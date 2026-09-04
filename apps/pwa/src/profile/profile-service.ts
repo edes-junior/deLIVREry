@@ -332,4 +332,243 @@ export class ProfileService {
       profile: profileData
     };
   }
+
+  public static validateRateVelocity = validateRateVelocity;
+
+  /**
+   * Atualiza as tarifas base do entregador respeitando a trava de velocidade tarifária (FR-9).
+   */
+  public static async updateCourierRates(input: {
+    userId: string;
+    baseDailyRate: number;
+    baseDeliveryFee: number;
+  }): Promise<{ success: boolean; profile: any }> {
+    if (!input.userId) {
+      throw new Error('Identificador do usuário é obrigatório.');
+    }
+
+    if (input.baseDailyRate < 0 || input.baseDeliveryFee < 0) {
+      throw new Error('As tarifas não podem ter valores negativos.');
+    }
+
+    const { data: currentProfile } = await supabase
+      .from('courier_profiles')
+      .select('base_daily_rate, base_delivery_fee, rate_updated_at')
+      .eq('user_id', input.userId)
+      .maybeSingle();
+
+    if (currentProfile) {
+      const dailyValidation = validateRateVelocity(
+        currentProfile.base_daily_rate,
+        input.baseDailyRate,
+        currentProfile.rate_updated_at
+      );
+
+      if (!dailyValidation.allowed) {
+        const err = new Error(dailyValidation.message);
+        (err as any).status = 400;
+        (err as any).details = dailyValidation;
+        throw err;
+      }
+
+      const feeValidation = validateRateVelocity(
+        currentProfile.base_delivery_fee,
+        input.baseDeliveryFee,
+        currentProfile.rate_updated_at
+      );
+
+      if (!feeValidation.allowed) {
+        const err = new Error(feeValidation.message);
+        (err as any).status = 400;
+        (err as any).details = feeValidation;
+        throw err;
+      }
+    }
+
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from('courier_profiles')
+      .update({
+        base_daily_rate: input.baseDailyRate,
+        base_delivery_fee: input.baseDeliveryFee,
+        rate_updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', input.userId)
+      .select()
+      .maybeSingle();
+
+    if (updateError) {
+      const err = new Error(`Erro ao atualizar tarifas do entregador: ${updateError.message}`);
+      (err as any).status = 400;
+      throw err;
+    }
+
+    return {
+      success: true,
+      profile: updatedProfile || {
+        userId: input.userId,
+        baseDailyRate: input.baseDailyRate,
+        baseDeliveryFee: input.baseDeliveryFee,
+        rateUpdatedAt: new Date().toISOString()
+      }
+    };
+  }
+
+  /**
+   * Atualiza as tarifas padrão do lojista respeitando a trava de velocidade tarifária (FR-9).
+   */
+  public static async updateStoreRates(input: {
+    userId: string;
+    defaultDailyRate: number;
+    defaultDeliveryFee: number;
+  }): Promise<{ success: boolean; profile: any }> {
+    if (!input.userId) {
+      throw new Error('Identificador do lojista é obrigatório.');
+    }
+
+    if (input.defaultDailyRate < 0 || input.defaultDeliveryFee < 0) {
+      throw new Error('As tarifas não podem ter valores negativos.');
+    }
+
+    const { data: currentProfile } = await supabase
+      .from('store_profiles')
+      .select('default_daily_rate, default_delivery_fee, rate_updated_at')
+      .eq('user_id', input.userId)
+      .maybeSingle();
+
+    if (currentProfile) {
+      const dailyValidation = validateRateVelocity(
+        currentProfile.default_daily_rate || 0,
+        input.defaultDailyRate,
+        currentProfile.rate_updated_at
+      );
+
+      if (!dailyValidation.allowed) {
+        const err = new Error(dailyValidation.message);
+        (err as any).status = 400;
+        (err as any).details = dailyValidation;
+        throw err;
+      }
+
+      const feeValidation = validateRateVelocity(
+        currentProfile.default_delivery_fee || 0,
+        input.defaultDeliveryFee,
+        currentProfile.rate_updated_at
+      );
+
+      if (!feeValidation.allowed) {
+        const err = new Error(feeValidation.message);
+        (err as any).status = 400;
+        (err as any).details = feeValidation;
+        throw err;
+      }
+    }
+
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from('store_profiles')
+      .update({
+        default_daily_rate: input.defaultDailyRate,
+        default_delivery_fee: input.defaultDeliveryFee,
+        rate_updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', input.userId)
+      .select()
+      .maybeSingle();
+
+    if (updateError) {
+      const err = new Error(`Erro ao atualizar tarifas da loja: ${updateError.message}`);
+      (err as any).status = 400;
+      throw err;
+    }
+
+    return {
+      success: true,
+      profile: updatedProfile || {
+        userId: input.userId,
+        defaultDailyRate: input.defaultDailyRate,
+        defaultDeliveryFee: input.defaultDeliveryFee,
+        rateUpdatedAt: new Date().toISOString()
+      }
+    };
+  }
+}
+
+export interface RateVelocityValidationResult {
+  allowed: boolean;
+  minAllowed: number;
+  maxAllowed: number;
+  timeRemainingMinutes: number;
+  timeRemainingHours: number;
+  message?: string;
+}
+
+/**
+ * Validação pura da trava de velocidade tarifária (±30% em 12h - FR-9).
+ */
+export function validateRateVelocity(
+  currentRate: number,
+  newRate: number,
+  lastUpdatedAt?: string | Date | number | null,
+  maxVariation = 0.30,
+  windowHours = 12
+): RateVelocityValidationResult {
+  if (currentRate <= 0 || !lastUpdatedAt) {
+    return {
+      allowed: true,
+      minAllowed: 0,
+      maxAllowed: Infinity,
+      timeRemainingMinutes: 0,
+      timeRemainingHours: 0
+    };
+  }
+
+  const lastUpdatedMs = new Date(lastUpdatedAt).getTime();
+  const timePassedMs = Date.now() - lastUpdatedMs;
+  const windowMs = windowHours * 60 * 60 * 1000;
+
+  if (timePassedMs >= windowMs) {
+    return {
+      allowed: true,
+      minAllowed: 0,
+      maxAllowed: Infinity,
+      timeRemainingMinutes: 0,
+      timeRemainingHours: 0
+    };
+  }
+
+  const minAllowed = Math.round(currentRate * (1 - maxVariation) * 100) / 100;
+  const maxAllowed = Math.round(currentRate * (1 + maxVariation) * 100) / 100;
+  const timeRemainingMinutes = Math.max(1, Math.round((windowMs - timePassedMs) / (60 * 1000)));
+  const timeRemainingHours = Math.round((timeRemainingMinutes / 60) * 10) / 10;
+
+  if (newRate < minAllowed) {
+    return {
+      allowed: false,
+      minAllowed,
+      maxAllowed,
+      timeRemainingMinutes,
+      timeRemainingHours,
+      message: `Trava de velocidade tarifária: alteração da tarifa (R$ ${newRate.toFixed(2)}) inferior ao piso permitido de R$ ${minAllowed.toFixed(2)} (-30%). Aguarde ${timeRemainingHours}h para alterações livres.`
+    };
+  }
+
+  if (newRate > maxAllowed) {
+    return {
+      allowed: false,
+      minAllowed,
+      maxAllowed,
+      timeRemainingMinutes,
+      timeRemainingHours,
+      message: `Trava de velocidade tarifária: alteração da tarifa (R$ ${newRate.toFixed(2)}) superior ao teto permitido de R$ ${maxAllowed.toFixed(2)} (+30%). Aguarde ${timeRemainingHours}h para alterações livres.`
+    };
+  }
+
+  return {
+    allowed: true,
+    minAllowed,
+    maxAllowed,
+    timeRemainingMinutes,
+    timeRemainingHours
+  };
 }

@@ -52,7 +52,7 @@ development_status:
   epic-3: in-progress
   3-1-algoritmo-de-expulgo-de-outliers-via-filtro-1-5-times-text-i: review
   3-2-endpoint-de-analytics-de-preços-com-cache-e-alta-performance: review
-  3-3-trava-de-velocidade-tarifária-no-perfil-do-usuário-anti-mani: backlog
+  3-3-trava-de-velocidade-tarifária-no-perfil-do-usuário-anti-mani: review
   3-4-painel-visual-do-balizador-regional-no-pwa-e-landing-pages: backlog
   epic-3-retrospective: optional
 
