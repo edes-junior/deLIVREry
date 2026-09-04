@@ -21,6 +21,7 @@ export interface JobPost {
   state_id: string;
   city_id: string;
   neighborhood_id: string;
+  delivery_radius_km?: number;
   description?: string | null;
   status: JobStatus;
   matched_bid_id?: string | null;
@@ -67,6 +68,7 @@ export interface CreateJobPostDTO {
   state_id: string;
   city_id: string;
   neighborhood_id: string;
+  delivery_radius_km?: number;
   description?: string;
 }
 
@@ -82,5 +84,6 @@ export interface JobFilterParams {
   city_id?: string;
   neighborhood_id?: string;
   modal?: TransportModal;
+  max_radius_km?: number;
   status?: JobStatus;
 }

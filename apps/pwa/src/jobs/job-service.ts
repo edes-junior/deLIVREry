@@ -127,6 +127,7 @@ export async function createJobPost(
     state_id: input.state_id.toUpperCase(),
     city_id: input.city_id,
     neighborhood_id: input.neighborhood_id,
+    delivery_radius_km: input.delivery_radius_km ?? 3.0,
     description: input.description || null,
     status: 'open'
   };
@@ -177,6 +178,27 @@ export async function createJobPost(
 }
 
 /**
+ * Determina se a vaga é compatível com o modal do entregador, respeitando a regra
+ * ergonômica inegociável de raio máximo <= 3.0km para bicicletas convencionais (FR-5).
+ */
+export function isJobCompatibleWithModal(
+  job: JobPost, 
+  modal: TransportModal
+): boolean {
+  if (!job.accepted_modals || !job.accepted_modals.includes(modal)) {
+    return false;
+  }
+
+  // Bicicletas convencionais possuem limite ergonômico de esforço físico de 3.0km
+  if (modal === 'bicycle') {
+    const radius = job.delivery_radius_km ?? 3.0;
+    return radius <= 3.0;
+  }
+
+  return true;
+}
+
+/**
  * Consulta pública de vagas abertas com suporte a filtros geográficos e modal.
  * Nota: Os telefones das lojas não são retornados pela consulta pública de vagas (RLS / AD-10).
  */
@@ -211,7 +233,18 @@ export async function listOpenJobs(
     return { success: false, jobs: [], error: error.message };
   }
 
-  return { success: true, jobs: (data || []) as JobPost[] };
+  let jobs = (data || []) as JobPost[];
+
+  // Aplica filtragem fina de compatibilidade por modal (ex: raio <= 3km para bikes)
+  if (filters?.modal) {
+    jobs = jobs.filter(job => isJobCompatibleWithModal(job, filters.modal!));
+  }
+
+  if (typeof filters?.max_radius_km === 'number') {
+    jobs = jobs.filter(job => (job.delivery_radius_km ?? 3.0) <= filters.max_radius_km!);
+  }
+
+  return { success: true, jobs };
 }
 
 /**
@@ -229,6 +262,29 @@ export async function submitBid(
   const validation = validateJobBidInput(input);
   if (!validation.valid) {
     return { success: false, error: validation.errors.join(' ') };
+  }
+
+  // Verifica se a vaga ainda aceita propostas (não casada ou cancelada)
+  try {
+    const { data: job } = await client
+      .from('job_posts')
+      .select('status')
+      .eq('id', input.job_id)
+      .single();
+
+    if (job) {
+      if (job.status === 'matched') {
+        return { success: false, error: 'Esta vaga já foi preenchida por outro entregador.' };
+      }
+      if (job.status === 'cancelled') {
+        return { success: false, error: 'Esta vaga foi cancelada pelo lojista e não aceita mais propostas.' };
+      }
+      if (job.status !== 'open') {
+        return { success: false, error: 'Esta vaga não está aberta para receber propostas.' };
+      }
+    }
+  } catch {
+    // Suporte a mocks simplificados ou fallthrough gracioso
   }
 
   const payload = {

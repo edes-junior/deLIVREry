@@ -16,6 +16,7 @@ import { ReferralService } from './referral/referral-service.ts';
 import { RegionalQuorumThermometer } from './components/quorum/RegionalQuorumThermometer.tsx';
 import { ReferralCard } from './components/referral/ReferralCard.tsx';
 import { JobPublishModal } from './components/jobs/JobPublishModal.tsx';
+import { JobFeed } from './components/jobs/JobFeed.tsx';
 
 export const App: React.FC = () => {
   const { user, session, isLoading: isAuthLoading, signOut } = useAuth();
@@ -398,6 +399,17 @@ export const App: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Feed de Vagas para Entregadores (Story 2.3) */}
+        {profileData.user.userType === 'courier' && (
+          <JobFeed
+            courierUserId={user.id}
+            transportModal={profileData.profile?.transport_modal || 'motorcycle'}
+            stateId={profileData.profile?.state_id || 'SP'}
+            cityId={profileData.profile?.city_id || 'sao-paulo'}
+            neighborhoodId={profileData.profile?.home_neighborhood_id || 'centro'}
+          />
+        )}
 
         {/* Toast de Sucesso */}
         {successToast && (
