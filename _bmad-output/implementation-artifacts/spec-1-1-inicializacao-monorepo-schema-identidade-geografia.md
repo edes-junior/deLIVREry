@@ -2,7 +2,8 @@
 title: 'Story 1.1: Inicialização do Monorepo e Schema de Identidade & Geografia com RLS'
 type: 'feature'
 created: '2026-09-04'
-status: 'ready-for-dev'
+status: 'done'
+baseline_commit: '4c12dc81d62884ec4edba5a9f69c17a553dbf780'
 review_loop_iteration: 0
 context:
   - '_bmad-output/planning-artifacts/architecture/architecture-deLIVREry-2026-08-21/ARCHITECTURE-SPINE.md'
@@ -61,16 +62,16 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `package.json` -- Criar package.json raiz com workspaces npm e scripts de validação -- Estruturar monorepo conforme arquitetura.
-- [ ] `.gitignore` -- Criar .gitignore unificado para o monorepo -- Evitar versionamento de arquivos efêmeros e segredos.
-- [ ] `apps/pwa/package.json` -- Inicializar package.json do PWA -- Isolar dependências e scripts do app PWA.
-- [ ] `apps/landing-pages/package.json` -- Inicializar package.json das Landing Pages -- Isolar dependências e scripts das landing pages.
-- [ ] `apps/developer-portal/package.json` -- Inicializar package.json do Developer Portal -- Isolar dependências do portal.
-- [ ] `packages/embed-widget/package.json` -- Inicializar package.json do embed-widget -- Isolar dependências do Web Component.
-- [ ] `packages/api-client-sdk/package.json` -- Inicializar package.json do SDK -- Isolar dependências do SDK da API.
-- [ ] `supabase/config.toml` -- Gerar configuração do Supabase -- Habilitar compatibilidade com Supabase CLI e ambiente local.
-- [ ] `supabase/migrations/20260904143000_init_identity_geography_schema.sql` -- Implementar DDL completo de tabelas, constraints de unicidade/check, índices e políticas RLS -- Cumprir requisitos de dados e segurança do Epic 1.
-- [ ] `tests/schema-validation.test.js` -- Criar teste automatizado para validação de schema e regras DDL -- Prover feedback imediato e regressão automatizada.
+- [x] `package.json` -- Criar package.json raiz com workspaces npm e scripts de validação -- Estruturar monorepo conforme arquitetura.
+- [x] `.gitignore` -- Criar .gitignore unificado para o monorepo -- Evitar versionamento de arquivos efêmeros e segredos.
+- [x] `apps/pwa/package.json` -- Inicializar package.json do PWA -- Isolar dependências e scripts do app PWA.
+- [x] `apps/landing-pages/package.json` -- Inicializar package.json das Landing Pages -- Isolar dependências e scripts das landing pages.
+- [x] `apps/developer-portal/package.json` -- Inicializar package.json do Developer Portal -- Isolar dependências do portal.
+- [x] `packages/embed-widget/package.json` -- Inicializar package.json do embed-widget -- Isolar dependências do Web Component.
+- [x] `packages/api-client-sdk/package.json` -- Inicializar package.json do SDK -- Isolar dependências do SDK da API.
+- [x] `supabase/config.toml` -- Gerar configuração do Supabase -- Habilitar compatibilidade com Supabase CLI e ambiente local.
+- [x] `supabase/migrations/20260904143000_init_identity_geography_schema.sql` -- Implementar DDL completo de tabelas, constraints de unicidade/check, índices e políticas RLS -- Cumprir requisitos de dados e segurança do Epic 1.
+- [x] `tests/schema-validation.test.js` -- Criar teste automatizado para validação de schema e regras DDL -- Prover feedback imediato e regressão automatizada.
 
 **Acceptance Criteria:**
 - Given a raiz do projeto deLIVREry, when inspecionada a árvore de diretórios, then devem existir as pastas `apps/pwa`, `apps/landing-pages`, `apps/developer-portal`, `packages/embed-widget`, `packages/api-client-sdk` e `supabase/migrations`.
@@ -94,3 +95,33 @@ context:
 
 **Manual checks (if no CLI):**
 - Inspecionar a sintaxe do arquivo de migration para garantir integridade com PostgreSQL 15+.
+
+## Suggested Review Order
+
+**Schema de Identidade & Geografia (Supabase)**
+
+- DDL de tabelas fundamentais de usuários e perfis com constraints de integridade
+  [`20260904143000_init_identity_geography_schema.sql:20`](../../supabase/migrations/20260904143000_init_identity_geography_schema.sql#L20)
+
+- Políticas de isolamento e Row Level Security (RLS) por auth.uid()
+  [`20260904143000_init_identity_geography_schema.sql:135`](../../supabase/migrations/20260904143000_init_identity_geography_schema.sql#L135)
+
+- Configuração de portas e autenticação para o Supabase CLI local
+  [`config.toml:1`](../../supabase/config.toml#L1)
+
+**Estrutura de Monorepo & Workspaces**
+
+- Configuração raiz com npm workspaces para apps e packages
+  [`package.json:6`](../../package.json#L6)
+
+- Stubs mínimos para os pacotes compartilhados embed-widget e SDK
+  [`delivrery-button.js:6`](../../packages/embed-widget/src/delivrery-button.js#L6)
+
+- Regras abrangentes de exclusão de artefatos efêmeros e variáveis de ambiente
+  [`.gitignore:1`](../../.gitignore#L1)
+
+**Verificação Automatizada**
+
+- Testes determinísticos validando schema DDL, constraints de quórum e workspaces
+  [`schema-validation.test.js:10`](../../tests/schema-validation.test.js#L10)
+

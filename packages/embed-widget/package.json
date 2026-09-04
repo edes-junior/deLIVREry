@@ -1,0 +1,10 @@
+{
+  "name": "@delivrery/embed-widget",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/delivrery-button.js",
+  "description": "Web Component nativo embutível <delivrery-button /> para cardápios e PDVs",
+  "scripts": {
+    "build": "node -e \"console.log('Embed widget scaffold ready')\""
+  }
+}

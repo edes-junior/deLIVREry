@@ -1,0 +1,12 @@
+{
+  "name": "@delivrery/pwa",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "PWA Oficial de Referência deLIVREry para Lojistas e Entregadores",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  }
+}
