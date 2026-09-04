@@ -67,6 +67,72 @@ export class DelivreryClient {
 
     return await res.json();
   }
+
+  /**
+   * Obtém a configuração de apoio comunitário e chave PIX.
+   */
+  getPixConfig() {
+    const key = (typeof process !== 'undefined' && process.env?.PUBLIC_PIX_KEY) || 'apoio@delivrery.org';
+    const recipientName = (typeof process !== 'undefined' && process.env?.PUBLIC_PIX_RECIPIENT_NAME) || 'Comunidade deLIVREry';
+    const city = (typeof process !== 'undefined' && process.env?.PUBLIC_PIX_CITY) || 'SAO PAULO';
+    return {
+      key,
+      recipientName,
+      city,
+      brCodePayload: generatePixBrcode({ key, recipientName, city })
+    };
+  }
+}
+
+/**
+ * Funções utilitárias de BR Code PIX no padrão EMVCo / BACEN
+ */
+export function formatPixTLV(id, value) {
+  const len = value.length.toString().padStart(2, '0');
+  return `${id}${len}${value}`;
+}
+
+export function calculatePixCrc16(str) {
+  let crc = 0xFFFF;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= (str.charCodeAt(i) << 8);
+    for (let j = 0; j < 8; j++) {
+      if ((crc & 0x8000) !== 0) {
+        crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+      } else {
+        crc = (crc << 1) & 0xFFFF;
+      }
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, '0');
+}
+
+export function generatePixBrcode(params = {}) {
+  const key = (params.key || 'apoio@delivrery.org').trim();
+  const recipientName = (params.recipientName || 'Comunidade deLIVREry')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().slice(0, 25);
+  const city = (params.city || 'SAO PAULO')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().slice(0, 15);
+  const txid = params.txid || '***';
+
+  const tag00 = formatPixTLV('00', '01');
+  const subtag00 = formatPixTLV('00', 'br.gov.bcb.pix');
+  const subtag01 = formatPixTLV('01', key);
+  const tag26 = formatPixTLV('26', `${subtag00}${subtag01}`);
+  const tag52 = formatPixTLV('52', '0000');
+  const tag53 = formatPixTLV('53', '986');
+  let tag54 = '';
+  if (params.amount && params.amount > 0) {
+    tag54 = formatPixTLV('54', Number(params.amount).toFixed(2));
+  }
+  const tag58 = formatPixTLV('58', 'BR');
+  const tag59 = formatPixTLV('59', recipientName);
+  const tag60 = formatPixTLV('60', city);
+  const tag62 = formatPixTLV('62', formatPixTLV('05', txid));
+
+  const partial = `${tag00}${tag26}${tag52}${tag53}${tag54}${tag58}${tag59}${tag60}${tag62}6304`;
+  return `${partial}${calculatePixCrc16(partial)}`;
 }
 
 export default DelivreryClient;
+
