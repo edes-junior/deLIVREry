@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>deLIVREry — Brainstorming Criativo 100+ Ideias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-base: #090a0f;
+    --bg-surface: #12141c;
+    --bg-surface-elevated: #1a1d28;
+    --bg-card: rgba(26, 29, 40, 0.7);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(139, 92, 246, 0.4);
+    --primary: #8b5cf6;
+    --primary-glow: rgba(139, 92, 246, 0.25);
+    --accent-cyan: #06b6d4;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-rose: #f43f5e;
+    --text-main: #f3f4f6;
+    --text-muted: #9ca3af;
+    --text-faint: #6b7280;
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --shadow-card: 0 10px 30px -10px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-main);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6;
+    padding: 0 0 80px 0;
+    overflow-x: hidden;
+  }
+
+  .glow-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.35;
+  }
+  .glow-1 { width: 500px; height: 500px; background: #6366f1; top: -100px; left: -100px; }
+  .glow-2 { width: 450px; height: 450px; background: #06b6d4; top: 30%; right: -100px; }
+  .glow-3 { width: 550px; height: 550px; background: #10b981; bottom: 10%; left: 20%; }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header.hero {
+    padding: 70px 0 40px 0;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    background: radial-gradient(circle at 50% 20%, rgba(139, 92, 246, 0.15), transparent 70%);
+  }
+  .badge-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: #c4b5fd;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  h1.title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #ffffff 30%, #c4b5fd 70%, #06b6d4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 14px;
+  }
+  p.subtitle {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 760px;
+    margin: 0 auto 30px auto;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 30px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .stat-box {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .stat-box:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary);
+  }
+  .stat-val {
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .stat-lbl {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .nav-tabs {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 40px 0 30px 0;
+    position: sticky;
+    top: 20px;
+    z-index: 100;
+    padding: 10px;
+    background: rgba(9, 10, 15, 0.85);
+    backdrop-filter: blur(16px);
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    max-width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .tab-btn.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 4px 15px var(--primary-glow);
+  }
+
+  section.tech-section {
+    margin-top: 50px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 14px;
+  }
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+  .section-badge {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 20px;
+  }
+  .idea-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 22px;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .idea-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--card-accent, var(--primary)), transparent);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .idea-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-card);
+  }
+  .idea-card:hover::before {
+    opacity: 1;
+  }
+  .card-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-faint);
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .card-body {
+    color: var(--text-main);
+    font-size: 0.96rem;
+    line-height: 1.55;
+  }
+  .card-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-top: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+  }
+
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+    margin-top: 20px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px; top: 10px; bottom: 10px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent-emerald), var(--primary), var(--accent-cyan));
+  }
+  .timeline-block {
+    position: relative;
+    margin-bottom: 30px;
+  }
+  .timeline-dot {
+    position: absolute;
+    left: -28px; top: 4px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 3px solid var(--bg-base);
+    box-shadow: 0 0 10px var(--primary);
+  }
+  .timeline-head {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .synthesis-hero {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.1));
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 36px;
+    margin-top: 60px;
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.6);
+  }
+  .synthesis-hero h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+    background: linear-gradient(90deg, #fff, #c4b5fd);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .synthesis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+  }
+  .synth-item {
+    background: rgba(18, 20, 28, 0.8);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 20px;
+  }
+  .synth-item h3 {
+    font-size: 1.05rem;
+    color: #c4b5fd;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .synth-item p {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 80px;
+    color: var(--text-faint);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 30px;
+  }
+</style>
+</head>
+<body>
+
+<div class="glow-orb glow-1"></div>
+<div class="glow-orb glow-2"></div>
+<div class="glow-orb glow-3"></div>
+
+<div class="container">
+
+  <!-- Header -->
+  <header class="hero">
+    <div class="badge-tag">
+      <span>⚡ BMad Brainstorming Keepsake</span>
+    </div>
+    <h1 class="title">deLIVREry: O Engine de Logística Livre</h1>
+    <p class="subtitle">
+      Painel visual imersivo compilando <strong>100+ ideias geradas autonomamente</strong> através de 4 técnicas criativas de ponta para alavancar a tração, viralidade, gamificação e sustentabilidade do projeto.
+    </p>
+
+    <!-- Stats -->
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="stat-val">100</div>
+        <div class="stat-lbl">Ideias Registradas</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val">4</div>
+        <div class="stat-lbl">Técnicas Criativas</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val">10</div>
+        <div class="stat-lbl">Pilares Estratégicos</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val">R$ 0</div>
+        <div class="stat-lbl">Custo Operacional</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sticky Navigation -->
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="scrollToSection('sec-rr', this)">1. Round Robin (25)</button>
+    <button class="tab-btn" onclick="scrollToSection('sec-hats', this)">2. Six Hats (31)</button>
+    <button class="tab-btn" onclick="scrollToSection('sec-c8', this)">3. Crazy 8s (24)</button>
+    <button class="tab-btn" onclick="scrollToSection('sec-bc', this)">4. Backcasting (20)</button>
+    <button class="tab-btn" onclick="scrollToSection('sec-synthesis', this)">5. Síntese & Decisões</button>
+  </nav>
+
+  <!-- Section 1: Brain Writing Round Robin -->
+  <section id="sec-rr" class="tech-section">
+    <div class="section-header">
+      <div class="section-title">
+        <span>🔄 1. Brain Writing Round Robin</span>
+      </div>
+      <span class="section-badge" style="background: rgba(139, 92, 246, 0.2); color: #c4b5fd;">25 Ideias Conectadas</span>
+    </div>
+    <div class="cards-grid">
+            <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #01</span> <span>ID #1</span></div>
+          <div class="card-body">Criar o 'Termômetro do Bairro' em tempo real no PWA, onde um mapa de calor mostra quantos entregadores e lojistas faltam para desbloquear o raio de 3km.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #02</span> <span>ID #2</span></div>
+          <div class="card-body">Construir sobre o Termômetro: Quando faltar menos de 5 cadastros para o desbloqueio, disparar contagem regressiva pública e notificar líderes comunitários de motoboys.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #03</span> <span>ID #3</span></div>
+          <div class="card-body">Construir sobre a Contagem: Lançar o 'Bônus de Fundação de Bairro' — os primeiros 20 entregadores e 5 lojas fundadoras ganham um badge permanente de Fundador e destaque vitalício no balizador de reputação.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #04</span> <span>ID #4</span></div>
+          <div class="card-body">Transformar lojistas âncora em 'Embaixadores do Polo': O lojista mais influente do polo gastronômico ganha um painel para convidar os 10 restaurantes vizinhos em 1 clique via WhatsApp.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #05</span> <span>ID #5</span></div>
+          <div class="card-body">Mapear pontos físicos de espera de motoboys (postos, praças) e espalhar QR Codes adesivados com a mensagem 'Seu corre sem taxas começa aqui — escaneie para acelerar o desbloqueio'.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #06</span> <span>ID #6</span></div>
+          <div class="card-body">Criar o 'Momento Salvador de Plantão': Quando um lojista tiver um pedido de emergência aceito em menos de 3 minutos num sábado à noite, exibir animação de resgate com confetes sonoros e sugestão de R$ 3,00 de PIX.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #07</span> <span>ID #7</span></div>
+          <div class="card-body">Construir sobre o Salvador: Permitir que o lojista adicione uma caixinha PIX direta e voluntária para o entregador E uma micro-doação para a infraestrutura do app na mesma tela de fechamento de turno.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #08</span> <span>ID #8</span></div>
+          <div class="card-body">Painel de Transparência Aberta de Custos: Mostrar uma barra de 'Meta do Servidor do Mês' em tempo real — quando a comunidade atinge 100% dos custos do Supabase/FCM cobertos, o app entra em 'Modo Vitória Coletiva' com temas visuais comemorativos.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #09</span> <span>ID #9</span></div>
+          <div class="card-body">Gamificar as microdoações com Selos de Apoiador Ouro/Prata/Bronze que aparecem no perfil público do restaurante e aumentam o prestígio perante os motoboys.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #10</span> <span>ID #10</span></div>
+          <div class="card-body">Disparar o gatilho de doação no entregador exatamente quando ele atinge um marco financeiro histórico no app (ex: 'Você acaba de atingir R$ 1.000 em corridas livres de taxa')</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #11</span> <span>ID #11</span></div>
+          <div class="card-body">Criar o botão 'PIX Relâmpago 1-Real': Um atalho instantâneo com deep link do app do banco do usuário que copia a chave e abre o banco sem fricção.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #12</span> <span>ID #12</span></div>
+          <div class="card-body">Desenvolver o 'deLIVREry Mini-Widget' em Web Component (<delivrery-button />) que qualquer cardápio digital open-source ou próprio de restaurante pode colar com 1 linha de código para acionar entregadores.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #13</span> <span>ID #13</span></div>
+          <div class="card-body">Construir sobre o Widget: Criar um plugin oficial para WordPress/WooCommerce que converte pedidos de delivery em chamadas de cotação Bid/Ask automáticas para a rede de entregadores locais.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #14</span> <span>ID #14</span></div>
+          <div class="card-body">Lançar o 'Portal da Cidade Conectada': Pacote de templates pré-configurados para secretarias municipais de desenvolvimento econômico adotarem o deLIVREry como infraestrutura pública de entregas.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #15</span> <span>ID #15</span></div>
+          <div class="card-body">Integrar com sistemas de PDV locais via Webhooks bidirecionais, para que o restaurante não precise tocar no celular — o fechamento da conta na mesa ou balcão já dispara o aviso de turno ou corrida.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #16</span> <span>ID #16</span></div>
+          <div class="card-body">Disponibilizar SDKs oficiais em JavaScript/TypeScript e Python para permitir que startups locais criem serviços nichados em cima do engine (ex: entrega de farmácias locais, petshops de bairro).</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #17</span> <span>ID #17</span></div>
+          <div class="card-body">Criar o 'Radar de Chuva e Eventos': O balizador ajusta dinamicamente a mediana sugerida quando há alertas meteorológicos ou jogos de futebol, orientando lojistas a aumentarem o valor da diária para atrair motoboys.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #18</span> <span>ID #18</span></div>
+          <div class="card-body">Construir sobre o Radar: Mecanismo de 'Oferta Relâmpago Blindada' onde o lojista pode lançar uma diária com bônus de pontualidade sem violar a regra de trava de velocidade de preços.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #19</span> <span>ID #19</span></div>
+          <div class="card-body">Gráfico de Curva de Demanda Semanal por Bairro: Entregadores podem ver quais dias e horários têm maior déficit de motoboys na sua região para planejarem suas escalas autônomas.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #20</span> <span>ID #20</span></div>
+          <div class="card-body">Algoritmo de contraproposta inteligente (Smart Counter-Bid): Quando a oferta do lojista está 20% abaixo da mediana regional, sugerir ao lojista com 1 clique o ajuste para a média com alta probabilidade de aceite.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #21</span> <span>ID #21</span></div>
+          <div class="card-body">Mecanismo de 'Pool de Turnos Compartilhados': Dois pequenos comércios vizinhos (ex: uma pizzaria e uma hamburgueria de horários complementares) contratam conjuntamente uma diária de entregador pela API.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #22</span> <span>ID #22</span></div>
+          <div class="card-body">Criar o 'Pacto de Pontualidade e Respeito': Badge de compromisso ético mútuo entre lojistas e motoboys, reduzindo no-shows a quase zero.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #23</span> <span>ID #23</span></div>
+          <div class="card-body">Clube de Vantagens Comunitário sem Custo: Empresas locais parceiras (oficinas de moto, borracharias) oferecem descontos espontâneos para entregadores com badge Nível Ouro no deLIVREry.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #24</span> <span>ID #24</span></div>
+          <div class="card-body">Canal de SOS Mecânico entre Entregadores: Alerta voluntário de emergência no PWA caso um motoboy tenha pneu furado ou pane durante um turno, permitindo que outro parceiro próximo assuma as entregas pendentes.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #8b5cf6;">
+        <div>
+          <div class="card-num"><span>ROUND ROBIN #25</span> <span>ID #25</span></div>
+          <div class="card-body">Selo Físico 'Este Estabelecimento Apoia o Delivery Livre': Adesivos para a porta de restaurantes que fortalecem a marca perante os clientes finais que repudiam taxas abusivas de grandes apps.</div>
+        </div>
+        <div>
+          <span class="card-tag">Iteração Criativa</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Section 2: Six Thinking Hats -->
+  <section id="sec-hats" class="tech-section">
+    <div class="section-header">
+      <div class="section-title">
+        <span>🎩 2. Six Thinking Hats (Edward de Bono)</span>
+      </div>
+      <span class="section-badge" style="background: rgba(6, 182, 212, 0.2); color: #67e8f9;">31 Ideias sob 6 Lentes</span>
+    </div>
+    <div class="cards-grid">
+            <div class="idea-card" style="--card-accent: #f3f4f6;">
+        <div>
+          <div class="card-num"><span>SIX HATS #26</span> <span>ID #26</span></div>
+          <div class="card-body">[Chapéu Branco] Monitorar telemetria de latência de matching e taxa de conversão de vagas por faixa de horário diretamente em views materializadas do PostgreSQL/Supabase.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f3f4f6;">
+        <div>
+          <div class="card-num"><span>SIX HATS #27</span> <span>ID #27</span></div>
+          <div class="card-body">[Chapéu Branco] Criar scripts de exportação periódica de estatísticas anônimas de preços para alimentar relatórios abertos de transparência da economia local.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f3f4f6;">
+        <div>
+          <div class="card-num"><span>SIX HATS #28</span> <span>ID #28</span></div>
+          <div class="card-body">[Chapéu Branco] Otimizar o payload dos Web Push FCM para garantir consumo de dados móveis inferior a 20KB por notificação, respeitando planos de dados pré-pagos de entregadores.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f3f4f6;">
+        <div>
+          <div class="card-num"><span>SIX HATS #29</span> <span>ID #29</span></div>
+          <div class="card-body">[Chapéu Branco] Cachear agregados de IQR de preços regionais no Redis/KV do Edge para que requisições de consulta de preços tenham latência <15ms.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f3f4f6;">
+        <div>
+          <div class="card-num"><span>SIX HATS #30</span> <span>ID #30</span></div>
+          <div class="card-body">[Chapéu Branco] Registrar no banco a geolocalização aproximada por polígonos de bairros (GeoJSON) para evitar vazamento de endereço residencial do entregador.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #ef4444;">
+        <div>
+          <div class="card-num"><span>SIX HATS #31</span> <span>ID #31</span></div>
+          <div class="card-body">[Chapéu Vermelho] Explorar a sensação de indignação contra as taxas de até 27% dos grandes monopólios, transformando o deLIVREry em um símbolo de resistência e autonomia.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #ef4444;">
+        <div>
+          <div class="card-num"><span>SIX HATS #32</span> <span>ID #32</span></div>
+          <div class="card-body">[Chapéu Vermelho] Gerar alívio imediato no lojista em momentos de pânico (ex: dia chuvoso com entregas atrasadas), fazendo-o sentir que a comunidade de entregadores é sua parceira direta.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #ef4444;">
+        <div>
+          <div class="card-num"><span>SIX HATS #33</span> <span>ID #33</span></div>
+          <div class="card-body">[Chapéu Vermelho] Criar orgulho na profissão de entregador com notificações que valorizam seu papel fundamental na economia da cidade ('Você é o motor da cidade').</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #ef4444;">
+        <div>
+          <div class="card-num"><span>SIX HATS #34</span> <span>ID #34</span></div>
+          <div class="card-body">[Chapéu Vermelho] Eliminar a ansiedade de bloqueios arbitrários e injustos que ocorrem nos grandes apps através de um processo transparente de reputação comunitária.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #ef4444;">
+        <div>
+          <div class="card-num"><span>SIX HATS #35</span> <span>ID #35</span></div>
+          <div class="card-body">[Chapéu Vermelho] Despertar generosidade espontânea: fazer a doação PIX parecer um abraço de agradecimento entre quem foi ajudado e quem mantém a ferramenta de pé.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #6b7280;">
+        <div>
+          <div class="card-num"><span>SIX HATS #36</span> <span>ID #36</span></div>
+          <div class="card-body">[Chapéu Preto] Risco de 'Free-Rider' crônico: lojistas que usam diariamente o sistema e nunca realizam doações nem avaliações. Mitigar com badges de 'Apoiador Ativo' e destaque prioritário para quem apoia.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #6b7280;">
+        <div>
+          <div class="card-num"><span>SIX HATS #37</span> <span>ID #37</span></div>
+          <div class="card-body">[Chapéu Preto] Risco de falta de liquidez em horários de baixo movimento (ex: terças à tarde). Mitigar com sugestão de turnos compartilhados entre lojistas.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #6b7280;">
+        <div>
+          <div class="card-num"><span>SIX HATS #38</span> <span>ID #38</span></div>
+          <div class="card-body">[Chapéu Preto] Risco de manipulação de avaliações entre amigos (Fake Reviews). Mitigar exigindo histórico mínimo de diárias confirmadas e divergência de CPF/chave PIX comprovada.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #6b7280;">
+        <div>
+          <div class="card-num"><span>SIX HATS #39</span> <span>ID #39</span></div>
+          <div class="card-body">[Chapéu Preto] Risco de dependência de cotas gratuitas do Supabase/FCM em caso de pico viral. Mitigar com arquitetura de fallback e clusterização de instâncias comunitárias.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #6b7280;">
+        <div>
+          <div class="card-num"><span>SIX HATS #40</span> <span>ID #40</span></div>
+          <div class="card-body">[Chapéu Preto] Risco de fragmentação da experiência em integrações headless de baixa qualidade por terceiros. Mitigar com SDK opinativo e certificação de design.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>SIX HATS #41</span> <span>ID #41</span></div>
+          <div class="card-body">[Chapéu Amarelo] Efeito de rede viral explosivo: o primeiro polo gastronômico a atingir 100% de adesão atrai automaticamente todos os motoboys da região vizinha.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>SIX HATS #42</span> <span>ID #42</span></div>
+          <div class="card-body">[Chapéu Amarelo] Adoção massiva por portais municipais e prefeituras em programas de estímulo ao comércio local e fomento ao trabalho autônomo sem custo aos cofres públicos.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>SIX HATS #43</span> <span>ID #43</span></div>
+          <div class="card-body">[Chapéu Amarelo] Criação de um ecossistema aberto de desenvolvedores que constroem plugins, robôs de WhatsApp e integrações com todos os cardápios digitais do Brasil.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>SIX HATS #44</span> <span>ID #44</span></div>
+          <div class="card-body">[Chapéu Amarelo] Sustentabilidade financeira orgânica: volume alto de transações com microdoação média de R$ 2,00 gerando superávit para reinvestir em melhorias e servidores.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>SIX HATS #45</span> <span>ID #45</span></div>
+          <div class="card-body">[Chapéu Amarelo] Expansão natural para outros modais e segmentos (fretes urbanos rápidos, entregas sustentáveis com bicicleta elétrica comunitária).</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #10b981;">
+        <div>
+          <div class="card-num"><span>SIX HATS #46</span> <span>ID #46</span></div>
+          <div class="card-body">[Chapéu Verde] 'Leilão Flash de Sobras de Turno': Se um restaurante precisa de motoboy por apenas 1h para desovar 10 pedidos acumulados, abrir um mini-leilão de raio curto.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #10b981;">
+        <div>
+          <div class="card-num"><span>SIX HATS #47</span> <span>ID #47</span></div>
+          <div class="card-body">[Chapéu Verde] Assistente de WhatsApp com IA Open Source para receber vagas e contrapropostas em áudio de motoboy em trânsito e convertê-las em chamadas de API.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #10b981;">
+        <div>
+          <div class="card-num"><span>SIX HATS #48</span> <span>ID #48</span></div>
+          <div class="card-body">[Chapéu Verde] 'Mapa de Pontos de Apoio Amigos': Lojas que oferecem água, café e tomada para motoboys ganham destaque especial no radar do app.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #10b981;">
+        <div>
+          <div class="card-num"><span>SIX HATS #49</span> <span>ID #49</span></div>
+          <div class="card-body">[Chapéu Verde] Mecânica de 'Desafio do Bairro': Se 50 entregadores baterem 500 entregas livres na semana, uma empresa local parceira patrocina um sorteio de pneus/troca de óleo.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #10b981;">
+        <div>
+          <div class="card-num"><span>SIX HATS #50</span> <span>ID #50</span></div>
+          <div class="card-body">[Chapéu Verde] 'Passaporte do Entregador': Registro portátil e criptograficamente seguro da reputação e pontualidade do entregador para ele comprovar histórico profissional em qualquer lugar.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #10b981;">
+        <div>
+          <div class="card-num"><span>SIX HATS #51</span> <span>ID #51</span></div>
+          <div class="card-body">[Chapéu Verde] Botão 'SOS Chuva': Alerta cooperativo que convoca entregadores com motos preparadas e capa de chuva para turnos especiais com remuneração justa sugerida.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #3b82f6;">
+        <div>
+          <div class="card-num"><span>SIX HATS #52</span> <span>ID #52</span></div>
+          <div class="card-body">[Chapéu Azul] Estabelecer critérios claros de prontidão de lançamento (Checklist de Desbloqueio de Bairro: 10 lojas ativas + 50 entregadores cadastrados).</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #3b82f6;">
+        <div>
+          <div class="card-num"><span>SIX HATS #53</span> <span>ID #53</span></div>
+          <div class="card-body">[Chapéu Azul] Criar um comitê comunitário aberto de governança de regras de precificação e anti-manipulação (auditoria pública das regras do algoritmo).</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #3b82f6;">
+        <div>
+          <div class="card-num"><span>SIX HATS #54</span> <span>ID #54</span></div>
+          <div class="card-body">[Chapéu Azul] Padronizar o ciclo de releases do Core Engine (API) com testes automatizados de regressão e garantia de backward-compatibility para parceiros.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #3b82f6;">
+        <div>
+          <div class="card-num"><span>SIX HATS #55</span> <span>ID #55</span></div>
+          <div class="card-body">[Chapéu Azul] Definir painel central de observabilidade de saúde operacional (taxa de sucesso de matching, tempo médio de resposta a vagas, NPS por bairro).</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #3b82f6;">
+        <div>
+          <div class="card-num"><span>SIX HATS #56</span> <span>ID #56</span></div>
+          <div class="card-body">[Chapéu Azul] Estruturar o roteiro de onboarding dos primeiros 3 polos-piloto com playbook de ativação passo a passo replicável para qualquer cidade.</div>
+        </div>
+        <div>
+          <span class="card-tag">Análise Multilateral</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Section 3: Crazy 8s -->
+  <section id="sec-c8" class="tech-section">
+    <div class="section-header">
+      <div class="section-title">
+        <span>⚡ 3. Crazy 8s (Velocidade & Disrupção)</span>
+      </div>
+      <span class="section-badge" style="background: rgba(245, 158, 11, 0.2); color: #fcd34d;">24 Ideias Rápidas</span>
+    </div>
+    <div class="cards-grid">
+            <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #57</span> <span>ID #57</span></div>
+          <div class="card-body">[Crazy 8s #1 - Lojista] 'Calculadora do Rombo do iFood': ferramenta interativa na Landing Page onde o dono de restaurante digita seu faturamento mensal e vê quanto dinheiro perdeu em taxas e quanto economizaria no deLIVREry.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #58</span> <span>ID #58</span></div>
+          <div class="card-body">[Crazy 8s #2 - Lojista] 'Botão SOS Motoboy Falhou': 1 clique no PWA que publica vaga de emergência instantânea com alerta sonoro estridente para todos os entregadores num raio de 2km.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #59</span> <span>ID #59</span></div>
+          <div class="card-body">[Crazy 8s #3 - Lojista] 'Plano de Turnos Recorrentes': O lojista agenda turnos fixos semanais (ex: sex/sáb/dom) e o sistema faz matching automático com os entregadores de melhor nota que atendem essa escala.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #60</span> <span>ID #60</span></div>
+          <div class="card-body">[Crazy 8s #4 - Lojista] 'Cardápio Digital Sem Fricção Integrado': Parceria ou modelo open-source onde cada lojista cadastrado ganha link de cardápio próprio que envia pedidos direto para o WhatsApp do restaurante e chama motoboys pelo deLIVREry.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #61</span> <span>ID #61</span></div>
+          <div class="card-body">[Crazy 8s #5 - Lojista] 'Aviso de Chegada Estimada para Clientes': Link público gerado automaticamente para o lojista enviar ao cliente final no WhatsApp acompanhando o status do entregador.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #62</span> <span>ID #62</span></div>
+          <div class="card-body">[Crazy 8s #6 - Lojista] 'Extrato de Economia Mensal': Relatório visual gerado todo dia 1º mostrando: 'Neste mês você economizou R$ 2.450 em taxas de marketplaces intermediários usando a rede livre'.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #63</span> <span>ID #63</span></div>
+          <div class="card-body">[Crazy 8s #7 - Lojista] 'Votação Comunitária de Melhorias': Lojistas votam com seus pontos de XP nas próximas funcionalidades a serem desenvolvidas na API/PWA.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #64</span> <span>ID #64</span></div>
+          <div class="card-body">[Crazy 8s #8 - Lojista] 'Modo Restaurante Amigo do Motoboy': Selo de verificação para estabelecimentos que oferecem banheiro limpo e recarga de celular, atraindo mais candidatos a vagas.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #65</span> <span>ID #65</span></div>
+          <div class="card-body">[Crazy 8s #9 - Entregador] 'Minha Tarifa, Minha Regra': Configuração simples de valor mínimo por KM ou por diária com slider intuitivo no PWA que calcula automaticamente a média do bairro.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #66</span> <span>ID #66</span></div>
+          <div class="card-body">[Crazy 8s #10 - Entregador] 'Filtro Anti-Furada': Indicador que avisa se o restaurante costuma atrasar o preparo de pedidos acima de 20 minutos, baseado em avaliações de outros motoboys.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #67</span> <span>ID #67</span></div>
+          <div class="card-body">[Crazy 8s #11 - Entregador] 'Meta Diária com Sons de Conquista': O entregador estipula sua meta de ganho do dia e, a cada diária/corrida confirmada, o PWA toca um efeito sonoro de caixa registradora e mostra barra de progresso animada.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #68</span> <span>ID #68</span></div>
+          <div class="card-body">[Crazy 8s #12 - Entregador] 'Modo Bateria Baixa Ultra-Lite': Interface simplificada de altíssimo contraste e economia máxima de bateria e dados para celulares com pouca carga.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #69</span> <span>ID #69</span></div>
+          <div class="card-body">[Crazy 8s #13 - Entregador] 'Resumo do Turno em PDF/Imagem para WhatsApp': Gerador em 1 clique de comprovante com lista de entregas e valores totais para conferência imediata com o caixa do restaurante.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #70</span> <span>ID #70</span></div>
+          <div class="card-body">[Crazy 8s #14 - Entregador] 'Guildas de Bairro': Grupos autônomos de entregadores por região que trocam informações sobre trânsito, chuva, policiamento e vagas abertas no bairro.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #71</span> <span>ID #71</span></div>
+          <div class="card-body">[Crazy 8s #15 - Entregador] 'Modo Bicicleta e E-Bike Especializado': Algoritmo que só atribui rotas em relevo plano e com distâncias inferiores a 3km para ciclistas.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #72</span> <span>ID #72</span></div>
+          <div class="card-body">[Crazy 8s #16 - Entregador] 'Proteção de Identidade e Segurança': Botão de compartilhamento de rota em tempo real com familiares ou contatos de confiança durante turnos noturnos.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #73</span> <span>ID #73</span></div>
+          <div class="card-body">[Crazy 8s #17 - Headless & Viral] 'Invasão Pacífica dos Grupos de WhatsApp de Bairro': Bot de Telegram/WhatsApp que monitora e formata vagas postadas em grupos de motoboys e as sincroniza com a API do deLIVREry.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #74</span> <span>ID #74</span></div>
+          <div class="card-body">[Crazy 8s #18 - Headless & Viral] 'Desafio de Desbloqueio entre Bairros Vizinhos': Competição amigável entre bairros (ex: Icaraí vs Santa Rosa) para ver quem atinge o limite de operação primeiro, com painel público e cobertura nas redes sociais.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #75</span> <span>ID #75</span></div>
+          <div class="card-body">[Crazy 8s #19 - Headless & Viral] 'API Sandbox em 30 Segundos': Playground no portal do desenvolvedor onde qualquer programador pode testar chamadas de API com chaves de teste instantâneas sem burocracia.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #76</span> <span>ID #76</span></div>
+          <div class="card-body">[Crazy 8s #20 - Headless & Viral] 'Kit de Comunicação Open Source': Pacote de banners, flyers para imprimir e posts de Instagram em Canva abertos para a comunidade divulgar o movimento livre em suas cidades.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #77</span> <span>ID #77</span></div>
+          <div class="card-body">[Crazy 8s #21 - Headless & Viral] 'Mural Comunitário de Gratidão': Página pública que exibe em tempo real mensagens anônimas enviadas por lojistas e motoboys ao fazerem suas doações PIX.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #78</span> <span>ID #78</span></div>
+          <div class="card-body">[Crazy 8s #22 - Headless & Viral] 'Conexão Direta com Cooperativas Locais': Endpoints dedicados para cooperativas de motoboys cadastrarem suas frotas inteiras e gerenciarem escalas com autonomia.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #79</span> <span>ID #79</span></div>
+          <div class="card-body">[Crazy 8s #23 - Headless & Viral] 'Mecanismo de Micro-Patrocínio Local': Pequenas empresas da região (ex: auto-peças, oficinas) podem patrocinar o servidor da cidade em troca de menção discreta no rodapé da página pública de status do bairro.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+      <div class="idea-card" style="--card-accent: #f59e0b;">
+        <div>
+          <div class="card-num"><span>CRAZY 8s #80</span> <span>ID #80</span></div>
+          <div class="card-body">[Crazy 8s #24 - Headless & Viral] 'Gatilho de PIX de Boas-Vindas à Liberdade': Modal sutil ao final do cadastro de lojista: 'Você acabou de economizar milhares de reais futuros em comissões. Ajude a manter este código vivo!'.</div>
+        </div>
+        <div>
+          <span class="card-tag">Ataque Rápido</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Section 4: Backcasting -->
+  <section id="sec-bc" class="tech-section">
+    <div class="section-header">
+      <div class="section-title">
+        <span>⏳ 4. Backcasting (De 2028 para Hoje)</span>
+      </div>
+      <span class="section-badge" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7;">20 Marcos Decisivos</span>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-block">
+        <div class="timeline-dot" style="background: var(--accent-emerald);"></div>
+        <div class="timeline-head">📍 2028: O Futuro Consolidado (1M entregas/mês)</div>
+        <div class="cards-grid">
+                    <div class="idea-card" style="--card-accent: #10b981;">
+            <div class="card-num"><span>VISÃO 2028</span> <span>ID #81</span></div>
+            <div class="card-body">[Backcasting 2028 - Visão] O deLIVREry atinge 1.000.000 de entregas/mês 100% livres de intermediação financeira, com 250 cidades ativas e autofinanciamento perpétuo via doações comunitárias PIX.</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #10b981;">
+            <div class="card-num"><span>VISÃO 2028</span> <span>ID #82</span></div>
+            <div class="card-body">[Backcasting 2028 - Visão] A API do deLIVREry tornou-se o protocolo padrão aberto consumido nativamente por todos os grandes sistemas de automação comercial e PDVs do país.</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #10b981;">
+            <div class="card-num"><span>VISÃO 2028</span> <span>ID #83</span></div>
+            <div class="card-body">[Backcasting 2028 - Visão] Entregadores em todo o território nacional têm estabilidade tarifária e respeito profissional, com histórico de reputação portátil e sem risco de desativações injustas.</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="timeline-block">
+        <div class="timeline-dot" style="background: #3b82f6;"></div>
+        <div class="timeline-head">📍 Final de 2027: Integração Nacional em PDVs e Portais Municipais</div>
+        <div class="cards-grid">
+                    <div class="idea-card" style="--card-accent: #3b82f6;">
+            <div class="card-num"><span>MARCO Q4 2027</span> <span>ID #84</span></div>
+            <div class="card-body">[Backcasting Q4 2027] Conectar o engine a 5 grandes players de software de PDV/gestão de restaurantes através de Webhooks e API REST oficial.</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #3b82f6;">
+            <div class="card-num"><span>MARCO Q4 2027</span> <span>ID #85</span></div>
+            <div class="card-body">[Backcasting Q4 2027] Firmar parcerias institucionais com 50 prefeituras municipais que adotam o deLIVREry em seus portais de 'Cidade Inteligente / Cidade Empreendedora'.</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #3b82f6;">
+            <div class="card-num"><span>MARCO Q4 2027</span> <span>ID #86</span></div>
+            <div class="card-body">[Backcasting Q4 2027] Lançar o 'Fundo Comunitário de Desenvolvimento', permitindo que a comunidade financie bolsas de desenvolvimento open source para novos módulos da API.</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #3b82f6;">
+            <div class="card-num"><span>MARCO Q4 2027</span> <span>ID #87</span></div>
+            <div class="card-body">[Backcasting Q4 2027] Desenvolver o módulo de roteirização multi-entrega colaborativa para otimizar frotas de bikes elétricas em centros urbanos densos.</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="timeline-block">
+        <div class="timeline-dot" style="background: #f59e0b;"></div>
+        <div class="timeline-head">📍 Meio de 2027: Sustentabilidade Comprovada e Expansão Multi-Estado</div>
+        <div class="cards-grid">
+                    <div class="idea-card" style="--card-accent: #f59e0b;">
+            <div class="card-num"><span>MARCO Q2 2027</span> <span>ID #88</span></div>
+            <div class="card-body">[Backcasting Q2 2027] Validar taxa de conversão de doações PIX em Delight Moments superior a 8% das corridas finalizadas, cobrindo com folga todos os custos de infraestrutura e suporte.</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #f59e0b;">
+            <div class="card-num"><span>MARCO Q2 2027</span> <span>ID #89</span></div>
+            <div class="card-body">[Backcasting Q2 2027] Lançar o programa 'Embaixadores do deLIVREry' em 15 capitais brasileiras, remunerando líderes comunitários com reconhecimento e kits físicos.</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #f59e0b;">
+            <div class="card-num"><span>MARCO Q2 2027</span> <span>ID #90</span></div>
+            <div class="card-body">[Backcasting Q2 2027] Integrar o balizador Bid/Ask com feeds de inteligência de combustíveis e inflação local para reajustes automáticos recomendados de tarifas base.</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #f59e0b;">
+            <div class="card-num"><span>MARCO Q2 2027</span> <span>ID #91</span></div>
+            <div class="card-body">[Backcasting Q2 2027] Criar o painel 'Open Delivery Analytics', expondo dados públicos de tendências de entregas urbanas para estudos acadêmicos e planejamento urbano.</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="timeline-block">
+        <div class="timeline-dot" style="background: #8b5cf6;"></div>
+        <div class="timeline-head">📍 Final de 2026: Prova de Tração em 20 Clusters Urbanos</div>
+        <div class="cards-grid">
+                    <div class="idea-card" style="--card-accent: #8b5cf6;">
+            <div class="card-num"><span>MARCO Q4 2026</span> <span>ID #92</span></div>
+            <div class="card-body">[Backcasting Q4 2026] Desbloquear com sucesso 20 bairros-chave em cidades como Niterói, São Paulo, Rio de Janeiro e Belo Horizonte.</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #8b5cf6;">
+            <div class="card-num"><span>MARCO Q4 2026</span> <span>ID #93</span></div>
+            <div class="card-body">[Backcasting Q4 2026] Atingir tempo médio de aceite de vagas de emergência inferior a 4 minutos em 90% das ocorrências.</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #8b5cf6;">
+            <div class="card-num"><span>MARCO Q4 2026</span> <span>ID #94</span></div>
+            <div class="card-body">[Backcasting Q4 2026] Validar o teste A/B/C das Landing Pages com taxa de conversão acima de 30% em pré-cadastros de motoboys e lojistas.</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #8b5cf6;">
+            <div class="card-num"><span>MARCO Q4 2026</span> <span>ID #95</span></div>
+            <div class="card-body">[Backcasting Q4 2026] Entregar o primeiro portal do desenvolvedor interativo com Swagger UI e emissão instantânea de API Keys para parceiros locais.</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="timeline-block">
+        <div class="timeline-dot" style="background: #ec4899;"></div>
+        <div class="timeline-head">📍 Sprint 1 (Hoje): O Primeiro Movimento Inevitável</div>
+        <div class="cards-grid">
+                    <div class="idea-card" style="--card-accent: #ec4899;">
+            <div class="card-num"><span>SPRINT 1 HOJE</span> <span>ID #96</span></div>
+            <div class="card-body">[Backcasting Hoje - Movimento Inevitável] Concentrar 100% da força de lançamento da Sprint 1 em 1 polo gastronômico pioneiro ultra-denso (ex: Icaraí em Niterói).</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #ec4899;">
+            <div class="card-num"><span>SPRINT 1 HOJE</span> <span>ID #97</span></div>
+            <div class="card-body">[Backcasting Hoje - Movimento Inevitável] Montar uma força-tarefa de ativação pessoal com 10 donos de restaurantes influentes e 30 motoboys de referência do bairro.</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #ec4899;">
+            <div class="card-num"><span>SPRINT 1 HOJE</span> <span>ID #98</span></div>
+            <div class="card-body">[Backcasting Hoje - Movimento Inevitável] Lançar as 3 Landing Pages de teste A/B/C para entregadores com medição em tempo real de CAC zero e tração orgânica via WhatsApp.</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #ec4899;">
+            <div class="card-num"><span>SPRINT 1 HOJE</span> <span>ID #99</span></div>
+            <div class="card-body">[Backcasting Hoje - Movimento Inevitável] Publicar a API Core e os endpoints de cadastro/vagas com documentação limpa no Supabase e autenticação passwordless por Magic Link.</div>
+          </div>
+          <div class="idea-card" style="--card-accent: #ec4899;">
+            <div class="card-num"><span>SPRINT 1 HOJE</span> <span>ID #100</span></div>
+            <div class="card-body">[Backcasting Hoje - Movimento Inevitável] Ativar o primeiro modal de doação voluntária PIX com microcopy de gratidão imediata após a primeira diária finalizada.</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Synthesis & Strategic Climax -->
+  <section id="sec-synthesis" class="synthesis-hero">
+    <h2>🎯 Síntese Estratégica & Descobertas Críticas</h2>
+    <p style="color: var(--text-muted); font-size: 1.05rem;">
+      Conexões profundas e decisões estruturadas que consolidam o deLIVREry como a infraestrutura de logística aberta mais viável e escalável do mercado.
+    </p>
+
+    <div class="synthesis-grid">
+      <div class="synth-item">
+        <h3>💡 1. Viralidade por Desbloqueio Local</h3>
+        <p>O <em>Termômetro de Desbloqueio</em> hiperlocal alinha o interesse mútuo de lojistas e motoboys: eles mesmos realizam o trabalho de captação de seus pares para ativar o bairro.</p>
+      </div>
+
+      <div class="synth-item">
+        <h3>❤️ 2. Doação PIX em Delight Moments</h3>
+        <p>A sustentabilidade por microdoações (R$ 2 a R$ 5) converte com altíssima taxa porque é acionada no momento exato em que o usuário sente a vitória financeira ou operacional.</p>
+      </div>
+
+      <div class="synth-item">
+        <h3>🔌 3. Headless como Armadura Competitiva</h3>
+        <p>Em vez de rivalizar com plataformas de cardápio digital ou apps municipais, a API aberta do deLIVREry posiciona-se como o motor invisível de logística que todos desejam integrar.</p>
+      </div>
+
+      <div class="synth-item">
+        <h3>🛡️ 4. Balizador P2P Anti-Manipulação</h3>
+        <p>O algoritmo baseado no desvio interquartil (1.5×IQR) e travas de velocidade previne práticas predatórias e assegura um mercado equilibrado e confiável para ambas as pontas.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>deLIVREry — Brainstorming Report gerado pelo BMad Brainstorming Engine em 21 de Agosto de 2026.</p>
+    <p style="margin-top: 6px;">Memlog de Sessão: <code>_bmad-output/brainstorming/brainstorm-delivrery-logistica-livre-2026-08-21/.memlog.md</code></p>
+  </footer>
+
+</div>
+
+<script>
+function scrollToSection(id, btn) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth' });
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+  }
+}
+</script>
+
+</body>
+</html>

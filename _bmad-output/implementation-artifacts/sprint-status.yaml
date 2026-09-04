@@ -1,0 +1,72 @@
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when its first story starts (via build's sprint sync)
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates the next story after the previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; the status view surfaces open ones
+generated: 09-04-2026 14:24
+last_updated: 09-04-2026 14:24
+project: deLIVREry
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+development_status:
+  epic-1: backlog
+  1-1-inicialização-do-monorepo-e-schema-de-identidade-geografia-c: backlog
+  1-2-autenticação-passwordless-via-magic-link-com-sessão-persiste: backlog
+  1-3-cadastro-e-perfil-universal-com-validação-rigorosa-de-cpf-e: backlog
+  1-4-termômetro-de-desbloqueio-regional-e-mecânica-de-indicação-v: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-schema-de-vagas-e-propostas-com-rls-e-isolamento-de-contatos: backlog
+  2-2-publicação-de-vagas-de-turno-e-notificações-web-push-fcm: backlog
+  2-3-listagem-de-vagas-filtrada-por-modal-e-negociação-bid-ask-pr: backlog
+  2-4-fechamento-de-matching-liberação-de-contatos-e-gestão-de-rep: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-algoritmo-de-expulgo-de-outliers-via-filtro-1-5-times-text-i: backlog
+  3-2-endpoint-de-analytics-de-preços-com-cache-e-alta-performance: backlog
+  3-3-trava-de-velocidade-tarifária-no-perfil-do-usuário-anti-mani: backlog
+  3-4-painel-visual-do-balizador-regional-no-pwa-e-landing-pages: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-schema-de-logs-de-microdoação-donations_log-e-configuração-d: backlog
+  4-2-componente-bottom-sheet-de-doação-pix-com-haptic-feedback-no: backlog
+  4-3-concessão-de-badge-de-apoiador-e-bonificação-de-xp: backlog
+  4-4-painel-público-de-transparência-de-custos-do-servidor-e-vitó: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-schema-de-clientes-de-api-webhooks-e-gateway-de-validação: backlog
+  5-2-endpoints-restful-headless-de-gestão-de-vagas-e-perfis-opena: backlog
+  5-3-dispatcher-de-webhooks-de-saída-assinados-criptograficamente: backlog
+  5-4-portal-do-desenvolvedor-developers-com-swagger-ui-interativo: backlog
+  5-5-web-component-embutível-nativo-delivrery-button-para-cardápi: backlog
+  epic-5-retrospective: optional
