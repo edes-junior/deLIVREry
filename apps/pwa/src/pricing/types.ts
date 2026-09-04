@@ -52,3 +52,25 @@ export interface PricingQueryParams {
   neighborhoodId: string;
   transportModal?: string;
 }
+
+export interface SuggestedPricing {
+  suggestedDailyRate: number;
+  suggestedDeliveryFee: number;
+  source: 'neighborhood' | 'city' | 'default';
+  confidence: 'high' | 'medium' | 'low';
+}
+
+export interface RFC7807ProblemDetails {
+  type: string;
+  title: string;
+  status: number;
+  detail: string;
+  instance: string;
+  invalidParams?: Array<{ name: string; reason: string }>;
+}
+
+export interface PricingStatsApiResponse {
+  data: RegionalPricingMetrics & { suggestedPricing: SuggestedPricing };
+  cached: boolean;
+  serverTime: string;
+}
