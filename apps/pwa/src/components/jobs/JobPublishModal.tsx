@@ -9,6 +9,7 @@ import React, { useState, useMemo } from 'react';
 import type { TransportModal } from '../../profile/types.ts';
 import { createJobPost } from '../../jobs/job-service.ts';
 import { isEligibleForEarlyXpBonus } from '../../notifications/notification-service.ts';
+import { RegionalPricingWidget } from '../pricing/RegionalPricingWidget.tsx';
 
 interface JobPublishModalProps {
   isOpen: boolean;
@@ -282,6 +283,21 @@ export const JobPublishModal: React.FC<JobPublishModalProps> = ({
                 }}
               />
             </div>
+          </div>
+
+          {/* Balizador Regional Inteligente de Preços */}
+          <div style={{ marginBottom: '16px' }}>
+            <RegionalPricingWidget
+              stateId={defaultStateId}
+              cityId={defaultCityId}
+              neighborhoodId={defaultNeighborhoodId}
+              compact={true}
+              title="📊 Balizador de Preços da sua Região"
+              onApplyRates={(suggestedDaily, suggestedFee) => {
+                setDailyRate(suggestedDaily.toFixed(2));
+                setDeliveryFee(suggestedFee.toFixed(2));
+              }}
+            />
           </div>
 
           {/* Valores Ofertados */}

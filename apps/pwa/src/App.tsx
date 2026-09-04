@@ -18,6 +18,7 @@ import { ReferralCard } from './components/referral/ReferralCard.tsx';
 import { JobPublishModal } from './components/jobs/JobPublishModal.tsx';
 import { JobFeed } from './components/jobs/JobFeed.tsx';
 import { StoreJobsList } from './components/jobs/StoreJobsList.tsx';
+import { RegionalPricingWidget } from './components/pricing/RegionalPricingWidget.tsx';
 
 export const App: React.FC = () => {
   const { user, session, isLoading: isAuthLoading, signOut } = useAuth();
@@ -267,6 +268,17 @@ export const App: React.FC = () => {
           referralCode={referralCode}
           neighborhoodName={neighborhoodName}
         />
+
+        {/* Balizador Inteligente de Preços Regionais (Story 3.4) */}
+        <div style={{ marginBottom: '16px' }}>
+          <RegionalPricingWidget
+            stateId={profileData.profile?.state_id || 'RJ'}
+            cityId={profileData.profile?.city_id || 'rio-de-janeiro'}
+            neighborhoodId={profileData.profile?.home_neighborhood_id || profileData.profile?.neighborhood_id || 'copacabana'}
+            initialModal={profileData.profile?.transport_modal || 'all'}
+            title="📊 Balizador de Preços da sua Região"
+          />
+        </div>
 
         {/* Detalhes do Perfil e Modal */}
         <div
