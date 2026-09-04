@@ -149,7 +149,7 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
     }
 
     const neighborhoodFinalId = isCustomNeighborhood
-      ? customNeighborhood.trim()
+      ? GeographyService.createCustomNeighborhood(selectedCity, customNeighborhood.trim()).id
       : selectedNeighborhood;
 
     if (!neighborhoodFinalId) {

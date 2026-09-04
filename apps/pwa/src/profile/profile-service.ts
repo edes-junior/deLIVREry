@@ -136,13 +136,19 @@ export class ProfileService {
       throw new Error(`Erro ao atualizar dados de usuário: ${userError.message}`);
     }
 
-    // 4. Criação do courier_profile com código de indicação único e retry anti-colisão
+    // 4. Criação ou atualização do courier_profile preservando código de indicação se já existir
+    const { data: existingProfile } = await supabase
+      .from('courier_profiles')
+      .select('referral_code, xp_points, level')
+      .eq('user_id', input.userId)
+      .maybeSingle();
+
     let courierProfile: any = null;
     let courierError: any = null;
     let attempts = 0;
 
     while (attempts < 3) {
-      const referralCode = generateReferralCode('LIVRE');
+      const referralCode = existingProfile?.referral_code || generateReferralCode('LIVRE');
       const { data, error } = await supabase
         .from('courier_profiles')
         .upsert({
@@ -150,8 +156,8 @@ export class ProfileService {
           transport_modal: input.transportModal,
           base_daily_rate: input.baseDailyRate,
           base_delivery_fee: input.baseDeliveryFee,
-          xp_points: 0,
-          level: 'Bronze',
+          xp_points: existingProfile?.xp_points ?? 0,
+          level: existingProfile?.level ?? 'Bronze',
           referral_code: referralCode,
           referred_by_id: referredById,
           state_id: input.stateId.toUpperCase(),
@@ -170,7 +176,7 @@ export class ProfileService {
       }
 
       courierError = error;
-      if (error.code === '23505' && error.message?.includes('referral_code')) {
+      if (error.code === '23505' && error.message?.includes('referral_code') && !existingProfile?.referral_code) {
         attempts++;
         continue;
       }
