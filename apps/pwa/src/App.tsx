@@ -15,12 +15,15 @@ import { QuorumService, RegionQuorum } from './quorum/quorum-service.ts';
 import { ReferralService } from './referral/referral-service.ts';
 import { RegionalQuorumThermometer } from './components/quorum/RegionalQuorumThermometer.tsx';
 import { ReferralCard } from './components/referral/ReferralCard.tsx';
+import { JobPublishModal } from './components/jobs/JobPublishModal.tsx';
 
 export const App: React.FC = () => {
   const { user, session, isLoading: isAuthLoading, signOut } = useAuth();
   const [profileData, setProfileData] = useState<UserProfileResponse | null>(null);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [regionQuorum, setRegionQuorum] = useState<RegionQuorum | null>(null);
+  const [isJobModalOpen, setIsJobModalOpen] = useState(false);
+  const [successToast, setSuccessToast] = useState<string | null>(null);
 
   // Rastreia código de indicação vindo pela URL (?ref=...)
   useEffect(() => {
@@ -358,17 +361,85 @@ export const App: React.FC = () => {
                 </div>
                 <div>
                   <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                    Região de Atuação
+                    Gamificação / Nível
                   </div>
-                  <div style={{ fontSize: '15px', fontWeight: 600 }}>
-                    {neighborhoodName}, {profileData.profile?.city_id} -{' '}
-                    {profileData.profile?.state_id}
+                  <div style={{ fontSize: '15px', fontWeight: 600, color: '#f59e0b' }}>
+                    ⭐ {profileData.profile?.level || 'Bronze'} ({profileData.profile?.xp_points || 0} XP)
                   </div>
                 </div>
+              </div>
+
+              {/* Botão de Ação Primária: Publicar Vaga de Turno */}
+              <div style={{ marginTop: '20px' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsJobModalOpen(true)}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: '12px',
+                    backgroundColor: '#10b981',
+                    border: 'none',
+                    color: '#0f172a',
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    cursor: 'pointer',
+                    minHeight: '48px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 14px 0 rgba(16, 185, 129, 0.35)'
+                  }}
+                >
+                  ➕ Publicar Nova Vaga de Turno
+                </button>
               </div>
             </div>
           )}
         </div>
+
+        {/* Toast de Sucesso */}
+        {successToast && (
+          <div
+            style={{
+              position: 'fixed',
+              bottom: '24px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: '#10b981',
+              color: '#0f172a',
+              padding: '12px 24px',
+              borderRadius: '999px',
+              fontWeight: 700,
+              fontSize: '14px',
+              boxShadow: '0 10px 25px -5px rgba(16, 185, 129, 0.5)',
+              zIndex: 1100
+            }}
+          >
+            {successToast}
+          </div>
+        )}
+
+        {/* Modal de Publicação de Vagas (Story 2.2) */}
+        {profileData?.user.userType === 'store' && (
+          <JobPublishModal
+            isOpen={isJobModalOpen}
+            onClose={() => setIsJobModalOpen(false)}
+            storeUserId={user?.id || ''}
+            storeName={profileData.profile?.store_name || 'Estabelecimento'}
+            defaultStateId={profileData.profile?.state_id || 'SP'}
+            defaultCityId={profileData.profile?.city_id || 'sao-paulo'}
+            defaultNeighborhoodId={profileData.profile?.neighborhood_id || 'centro'}
+            onSuccess={(_job, earnedXp) => {
+              const msg = earnedXp
+                ? '🎉 Vaga publicada com sucesso! +50 XP acumulados por antecipação!'
+                : '✅ Vaga publicada com sucesso!';
+              setSuccessToast(msg);
+              setTimeout(() => setSuccessToast(null), 4000);
+            }}
+          />
+        )}
       </div>
     </div>
   );

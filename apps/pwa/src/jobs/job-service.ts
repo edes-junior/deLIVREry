@@ -96,14 +96,18 @@ export function validateJobBidInput(input: CreateJobBidDTO): { valid: boolean; e
   };
 }
 
+import { isEligibleForEarlyXpBonus, dispatchJobWebPush } from '../notifications/notification-service.ts';
+
 /**
  * Cria uma nova vaga de turno para um lojista autenticado.
+ * Concede automaticamente +50 XP caso a publicação seja feita com >48h de antecedência (FR-14).
  */
 export async function createJobPost(
   storeUserId: string, 
   input: CreateJobPostDTO,
-  client: any = supabase
-): Promise<{ success: boolean; job?: JobPost; error?: string }> {
+  client: any = supabase,
+  storeName = 'Lojista'
+): Promise<{ success: boolean; job?: JobPost; earnedXpBonus?: boolean; error?: string }> {
   if (!storeUserId) {
     return { success: false, error: 'Identificador do lojista não fornecido.' };
   }
@@ -137,7 +141,39 @@ export async function createJobPost(
     return { success: false, error: error.message };
   }
 
-  return { success: true, job: data as JobPost };
+  const job = data as JobPost;
+  const earnedXpBonus = isEligibleForEarlyXpBonus(input.shift_start_time);
+
+  // Se qualificado para bônus de antecedência (>48h), atualiza XP do lojista
+  if (earnedXpBonus) {
+    try {
+      const { data: currentStore } = await client
+        .from('store_profiles')
+        .select('xp_points')
+        .eq('user_id', storeUserId)
+        .single();
+
+      const currentXp = currentStore?.xp_points || 0;
+      const newXp = currentXp + 50;
+      const newLevel = newXp >= 1000 ? 'Ouro' : newXp >= 300 ? 'Prata' : 'Bronze';
+
+      await client
+        .from('store_profiles')
+        .update({ xp_points: newXp, level: newLevel })
+        .eq('user_id', storeUserId);
+    } catch {
+      // Degradação não-bloqueante
+    }
+  }
+
+  // Disparo assíncrono de Web Push (não bloqueia criação caso falhe)
+  try {
+    await dispatchJobWebPush(job, storeName);
+  } catch {
+    // Degradação graciosa
+  }
+
+  return { success: true, job, earnedXpBonus };
 }
 
 /**

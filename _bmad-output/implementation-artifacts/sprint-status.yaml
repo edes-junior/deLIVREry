@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-04-2026 14:24
-last_updated: 09-04-2026 16:37
+last_updated: 09-04-2026 16:45
 project: deLIVREry
 project_key: NOKEY
 tracking_system: file-system
@@ -44,7 +44,7 @@ development_status:
 
   epic-2: in-progress
   2-1-schema-de-vagas-e-propostas-com-rls-e-isolamento-de-contatos: review
-  2-2-publicação-de-vagas-de-turno-e-notificações-web-push-fcm: backlog
+  2-2-publicação-de-vagas-de-turno-e-notificações-web-push-fcm: review
   2-3-listagem-de-vagas-filtrada-por-modal-e-negociação-bid-ask-pr: backlog
   2-4-fechamento-de-matching-liberação-de-contatos-e-gestão-de-rep: backlog
   epic-2-retrospective: optional
