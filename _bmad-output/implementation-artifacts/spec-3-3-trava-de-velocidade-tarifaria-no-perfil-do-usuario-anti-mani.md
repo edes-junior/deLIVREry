@@ -2,7 +2,7 @@
 title: 'Story 3.3: Trava de Velocidade Tarifária no Perfil do Usuário (Anti-Manipulação)'
 type: 'feature'
 created: '2026-09-04'
-status: 'review'
+status: 'done'
 baseline_commit: '79043fe'
 review_loop_iteration: 0
 context:

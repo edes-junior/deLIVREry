@@ -2,7 +2,7 @@
 title: 'Story 3.4: Painel Visual do Balizador Regional no PWA e Landing Pages'
 type: 'feature'
 created: '2026-09-04'
-status: 'review'
+status: 'done'
 baseline_commit: 'ca03ee0'
 review_loop_iteration: 0
 context:

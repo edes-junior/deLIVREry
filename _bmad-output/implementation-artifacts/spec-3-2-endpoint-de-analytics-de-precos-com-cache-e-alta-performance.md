@@ -2,7 +2,7 @@
 title: 'Story 3.2: Endpoint de Analytics de Preços com Cache e Alta Performance'
 type: 'feature'
 created: '2026-09-04'
-status: 'review'
+status: 'done'
 baseline_commit: '2f90e69'
 review_loop_iteration: 0
 context:

@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-04-2026 14:24
-last_updated: 09-04-2026 18:17
+last_updated: 09-04-2026 19:07
 project: deLIVREry
 project_key: NOKEY
 tracking_system: file-system
@@ -49,12 +49,12 @@ development_status:
   2-4-fechamento-de-matching-liberação-de-contatos-e-gestão-de-rep: done
   epic-2-retrospective: done
 
-  epic-3: in-progress
-  3-1-algoritmo-de-expulgo-de-outliers-via-filtro-1-5-times-text-i: review
-  3-2-endpoint-de-analytics-de-preços-com-cache-e-alta-performance: review
-  3-3-trava-de-velocidade-tarifária-no-perfil-do-usuário-anti-mani: review
-  3-4-painel-visual-do-balizador-regional-no-pwa-e-landing-pages: review
-  epic-3-retrospective: optional
+  epic-3: done
+  3-1-algoritmo-de-expulgo-de-outliers-via-filtro-1-5-times-text-i: done
+  3-2-endpoint-de-analytics-de-preços-com-cache-e-alta-performance: done
+  3-3-trava-de-velocidade-tarifária-no-perfil-do-usuário-anti-mani: done
+  3-4-painel-visual-do-balizador-regional-no-pwa-e-landing-pages: done
+  epic-3-retrospective: done
 
   epic-4: backlog
   4-1-schema-de-logs-de-microdoação-donations_log-e-configuração-d: backlog

@@ -2,7 +2,7 @@
 title: 'Story 3.1: Algoritmo de Expulgo de Outliers via Filtro 1.5xIQR no Banco de Dados'
 type: 'feature'
 created: '2026-09-04'
-status: 'review'
+status: 'done'
 baseline_commit: '3ddf7a9133791354b0e7741e46771b259630eca0'
 review_loop_iteration: 0
 context:
