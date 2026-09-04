@@ -8,6 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { validateCPF, formatCPF, validatePhone, formatPhone } from '../../profile/cpf-validator.ts';
 import { GeographyService, StateItem, CityItem, NeighborhoodItem } from '../../geography/geography-service.ts';
 import { ProfileService, TransportModal } from '../../profile/profile-service.ts';
+import { ReferralService } from '../../referral/referral-service.ts';
 
 interface ProfileCompletionFormProps {
   userId: string;
@@ -56,12 +57,17 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Carrega lista de estados ao montar
+  // Carrega lista de estados e recupera referral_code do storage ao montar
   useEffect(() => {
     const loadedStates = GeographyService.getStates();
     setStates(loadedStates);
     if (loadedStates.length > 0) {
       handleStateChange('SP');
+    }
+
+    const storedRef = ReferralService.getStoredReferralCode();
+    if (storedRef && !referralCodeInput) {
+      setReferralCodeInput(storedRef);
     }
   }, []);
 

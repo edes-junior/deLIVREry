@@ -1,7 +1,8 @@
 /**
  * @file App.tsx
  * @description Aplicação principal do PWA deLIVREry.
- * Orquestra o fluxo de autenticação passwordless (Story 1.2) e complementação de perfil universal (Story 1.3).
+ * Orquestra o fluxo de autenticação passwordless (Story 1.2), complementação de perfil universal (Story 1.3)
+ * e o Termômetro de Desbloqueio Regional com Indicação Viral (Story 1.4).
  */
 
 import React, { useState, useEffect } from 'react';
@@ -10,20 +11,36 @@ import { MagicLinkForm } from './components/auth/MagicLinkForm.tsx';
 import { AuthCallback } from './components/auth/AuthCallback.tsx';
 import { ProfileCompletionForm } from './components/profile/ProfileCompletionForm.tsx';
 import { ProfileService, UserProfileResponse } from './profile/profile-service.ts';
+import { QuorumService, RegionQuorum } from './quorum/quorum-service.ts';
+import { ReferralService } from './referral/referral-service.ts';
+import { RegionalQuorumThermometer } from './components/quorum/RegionalQuorumThermometer.tsx';
+import { ReferralCard } from './components/referral/ReferralCard.tsx';
 
 export const App: React.FC = () => {
   const { user, session, isLoading: isAuthLoading, signOut } = useAuth();
   const [profileData, setProfileData] = useState<UserProfileResponse | null>(null);
   const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [regionQuorum, setRegionQuorum] = useState<RegionQuorum | null>(null);
+
+  // Rastreia código de indicação vindo pela URL (?ref=...)
+  useEffect(() => {
+    const urlRef = ReferralService.extractReferralCodeFromUrl();
+    if (urlRef) {
+      ReferralService.saveReferralCodeToStorage(urlRef);
+    }
+  }, []);
 
   // Verifica se está na rota de callback de autenticação (#access_token=...)
-  const isAuthCallback = typeof window !== 'undefined' && 
+  const isAuthCallback =
+    typeof window !== 'undefined' &&
     (window.location.hash.includes('access_token') || window.location.search.includes('code'));
 
+  // Carrega perfil e quórum regional do usuário
   useEffect(() => {
-    async function loadUserProfile() {
+    async function loadUserProfileAndQuorum() {
       if (!user) {
         setProfileData(null);
+        setRegionQuorum(null);
         return;
       }
 
@@ -31,14 +48,31 @@ export const App: React.FC = () => {
       try {
         const data = await ProfileService.getUserProfile(user.id);
         setProfileData(data);
+
+        // Se o perfil tiver localização, busca o quórum regional
+        if (data && data.profile) {
+          const stateId = data.profile.state_id;
+          const cityId = data.profile.city_id;
+          const neighborhoodId =
+            data.profile.home_neighborhood_id || data.profile.neighborhood_id;
+
+          if (stateId && cityId && neighborhoodId) {
+            const quorum = await QuorumService.getRegionQuorum(
+              stateId,
+              cityId,
+              neighborhoodId
+            );
+            setRegionQuorum(quorum);
+          }
+        }
       } catch (err) {
-        console.error('Erro ao carregar perfil do usuário:', err);
+        console.error('Erro ao carregar perfil ou quórum do usuário:', err);
       } finally {
         setIsProfileLoading(false);
       }
     }
 
-    loadUserProfile();
+    loadUserProfileAndQuorum();
   }, [user]);
 
   if (isAuthCallback) {
@@ -128,7 +162,16 @@ export const App: React.FC = () => {
     );
   }
 
-  // Perfil Ativo -> Dashboard Inicial
+  const neighborhoodName =
+    profileData.profile?.home_neighborhood_id ||
+    profileData.profile?.neighborhood_id ||
+    'Bairro';
+
+  const referralCode =
+    profileData.profile?.referral_code ||
+    `LOJA-${profileData.user.id.slice(0, 6).toUpperCase()}`;
+
+  // Perfil Ativo -> Dashboard Inicial com Quórum e Indicação Viral (Story 1.4)
   return (
     <div
       style={{
@@ -141,15 +184,23 @@ export const App: React.FC = () => {
     >
       <div
         style={{
-          maxWidth: '600px',
-          margin: '0 auto',
-          backgroundColor: '#131822',
-          borderRadius: '16px',
-          padding: '24px',
-          border: '1px solid #1e293b'
+          maxWidth: '640px',
+          margin: '0 auto'
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        {/* Barra Superior do Usuário */}
+        <div
+          style={{
+            backgroundColor: '#131822',
+            borderRadius: '16px',
+            padding: '20px',
+            border: '1px solid #1e293b',
+            marginBottom: '20px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
           <div>
             <span
               style={{
@@ -158,13 +209,16 @@ export const App: React.FC = () => {
                 textTransform: 'uppercase',
                 padding: '4px 8px',
                 borderRadius: '6px',
-                backgroundColor: profileData.user.userType === 'courier' ? '#0369a1' : '#047857',
+                backgroundColor:
+                  profileData.user.userType === 'courier' ? '#0369a1' : '#047857',
                 color: '#fff'
               }}
             >
-              {profileData.user.userType === 'courier' ? '🛵 Entregador Ativo' : '🏪 Lojista Ativo'}
+              {profileData.user.userType === 'courier'
+                ? '🛵 Entregador Ativo'
+                : '🏪 Lojista Ativo'}
             </span>
-            <h1 style={{ fontSize: '22px', margin: '8px 0 2px 0' }}>
+            <h1 style={{ fontSize: '20px', margin: '8px 0 2px 0' }}>
               Olá, {profileData.user.fullName}!
             </h1>
             <p style={{ margin: 0, color: '#94a3b8', fontSize: '13px' }}>
@@ -189,19 +243,44 @@ export const App: React.FC = () => {
           </button>
         </div>
 
-        {/* Detalhes do Perfil */}
+        {/* Termômetro de Desbloqueio Regional (FR-13) */}
+        {regionQuorum && (
+          <RegionalQuorumThermometer
+            quorum={regionQuorum}
+            neighborhoodName={neighborhoodName}
+            cityName={profileData.profile?.city_id}
+            stateId={profileData.profile?.state_id}
+            onShareClick={() => {
+              ReferralService.shareReferral(referralCode, neighborhoodName);
+            }}
+          />
+        )}
+
+        {/* Card de Indicação Viral Multicanal (FR-15) */}
+        <ReferralCard
+          referralCode={referralCode}
+          neighborhoodName={neighborhoodName}
+        />
+
+        {/* Detalhes do Perfil e Modal */}
         <div
           style={{
-            backgroundColor: '#0f172a',
-            padding: '16px',
-            borderRadius: '12px',
-            marginBottom: '16px',
+            backgroundColor: '#131822',
+            padding: '20px',
+            borderRadius: '16px',
             border: '1px solid #1e293b'
           }}
         >
           {profileData.user.userType === 'courier' ? (
             <div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '12px',
+                  marginBottom: '14px'
+                }}
+              >
                 <div>
                   <div style={{ fontSize: '12px', color: '#94a3b8' }}>Modal</div>
                   <div style={{ fontSize: '15px', fontWeight: 600 }}>
@@ -214,85 +293,76 @@ export const App: React.FC = () => {
                 </div>
                 <div>
                   <div style={{ fontSize: '12px', color: '#94a3b8' }}>Nível / XP</div>
-                  <div style={{ fontSize: '15px', fontWeight: 600, color: '#f59e0b' }}>
+                  <div
+                    style={{ fontSize: '15px', fontWeight: 600, color: '#f59e0b' }}
+                  >
                     {profileData.profile?.level || 'Bronze'} (0 XP)
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                <div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Diária Base</div>
-                  <div style={{ fontSize: '15px', fontWeight: 600, color: '#10b981' }}>
-                    R$ {Number(profileData.profile?.base_daily_rate || 0).toFixed(2)}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Taxa por Entrega</div>
-                  <div style={{ fontSize: '15px', fontWeight: 600, color: '#10b981' }}>
-                    R$ {Number(profileData.profile?.base_delivery_fee || 0).toFixed(2)}
                   </div>
                 </div>
               </div>
 
               <div
                 style={{
-                  padding: '10px 14px',
-                  backgroundColor: '#1e293b',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '12px'
                 }}
               >
                 <div>
-                  <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block' }}>
-                    Seu Código de Indicação Viral:
-                  </span>
-                  <strong style={{ fontSize: '16px', color: '#38bdf8', letterSpacing: '1px' }}>
-                    {profileData.profile?.referral_code}
-                  </strong>
+                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Diária Base</div>
+                  <div
+                    style={{ fontSize: '15px', fontWeight: 600, color: '#10b981' }}
+                  >
+                    R$ {Number(profileData.profile?.base_daily_rate || 0).toFixed(2)}
+                  </div>
                 </div>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(profileData.profile?.referral_code || '');
-                    alert('Código copiado para a área de transferência!');
-                  }}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    backgroundColor: '#38bdf8',
-                    color: '#0f172a',
-                    border: 'none',
-                    fontWeight: 600,
-                    fontSize: '12px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Copiar
-                </button>
+                <div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+                    Taxa por Entrega
+                  </div>
+                  <div
+                    style={{ fontSize: '15px', fontWeight: 600, color: '#10b981' }}
+                  >
+                    R$ {Number(profileData.profile?.base_delivery_fee || 0).toFixed(2)}
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
             <div>
-              <div style={{ marginBottom: '12px' }}>
-                <div style={{ fontSize: '12px', color: '#94a3b8' }}>Estabelecimento</div>
+              <div style={{ marginBottom: '14px' }}>
+                <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+                  Estabelecimento Comercial
+                </div>
                 <div style={{ fontSize: '16px', fontWeight: 700 }}>
                   {profileData.profile?.store_name}
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '12px'
+                }}
+              >
                 <div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Reputação Inicial</div>
-                  <div style={{ fontSize: '15px', fontWeight: 600, color: '#eab308' }}>
+                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+                    Reputação Inicial
+                  </div>
+                  <div
+                    style={{ fontSize: '15px', fontWeight: 600, color: '#eab308' }}
+                  >
                     ⭐ {Number(profileData.profile?.reputation_score || 5).toFixed(2)} / 5.00
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Região</div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+                    Região de Atuação
+                  </div>
                   <div style={{ fontSize: '15px', fontWeight: 600 }}>
-                    {profileData.profile?.neighborhood_id}, {profileData.profile?.city_id} - {profileData.profile?.state_id}
+                    {neighborhoodName}, {profileData.profile?.city_id} -{' '}
+                    {profileData.profile?.state_id}
                   </div>
                 </div>
               </div>
