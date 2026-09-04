@@ -26,7 +26,7 @@ export class DelivreryClient {
   async getPricingStats(params = {}) {
     const cityId = params.cityId || params.city_id;
     const neighborhoodId = params.neighborhoodId || params.neighborhood_id;
-    const stateId = params.stateId || params.state_id || 'RJ';
+    const stateId = (params.stateId || params.state_id || 'RJ').toUpperCase();
     const transportModal = params.transportModal || params.transport_modal || 'all';
 
     if (!cityId || !neighborhoodId) {

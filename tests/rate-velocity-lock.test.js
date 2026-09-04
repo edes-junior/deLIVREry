@@ -70,6 +70,17 @@ describe('Story 3.3: Trava de Velocidade Tarifária - Algoritmo e Regras de Neg�
     assert.strictEqual(firstFee.allowed, true);
   });
 
+  it('deve permitir e preservar tarifas quando apenas campos cadastrais forem alterados (Matriz Linha 5)', () => {
+    const oneHourAgo = new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString();
+
+    // Mantém exatamente as mesmas tarifas (ex: apenas trocou modal ou telefone)
+    const dailyCheck = validateRateVelocity(100, 100, oneHourAgo);
+    const feeCheck = validateRateVelocity(8, 8, oneHourAgo);
+
+    assert.strictEqual(dailyCheck.allowed, true);
+    assert.strictEqual(feeCheck.allowed, true);
+  });
+
   it('deve rejeitar valores negativos de tarifas na validação do serviço', async () => {
     await assert.rejects(
       async () => {

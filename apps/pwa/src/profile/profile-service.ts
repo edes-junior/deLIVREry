@@ -136,12 +136,45 @@ export class ProfileService {
       throw new Error(`Erro ao atualizar dados de usuário: ${userError.message}`);
     }
 
-    // 4. Criação ou atualização do courier_profile preservando código de indicação se já existir
+    // 4. Criação ou atualização do courier_profile preservando código de indicação e rate_updated_at se inalterado
     const { data: existingProfile } = await supabase
       .from('courier_profiles')
-      .select('referral_code, xp_points, level')
+      .select('referral_code, xp_points, level, base_daily_rate, base_delivery_fee, rate_updated_at')
       .eq('user_id', input.userId)
       .maybeSingle();
+
+    let rateUpdatedAt = new Date().toISOString();
+
+    if (existingProfile) {
+      const ratesChanged =
+        Number(existingProfile.base_daily_rate) !== Number(input.baseDailyRate) ||
+        Number(existingProfile.base_delivery_fee) !== Number(input.baseDeliveryFee);
+
+      if (ratesChanged) {
+        const dailyValidation = validateRateVelocity(
+          existingProfile.base_daily_rate,
+          input.baseDailyRate,
+          existingProfile.rate_updated_at
+        );
+        if (!dailyValidation.allowed) {
+          throw new Error(dailyValidation.message);
+        }
+
+        const feeValidation = validateRateVelocity(
+          existingProfile.base_delivery_fee,
+          input.baseDeliveryFee,
+          existingProfile.rate_updated_at
+        );
+        if (!feeValidation.allowed) {
+          throw new Error(feeValidation.message);
+        }
+
+        rateUpdatedAt = new Date().toISOString();
+      } else {
+        // Preserva o timestamp anterior para não reiniciar indevidamente a janela de 12h
+        rateUpdatedAt = existingProfile.rate_updated_at || new Date().toISOString();
+      }
+    }
 
     let courierProfile: any = null;
     let courierError: any = null;
@@ -163,7 +196,7 @@ export class ProfileService {
           state_id: input.stateId.toUpperCase(),
           city_id: input.cityId,
           home_neighborhood_id: input.homeNeighborhoodId,
-          rate_updated_at: new Date().toISOString(),
+          rate_updated_at: rateUpdatedAt,
           updated_at: new Date().toISOString()
         })
         .select()

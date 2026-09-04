@@ -66,10 +66,9 @@ export const RegionalPricingWidget: React.FC<RegionalPricingWidgetProps> = ({
       navigator.vibrate([15, 30]);
     }
 
-    const suggestedDaily = metrics.medianDailyRate > 0 ? metrics.medianDailyRate : 110;
-    const suggestedFee = metrics.medianDeliveryFee > 0 ? metrics.medianDeliveryFee : 7;
+    const suggested = PricingService.calculateSuggestedPricing(metrics);
 
-    onApplyRates(suggestedDaily, suggestedFee);
+    onApplyRates(suggested.suggestedDailyRate, suggested.suggestedDeliveryFee);
     setAppliedFeedback(true);
     setTimeout(() => setAppliedFeedback(false), 2500);
   };

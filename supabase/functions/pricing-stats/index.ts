@@ -7,7 +7,7 @@
 import { PricingService } from '../../../apps/pwa/src/pricing/pricing-service.ts';
 
 export async function handler(req: Request): Promise<Response> {
-  const url = new URL(req.url);
+  const url = new URL(req.url, 'http://localhost');
   const queryParams: Record<string, string> = {};
   for (const [key, value] of url.searchParams.entries()) {
     queryParams[key] = value;
