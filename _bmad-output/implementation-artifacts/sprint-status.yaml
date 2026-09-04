@@ -42,12 +42,12 @@ development_status:
   1-4-termômetro-de-desbloqueio-regional-e-mecânica-de-indicação-v: review
   epic-1-retrospective: optional
 
-  epic-2: in-progress
-  2-1-schema-de-vagas-e-propostas-com-rls-e-isolamento-de-contatos: review
-  2-2-publicação-de-vagas-de-turno-e-notificações-web-push-fcm: review
-  2-3-listagem-de-vagas-filtrada-por-modal-e-negociação-bid-ask-pr: review
-  2-4-fechamento-de-matching-liberação-de-contatos-e-gestão-de-rep: review
-  epic-2-retrospective: optional
+  epic-2: done
+  2-1-schema-de-vagas-e-propostas-com-rls-e-isolamento-de-contatos: done
+  2-2-publicação-de-vagas-de-turno-e-notificações-web-push-fcm: done
+  2-3-listagem-de-vagas-filtrada-por-modal-e-negociação-bid-ask-pr: done
+  2-4-fechamento-de-matching-liberação-de-contatos-e-gestão-de-rep: done
+  epic-2-retrospective: done
 
   epic-3: backlog
   3-1-algoritmo-de-expulgo-de-outliers-via-filtro-1-5-times-text-i: backlog
