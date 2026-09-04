@@ -46,7 +46,7 @@ development_status:
   2-1-schema-de-vagas-e-propostas-com-rls-e-isolamento-de-contatos: review
   2-2-publicação-de-vagas-de-turno-e-notificações-web-push-fcm: review
   2-3-listagem-de-vagas-filtrada-por-modal-e-negociação-bid-ask-pr: review
-  2-4-fechamento-de-matching-liberação-de-contatos-e-gestão-de-rep: backlog
+  2-4-fechamento-de-matching-liberação-de-contatos-e-gestão-de-rep: review
   epic-2-retrospective: optional
 
   epic-3: backlog

@@ -87,3 +87,37 @@ export interface JobFilterParams {
   max_radius_km?: number;
   status?: JobStatus;
 }
+
+export interface JobRating {
+  id: string;
+  job_id: string;
+  rater_id: string;
+  rated_user_id: string;
+  rating: number;
+  comment?: string | null;
+  created_at?: string;
+}
+
+export interface CreateJobRatingDTO {
+  job_id: string;
+  rated_user_id: string;
+  rating: number;
+  comment?: string;
+}
+
+export interface JobCompletionResult {
+  success: boolean;
+  job?: JobPost;
+  courierEarnedXp?: number;
+  storeEarnedXp?: number;
+  error?: string;
+}
+
+export interface JobCancellationResult {
+  success: boolean;
+  job?: JobPost;
+  penaltyApplied: boolean;
+  penaltyXp?: number;
+  error?: string;
+}
+

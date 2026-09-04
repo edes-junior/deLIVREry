@@ -17,6 +17,7 @@ import { RegionalQuorumThermometer } from './components/quorum/RegionalQuorumThe
 import { ReferralCard } from './components/referral/ReferralCard.tsx';
 import { JobPublishModal } from './components/jobs/JobPublishModal.tsx';
 import { JobFeed } from './components/jobs/JobFeed.tsx';
+import { StoreJobsList } from './components/jobs/StoreJobsList.tsx';
 
 export const App: React.FC = () => {
   const { user, session, isLoading: isAuthLoading, signOut } = useAuth();
@@ -24,6 +25,7 @@ export const App: React.FC = () => {
   const [isProfileLoading, setIsProfileLoading] = useState(false);
   const [regionQuorum, setRegionQuorum] = useState<RegionQuorum | null>(null);
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
+  const [jobsRefreshTrigger, setJobsRefreshTrigger] = useState(0);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
   // Rastreia código de indicação vindo pela URL (?ref=...)
@@ -411,6 +413,14 @@ export const App: React.FC = () => {
           />
         )}
 
+        {/* Gestão de Vagas e Matchings para Lojistas (Story 2.4) */}
+        {profileData.user.userType === 'store' && (
+          <StoreJobsList
+            storeUserId={user.id}
+            refreshTrigger={jobsRefreshTrigger}
+          />
+        )}
+
         {/* Toast de Sucesso */}
         {successToast && (
           <div
@@ -444,6 +454,7 @@ export const App: React.FC = () => {
             defaultCityId={profileData.profile?.city_id || 'sao-paulo'}
             defaultNeighborhoodId={profileData.profile?.neighborhood_id || 'centro'}
             onSuccess={(_job, earnedXp) => {
+              setJobsRefreshTrigger((prev) => prev + 1);
               const msg = earnedXp
                 ? '🎉 Vaga publicada com sucesso! +50 XP acumulados por antecipação!'
                 : '✅ Vaga publicada com sucesso!';
