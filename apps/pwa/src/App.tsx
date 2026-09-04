@@ -19,6 +19,8 @@ import { JobPublishModal } from './components/jobs/JobPublishModal.tsx';
 import { JobFeed } from './components/jobs/JobFeed.tsx';
 import { StoreJobsList } from './components/jobs/StoreJobsList.tsx';
 import { RegionalPricingWidget } from './components/pricing/RegionalPricingWidget.tsx';
+import { DonationBottomSheet } from './components/donations/DonationBottomSheet.tsx';
+import type { DonationTriggerMoment } from './donations/types.ts';
 
 export const App: React.FC = () => {
   const { user, session, isLoading: isAuthLoading, signOut } = useAuth();
@@ -28,6 +30,10 @@ export const App: React.FC = () => {
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
   const [jobsRefreshTrigger, setJobsRefreshTrigger] = useState(0);
   const [successToast, setSuccessToast] = useState<string | null>(null);
+  const [donationModalState, setDonationModalState] = useState<{
+    isOpen: boolean;
+    triggerMoment: DonationTriggerMoment;
+  }>({ isOpen: false, triggerMoment: 'manual_donation' });
 
   // Rastreia código de indicação vindo pela URL (?ref=...)
   useEffect(() => {
@@ -233,21 +239,46 @@ export const App: React.FC = () => {
             </p>
           </div>
 
-          <button
-            onClick={() => signOut()}
-            style={{
-              padding: '8px 14px',
-              borderRadius: '8px',
-              backgroundColor: '#1e293b',
-              border: '1px solid #334155',
-              color: '#f87171',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 600
-            }}
-          >
-            Sair
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              onClick={() => setDonationModalState({ isOpen: true, triggerMoment: 'manual_donation' })}
+              data-testid="header-btn-donate"
+              style={{
+                minHeight: '48px',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                backgroundColor: '#064e3b',
+                border: '1px solid #059669',
+                color: '#34d399',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <span>💚</span>
+              <span>Apoiar</span>
+            </button>
+
+            <button
+              onClick={() => signOut()}
+              style={{
+                minHeight: '48px',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                backgroundColor: '#1e293b',
+                border: '1px solid #334155',
+                color: '#f87171',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: 600
+              }}
+            >
+              Sair
+            </button>
+          </div>
         </div>
 
         {/* Termômetro de Desbloqueio Regional (FR-13) */}
@@ -475,6 +506,18 @@ export const App: React.FC = () => {
             }}
           />
         )}
+
+        {/* Bottom Sheet de Microdoação PIX (Story 4.2 - FR-10, FR-11) */}
+        <DonationBottomSheet
+          isOpen={donationModalState.isOpen}
+          onClose={() => setDonationModalState((prev) => ({ ...prev, isOpen: false }))}
+          triggerMoment={donationModalState.triggerMoment}
+          currentUserId={user?.id}
+          onDonated={({ amount }) => {
+            setSuccessToast(`💚 Muito obrigado pelo apoio comunitário de R$ ${amount.toFixed(2).replace('.', ',')}!`);
+            setTimeout(() => setSuccessToast(null), 4500);
+          }}
+        />
       </div>
     </div>
   );

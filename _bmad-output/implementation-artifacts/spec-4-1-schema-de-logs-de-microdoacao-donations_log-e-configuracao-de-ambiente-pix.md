@@ -2,7 +2,7 @@
 title: 'Story 4.1: Schema de Logs de Microdoação (donations_log) e Configuração de Ambiente PIX'
 type: 'feature'
 created: '2026-09-04'
-status: 'review'
+status: 'done'
 baseline_commit: 'f635c48'
 review_loop_iteration: 0
 context:

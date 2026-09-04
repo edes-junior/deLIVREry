@@ -9,6 +9,7 @@ import type { JobPost, MatchedJobContact, JobRating } from '../../jobs/types.ts'
 import { listStoreJobs } from '../../jobs/job-service.ts';
 import { StoreJobManagementCard } from './StoreJobManagementCard.tsx';
 import { JobRatingModal } from './JobRatingModal.tsx';
+import { DonationBottomSheet } from '../donations/DonationBottomSheet.tsx';
 
 interface StoreJobsListProps {
   storeUserId: string;
@@ -23,6 +24,7 @@ export const StoreJobsList: React.FC<StoreJobsListProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [selectedContactForRating, setSelectedContactForRating] = useState<MatchedJobContact | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isDonationOpen, setIsDonationOpen] = useState(false);
 
   const fetchJobs = useCallback(async () => {
     setIsLoading(true);
@@ -47,8 +49,13 @@ export const StoreJobsList: React.FC<StoreJobsListProps> = ({
   };
 
   const handleRatingSuccess = (_rating: JobRating) => {
-    setToastMessage('⭐ Avaliação registrada! Obrigado por fortalecer a confiança da comunidade.');
-    setTimeout(() => setToastMessage(null), 4000);
+    fetchJobs();
+    if (_rating.rating === 5) {
+      setIsDonationOpen(true);
+    } else {
+      setToastMessage('⭐ Avaliação registrada! Obrigado por fortalecer a confiança da comunidade.');
+      setTimeout(() => setToastMessage(null), 4000);
+    }
   };
 
   if (isLoading) {
@@ -73,12 +80,14 @@ export const StoreJobsList: React.FC<StoreJobsListProps> = ({
           type="button"
           onClick={fetchJobs}
           style={{
-            background: 'none',
-            border: 'none',
-            color: '#38bdf8',
-            fontSize: '13px',
-            fontWeight: 600,
-            cursor: 'pointer'
+            padding: '6px 12px',
+            backgroundColor: '#1e293b',
+            color: '#94a3b8',
+            border: '1px solid #334155',
+            borderRadius: '8px',
+            fontSize: '12px',
+            cursor: 'pointer',
+            fontWeight: 600
           }}
         >
           🔄 Atualizar
@@ -102,6 +111,17 @@ export const StoreJobsList: React.FC<StoreJobsListProps> = ({
         currentUserId={storeUserId}
         isStore={true}
         onSuccess={handleRatingSuccess}
+      />
+
+      <DonationBottomSheet
+        isOpen={isDonationOpen}
+        onClose={() => setIsDonationOpen(false)}
+        triggerMoment="rating_5_stars"
+        currentUserId={storeUserId}
+        onDonated={({ amount }) => {
+          setToastMessage(`💚 Muito obrigado pela contribuição de R$ ${amount.toFixed(2)} à comunidade!`);
+          setTimeout(() => setToastMessage(null), 4000);
+        }}
       />
 
       {toastMessage && (

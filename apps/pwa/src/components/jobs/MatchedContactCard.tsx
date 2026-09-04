@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import type { MatchedJobContact, JobPost } from '../../jobs/types.ts';
 import { completeJob, cancelJobWithPenaltyCheck } from '../../jobs/job-service.ts';
+import { DonationBottomSheet } from '../donations/DonationBottomSheet.tsx';
 
 interface MatchedContactCardProps {
   contact: MatchedJobContact;
@@ -26,6 +27,7 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isDonationOpen, setIsDonationOpen] = useState(false);
 
   // O parceiro do lojista é o entregador; o parceiro do entregador é o lojista
   const partnerName = isStore ? contact.courier_name : contact.store_contact_name || contact.store_name;
@@ -60,6 +62,7 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
         setErrorMessage(res.error || 'Erro ao concluir o turno.');
       } else {
         setStatusMessage('🎉 Turno concluído com sucesso! XP de gamificação creditado.');
+        setIsDonationOpen(true);
         if (onJobUpdated) onJobUpdated(res.job);
         if (onOpenRatingModal) onOpenRatingModal(contact);
       }
@@ -83,16 +86,13 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
     try {
       const res = await cancelJobWithPenaltyCheck(currentUserId, contact.job_id);
       if (!res.success || !res.job) {
-        setErrorMessage(res.error || 'Erro ao cancelar turno.');
+        setErrorMessage(res.error || 'Erro ao cancelar o turno.');
       } else {
-        const msg = res.penaltyApplied
-          ? '⚠️ Turno cancelado a menos de 2h do início. Penalidade de -30 XP aplicada.'
-          : 'Turno cancelado com antecedência sem penalidades.';
-        setStatusMessage(msg);
+        setStatusMessage('Turno cancelado.');
         if (onJobUpdated) onJobUpdated(res.job);
       }
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Falha ao processar cancelamento.');
+      setErrorMessage(err?.message || 'Falha de comunicação.');
     } finally {
       setIsProcessing(false);
     }
@@ -101,38 +101,16 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
   return (
     <div
       style={{
-        backgroundColor: '#0f172a',
-        border: '1px solid #10b981',
+        backgroundColor: '#131822',
         borderRadius: '16px',
         padding: '20px',
+        border: '1px solid #1e293b',
         marginTop: '16px',
-        boxShadow: '0 8px 24px rgba(16, 185, 129, 0.15)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         color: '#f8fafc'
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <span
-          style={{
-            backgroundColor: '#064e3b',
-            color: '#34d399',
-            fontSize: '11px',
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            padding: '4px 10px',
-            borderRadius: '999px'
-          }}
-        >
-          🤝 Matching Confirmado
-        </span>
-        <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-          Diária: R$ {Number(contact.offered_daily_rate).toFixed(2)} | Taxa: R$ {Number(contact.offered_delivery_fee).toFixed(2)}
-        </span>
-      </div>
-
-      <div style={{ marginBottom: '14px' }}>
-        <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase' }}>{partnerRole}</div>
-        <h4 style={{ fontSize: '18px', fontWeight: 700, margin: '2px 0 4px 0', color: '#f1f5f9' }}>
           {partnerName}
         </h4>
         <p style={{ margin: 0, fontSize: '14px', color: '#38bdf8', fontWeight: 600 }}>
@@ -294,6 +272,14 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
           Cancelar
         </button>
       </div>
+
+      {/* Modal de Microdoação PIX (Story 4.2 - Delight Moment #1) */}
+      <DonationBottomSheet
+        isOpen={isDonationOpen}
+        onClose={() => setIsDonationOpen(false)}
+        triggerMoment="shift_completed"
+        currentUserId={currentUserId}
+      />
     </div>
   );
 };
