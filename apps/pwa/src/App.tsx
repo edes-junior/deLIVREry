@@ -20,6 +20,7 @@ import { JobFeed } from './components/jobs/JobFeed.tsx';
 import { StoreJobsList } from './components/jobs/StoreJobsList.tsx';
 import { RegionalPricingWidget } from './components/pricing/RegionalPricingWidget.tsx';
 import { DonationBottomSheet } from './components/donations/DonationBottomSheet.tsx';
+import { TransparencyPanel } from './components/donations/TransparencyPanel.tsx';
 import type { DonationTriggerMoment } from './donations/types.ts';
 
 export const App: React.FC = () => {
@@ -29,6 +30,7 @@ export const App: React.FC = () => {
   const [regionQuorum, setRegionQuorum] = useState<RegionQuorum | null>(null);
   const [isJobModalOpen, setIsJobModalOpen] = useState(false);
   const [jobsRefreshTrigger, setJobsRefreshTrigger] = useState(0);
+  const [transparencyRefreshTrigger, setTransparencyRefreshTrigger] = useState(0);
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [donationModalState, setDonationModalState] = useState<{
     isOpen: boolean;
@@ -131,7 +133,7 @@ export const App: React.FC = () => {
     );
   }
 
-  // Usuário não autenticado -> Tela de Magic Link (Story 1.2)
+  // Usuário não autenticado -> Tela de Magic Link (Story 1.2) + Painel Público de Transparência (Story 4.4 - FR-12)
   if (!user) {
     return (
       <div
@@ -142,10 +144,54 @@ export const App: React.FC = () => {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          padding: '16px'
+          padding: '24px 16px'
         }}
       >
-        <MagicLinkForm />
+        <div style={{ maxWidth: '460px', width: '100%' }}>
+          <MagicLinkForm />
+
+          {/* Painel Público de Transparência de Custos (Story 4.4) */}
+          <TransparencyPanel
+            refreshTrigger={transparencyRefreshTrigger}
+            onOpenDonationModal={(moment) =>
+              setDonationModalState({ isOpen: true, triggerMoment: moment })
+            }
+          />
+        </div>
+
+        {/* Modal de Doação Voluntária PIX para Visitantes */}
+        <DonationBottomSheet
+          isOpen={donationModalState.isOpen}
+          onClose={() => setDonationModalState((prev) => ({ ...prev, isOpen: false }))}
+          triggerMoment={donationModalState.triggerMoment}
+          onDonated={async ({ amount }) => {
+            setTransparencyRefreshTrigger((prev) => prev + 1);
+            setSuccessToast(`💚 Muito obrigado pelo apoio comunitário de R$ ${amount.toFixed(2).replace('.', ',')}!`);
+            setTimeout(() => setSuccessToast(null), 4500);
+          }}
+        />
+
+        {/* Toast de Confirmação */}
+        {successToast && (
+          <div
+            style={{
+              position: 'fixed',
+              bottom: '24px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: '#10b981',
+              color: '#0f172a',
+              padding: '12px 24px',
+              borderRadius: '999px',
+              fontWeight: 700,
+              fontSize: '14px',
+              boxShadow: '0 10px 25px -5px rgba(16, 185, 129, 0.5)',
+              zIndex: 1100
+            }}
+          >
+            {successToast}
+          </div>
+        )}
       </div>
     );
   }
@@ -507,6 +553,14 @@ export const App: React.FC = () => {
           />
         )}
 
+        {/* Painel Público de Transparência de Custos do Servidor e Vitória Coletiva (Story 4.4 - FR-12) */}
+        <TransparencyPanel
+          refreshTrigger={transparencyRefreshTrigger}
+          onOpenDonationModal={(moment) =>
+            setDonationModalState({ isOpen: true, triggerMoment: moment })
+          }
+        />
+
         {/* Toast de Sucesso */}
         {successToast && (
           <div
@@ -557,6 +611,7 @@ export const App: React.FC = () => {
           triggerMoment={donationModalState.triggerMoment}
           currentUserId={user?.id}
           onDonated={async ({ amount }) => {
+            setTransparencyRefreshTrigger((prev) => prev + 1);
             if (user?.id) {
               try {
                 const refreshed = await ProfileService.getUserProfile(user.id);

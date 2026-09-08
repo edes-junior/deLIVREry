@@ -58,3 +58,30 @@ export interface LogDonationResult {
   reward?: CommunitySupporterReward;
 }
 
+export interface ServerCostItem {
+  id: string;
+  name: string;
+  category: 'database' | 'hosting' | 'domains' | 'services';
+  monthlyCostBrl: number;
+  description: string;
+}
+
+export interface ServerCostBreakdown {
+  totalMonthlyTarget: number;
+  currency: 'BRL';
+  items: ServerCostItem[];
+}
+
+export interface TransparencyReport {
+  monthPeriod: string;
+  totalEstimatedAmount: number;
+  totalMonthlyTarget: number;
+  percentage: number;
+  isGoalReached: boolean;
+  remainingAmount: number;
+  uniqueDonorsCount: number;
+  totalIntents: number;
+  costBreakdown: ServerCostBreakdown;
+  breakdownByMoment: Record<DonationTriggerMoment, number>;
+}
+

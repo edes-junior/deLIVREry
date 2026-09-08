@@ -7,8 +7,10 @@ import type {
   DonationLogEntry,
   CommunitySupporterReward,
   LogDonationResult,
+  TransparencyReport,
+  ServerCostBreakdown,
 } from './types.ts';
-import { getPixConfig } from './pix-config.ts';
+import { getPixConfig, getServerCostBreakdown } from './pix-config.ts';
 
 export const VALID_TRIGGER_MOMENTS: DonationTriggerMoment[] = [
   'shift_completed',
@@ -352,6 +354,40 @@ export class DonationService {
       totalEstimatedAmount: Number(totalAmount.toFixed(2)),
       uniqueDonorsCount: uniqueUsers.size,
       breakdownByMoment: breakdown,
+    };
+  }
+
+  /**
+   * Obtém relatório consolidado de transparência pública de custos de servidor e meta coletiva (FR-12)
+   */
+  public static async getTransparencyReport(options?: {
+    month?: number;
+    year?: number;
+  }): Promise<TransparencyReport> {
+    const stats = await this.getMonthlyDonationStats(options);
+    const costBreakdown = getServerCostBreakdown();
+    const totalMonthlyTarget = costBreakdown.totalMonthlyTarget;
+    const totalEstimatedAmount = stats.totalEstimatedAmount;
+
+    const percentage =
+      totalMonthlyTarget > 0
+        ? Number(((totalEstimatedAmount / totalMonthlyTarget) * 100).toFixed(1))
+        : 0;
+
+    const isGoalReached = totalEstimatedAmount >= totalMonthlyTarget;
+    const remainingAmount = Math.max(0, Number((totalMonthlyTarget - totalEstimatedAmount).toFixed(2)));
+
+    return {
+      monthPeriod: stats.monthPeriod,
+      totalEstimatedAmount,
+      totalMonthlyTarget,
+      percentage,
+      isGoalReached,
+      remainingAmount,
+      uniqueDonorsCount: stats.uniqueDonorsCount,
+      totalIntents: stats.totalIntents,
+      costBreakdown,
+      breakdownByMoment: stats.breakdownByMoment,
     };
   }
 

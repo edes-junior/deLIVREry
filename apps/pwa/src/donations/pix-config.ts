@@ -1,4 +1,4 @@
-import type { PixConfiguration } from './types.ts';
+import type { PixConfiguration, ServerCostBreakdown, ServerCostItem } from './types.ts';
 
 /**
  * Utilitário de formatação de bloco TLV (Tag-Length-Value) do padrão EMVCo / BACEN
@@ -147,5 +147,57 @@ export function getPixConfig(): PixConfiguration {
     city,
     brCodePayload,
     isCustomPayload,
+  };
+}
+
+/**
+ * Retorna o detalhamento transparente dos custos mensais da infraestrutura do servidor (FR-12, NFR-8)
+ */
+export function getServerCostBreakdown(): ServerCostBreakdown {
+  const customTargetStr =
+    readEnvVar('VITE_PUBLIC_MONTHLY_SERVER_COST_BRL') ||
+    readEnvVar('PUBLIC_MONTHLY_SERVER_COST_BRL');
+
+  const defaultItems: ServerCostItem[] = [
+    {
+      id: 'supabase-db-auth',
+      name: 'Supabase PostgreSQL & Auth',
+      category: 'database',
+      monthlyCostBrl: 85.0,
+      description: 'Banco de dados transacional PostgreSQL 15, pooler de conexões e autenticação Magic Link',
+    },
+    {
+      id: 'edge-hosting-cdn',
+      name: 'Hospedagem Edge & CDN',
+      category: 'hosting',
+      monthlyCostBrl: 45.0,
+      description: 'Distribuição estática do PWA em alta velocidade com cache de borda e certificado SSL',
+    },
+    {
+      id: 'domain-dns',
+      name: 'Domínio & DNS Brasil (.app.br)',
+      category: 'domains',
+      monthlyCostBrl: 20.0,
+      description: 'Manutenção da anuidade de domínio nacional no Registro.br e zona DNS Anycast',
+    },
+  ];
+
+  if (customTargetStr) {
+    const parsedTarget = parseFloat(customTargetStr);
+    if (!isNaN(parsedTarget) && parsedTarget > 0) {
+      return {
+        totalMonthlyTarget: parsedTarget,
+        currency: 'BRL',
+        items: defaultItems,
+      };
+    }
+  }
+
+  const defaultTotal = defaultItems.reduce((acc, item) => acc + item.monthlyCostBrl, 0);
+
+  return {
+    totalMonthlyTarget: defaultTotal,
+    currency: 'BRL',
+    items: defaultItems,
   };
 }

@@ -56,11 +56,11 @@ development_status:
   3-4-painel-visual-do-balizador-regional-no-pwa-e-landing-pages: done
   epic-3-retrospective: done
 
-  epic-4: in-progress
+  epic-4: done
   4-1-schema-de-logs-de-microdoação-donations_log-e-configuração-d: done
   4-2-componente-bottom-sheet-de-doação-pix-com-haptic-feedback-no: done
   4-3-concessão-de-badge-de-apoiador-e-bonificação-de-xp: done
-  4-4-painel-público-de-transparência-de-custos-do-servidor-e-vitó: backlog
+  4-4-painel-público-de-transparência-de-custos-do-servidor-e-vitó: done
   epic-4-retrospective: optional
 
   epic-5: backlog
