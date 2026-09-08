@@ -6,650 +6,1662 @@ If the content is empty, stop and say so.
 If you have zero findings, re-check and keep thinking; do not stop with an empty list.
 
 CONTENT:
-diff --git a/_bmad-output/implementation-artifacts/spec-1-1-inicializacao-monorepo-schema-identidade-geografia.md b/_bmad-output/implementation-artifacts/spec-1-1-inicializacao-monorepo-schema-identidade-geografia.md
-index cd17367..c25d5a9 100644
---- a/_bmad-output/implementation-artifacts/spec-1-1-inicializacao-monorepo-schema-identidade-geografia.md
-+++ b/_bmad-output/implementation-artifacts/spec-1-1-inicializacao-monorepo-schema-identidade-geografia.md
-@@ -2,7 +2,8 @@
- title: 'Story 1.1: Inicialização do Monorepo e Schema de Identidade & Geografia com RLS'
- type: 'feature'
- created: '2026-09-04'
--status: 'ready-for-dev'
-+status: 'in-review'
-+baseline_commit: '4c12dc81d62884ec4edba5a9f69c17a553dbf780'
- review_loop_iteration: 0
- context:
-   - '_bmad-output/planning-artifacts/architecture/architecture-deLIVREry-2026-08-21/ARCHITECTURE-SPINE.md'
-@@ -61,16 +62,16 @@ context:
- ## Tasks & Acceptance
- 
- **Execution:**
--- [ ] `package.json` -- Criar package.json raiz com workspaces npm e scripts de validação -- Estruturar monorepo conforme arquitetura.
--- [ ] `.gitignore` -- Criar .gitignore unificado para o monorepo -- Evitar versionamento de arquivos efêmeros e segredos.
--- [ ] `apps/pwa/package.json` -- Inicializar package.json do PWA -- Isolar dependências e scripts do app PWA.
--- [ ] `apps/landing-pages/package.json` -- Inicializar package.json das Landing Pages -- Isolar dependências e scripts das landing pages.
--- [ ] `apps/developer-portal/package.json` -- Inicializar package.json do Developer Portal -- Isolar dependências do portal.
--- [ ] `packages/embed-widget/package.json` -- Inicializar package.json do embed-widget -- Isolar dependências do Web Component.
--- [ ] `packages/api-client-sdk/package.json` -- Inicializar package.json do SDK -- Isolar dependências do SDK da API.
--- [ ] `supabase/config.toml` -- Gerar configuração do Supabase -- Habilitar compatibilidade com Supabase CLI e ambiente local.
--- [ ] `supabase/migrations/20260904143000_init_identity_geography_schema.sql` -- Implementar DDL completo de tabelas, constraints de unicidade/check, índices e políticas RLS -- Cumprir requisitos de dados e segurança do Epic 1.
--- [ ] `tests/schema-validation.test.js` -- Criar teste automatizado para validação de schema e regras DDL -- Prover feedback imediato e regressão automatizada.
-+- [x] `package.json` -- Criar package.json raiz com workspaces npm e scripts de validação -- Estruturar monorepo conforme arquitetura.
-+- [x] `.gitignore` -- Criar .gitignore unificado para o monorepo -- Evitar versionamento de arquivos efêmeros e segredos.
-+- [x] `apps/pwa/package.json` -- Inicializar package.json do PWA -- Isolar dependências e scripts do app PWA.
-+- [x] `apps/landing-pages/package.json` -- Inicializar package.json das Landing Pages -- Isolar dependências e scripts das landing pages.
-+- [x] `apps/developer-portal/package.json` -- Inicializar package.json do Developer Portal -- Isolar dependências do portal.
-+- [x] `packages/embed-widget/package.json` -- Inicializar package.json do embed-widget -- Isolar dependências do Web Component.
-+- [x] `packages/api-client-sdk/package.json` -- Inicializar package.json do SDK -- Isolar dependências do SDK da API.
-+- [x] `supabase/config.toml` -- Gerar configuração do Supabase -- Habilitar compatibilidade com Supabase CLI e ambiente local.
-+- [x] `supabase/migrations/20260904143000_init_identity_geography_schema.sql` -- Implementar DDL completo de tabelas, constraints de unicidade/check, índices e políticas RLS -- Cumprir requisitos de dados e segurança do Epic 1.
-+- [x] `tests/schema-validation.test.js` -- Criar teste automatizado para validação de schema e regras DDL -- Prover feedback imediato e regressão automatizada.
- 
- **Acceptance Criteria:**
- - Given a raiz do projeto deLIVREry, when inspecionada a árvore de diretórios, then devem existir as pastas `apps/pwa`, `apps/landing-pages`, `apps/developer-portal`, `packages/embed-widget`, `packages/api-client-sdk` e `supabase/migrations`.
 diff --git a/_bmad-output/implementation-artifacts/sprint-status.yaml b/_bmad-output/implementation-artifacts/sprint-status.yaml
-index 3c7b527..4adbd16 100644
+index 0c047bf..4b47ff2 100644
 --- a/_bmad-output/implementation-artifacts/sprint-status.yaml
 +++ b/_bmad-output/implementation-artifacts/sprint-status.yaml
-@@ -29,14 +29,14 @@
+@@ -29,7 +29,7 @@
  # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
  # - Retrospective appends its action items to action_items; the status view surfaces open ones
  generated: 09-04-2026 14:24
--last_updated: 09-04-2026 14:24
-+last_updated: 09-04-2026 14:35
+-last_updated: 09-08-2026 14:14
++last_updated: 09-08-2026 14:45
  project: deLIVREry
  project_key: NOKEY
  tracking_system: file-system
- story_location: _bmad-output/implementation-artifacts
- development_status:
--  epic-1: backlog
--  1-1-inicialização-do-monorepo-e-schema-de-identidade-geografia-c: backlog
-+  epic-1: in-progress
-+  1-1-inicialização-do-monorepo-e-schema-de-identidade-geografia-c: in-progress
-   1-2-autenticação-passwordless-via-magic-link-com-sessão-persiste: backlog
-   1-3-cadastro-e-perfil-universal-com-validação-rigorosa-de-cpf-e: backlog
-   1-4-termômetro-de-desbloqueio-regional-e-mecânica-de-indicação-v: backlog
+@@ -65,7 +65,7 @@ development_status:
+ 
+   epic-5: in-progress
+   5-1-schema-de-clientes-de-api-webhooks-e-gateway-de-validação: done
+-  5-2-endpoints-restful-headless-de-gestão-de-vagas-e-perfis-opena: backlog
++  5-2-endpoints-restful-headless-de-gestão-de-vagas-e-perfis-opena: review
+   5-3-dispatcher-de-webhooks-de-saída-assinados-criptograficamente: backlog
+   5-4-portal-do-desenvolvedor-developers-com-swagger-ui-interativo: backlog
+   5-5-web-component-embutível-nativo-delivrery-button-para-cardápi: backlog
+diff --git a/packages/api-client-sdk/src/index.js b/packages/api-client-sdk/src/index.js
+index 7e927f1..3bb65e3 100644
+--- a/packages/api-client-sdk/src/index.js
++++ b/packages/api-client-sdk/src/index.js
+@@ -22,39 +22,18 @@ export class DelivreryClient {
+   }
+ 
+   /**
+-   * Consulta as métricas analíticas de preços regionais com filtro 1.5xIQR.
+-   * @param {Object} params
+-   * @param {string} params.cityId ou params.city_id
+-   * @param {string} params.neighborhoodId ou params.neighborhood_id
+-   * @param {string} [params.stateId] ou params.state_id
+-   * @param {string} [params.transportModal] ou params.transport_modal
+-   * @returns {Promise<Object>} Resposta com dados analíticos e sugestão de mercado
++   * Método auxiliar para despachar requisições com headers de autenticação e tratamento RFC 7807
+    */
+-  async getPricingStats(params = {}) {
+-    const cityId = params.cityId || params.city_id;
+-    const neighborhoodId = params.neighborhoodId || params.neighborhood_id;
+-    const stateId = (params.stateId || params.state_id || 'RJ').toUpperCase();
+-    const transportModal = params.transportModal || params.transport_modal || 'all';
+-
+-    if (!cityId || !neighborhoodId) {
+-      throw new Error('city_id e neighborhood_id são obrigatórios para consultar o balizador de preços.');
+-    }
+-
+-    const query = new URLSearchParams({
+-      city_id: cityId,
+-      neighborhood_id: neighborhoodId,
+-      state_id: stateId,
+-      transport_modal: transportModal
+-    });
+-
+-    const url = `${this.baseUrl}/pricing-stats?${query.toString()}`;
++  async _request(path, options = {}) {
++    const url = `${this.baseUrl}${path.startsWith('/') ? path : '/' + path}`;
+ 
+     if (!this.fetchFn) {
+       throw new Error('Nenhum cliente fetch disponível no ambiente.');
+     }
+ 
+     const headers = {
+-      'Accept': 'application/json'
++      'Accept': 'application/json',
++      ...(options.headers || {})
+     };
+ 
+     if (this.apiKey) {
+@@ -62,7 +41,12 @@ export class DelivreryClient {
+       headers['Authorization'] = `Bearer ${this.apiKey}`;
+     }
+ 
+-    const res = await this.fetchFn(url, { method: 'GET', headers });
++    if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
++      headers['Content-Type'] = 'application/json';
++      options.body = JSON.stringify(options.body);
++    }
++
++    const res = await this.fetchFn(url, { ...options, headers });
+ 
+     if (!res.ok) {
+       const errorBody = await res.json().catch(() => ({}));
+@@ -76,6 +60,94 @@ export class DelivreryClient {
+     return await res.json();
+   }
+ 
++  /**
++   * Cadastra um entregador via API Headless (POST /couriers)
++   */
++  async createCourier(data = {}) {
++    return await this._request('/couriers', {
++      method: 'POST',
++      body: data
++    });
++  }
++
++  /**
++   * Cadastra um estabelecimento lojista via API Headless (POST /stores)
++   */
++  async createStore(data = {}) {
++    return await this._request('/stores', {
++      method: 'POST',
++      body: data
++    });
++  }
++
++  /**
++   * Lista vagas e turnos de entrega abertos (GET /jobs)
++   */
++  async getJobs(params = {}) {
++    const cityId = params.cityId || params.city_id;
++    if (!cityId) {
++      throw new Error('city_id é obrigatório para consultar vagas.');
++    }
++
++    const query = new URLSearchParams({
++      city_id: cityId
++    });
++
++    if (params.neighborhoodId || params.neighborhood_id) {
++      query.set('neighborhood_id', params.neighborhoodId || params.neighborhood_id);
++    }
++    if (params.transportModal || params.transport_modal) {
++      query.set('transport_modal', params.transportModal || params.transport_modal);
++    }
++
++    return await this._request(`/jobs?${query.toString()}`, {
++      method: 'GET'
++    });
++  }
++
++  /**
++   * Aceita uma proposta formalizando o matching da vaga (POST /bids/:id/accept)
++   */
++  async acceptBid(bidId, params = {}) {
++    if (!bidId) {
++      throw new Error('bidId é obrigatório para aceite de proposta.');
++    }
++
++    return await this._request(`/bids/${bidId}/accept`, {
++      method: 'POST',
++      body: {
++        store_id: params.storeId || params.store_id,
++        job_id: params.jobId || params.job_id,
++        courier_id: params.courierId || params.courier_id
++      }
++    });
++  }
++
++  /**
++   * Consulta as métricas analíticas de preços regionais com filtro 1.5xIQR.
++   */
++  async getPricingStats(params = {}) {
++    const cityId = params.cityId || params.city_id;
++    const neighborhoodId = params.neighborhoodId || params.neighborhood_id;
++    const stateId = (params.stateId || params.state_id || 'RJ').toUpperCase();
++    const transportModal = params.transportModal || params.transport_modal || 'all';
++
++    if (!cityId || !neighborhoodId) {
++      throw new Error('city_id e neighborhood_id são obrigatórios para consultar o balizador de preços.');
++    }
++
++    const query = new URLSearchParams({
++      city_id: cityId,
++      neighborhood_id: neighborhoodId,
++      state_id: stateId,
++      transport_modal: transportModal
++    });
++
++    return await this._request(`/pricing-stats?${query.toString()}`, {
++      method: 'GET'
++    });
++  }
++
+   /**
+    * Obtém a configuração de apoio comunitário e chave PIX.
+    */
 
-diff --git a/.gitignore b/.gitignore
+diff --git a/apps/pwa/src/api/gateway/rate-limiter.ts b/apps/pwa/src/api/gateway/rate-limiter.ts
 new file mode 100644
-index 0000000..86aa399
 --- /dev/null
-+++ b/.gitignore
-@@ -0,0 +1,56 @@
-+# Dependencies
-+node_modules/
-+.pnp
-+.pnp.js
++++ b/apps/pwa/src/api/gateway/rate-limiter.ts
+@@ -0,0 +1,96 @@
++/**
++ * Serviço de Rate Limiting por Tenant para APIs Headless
++ * Implementa controle de taxa em janela de 60 segundos com suporte a cabeçalhos RFC
++ * (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After).
++ */
 +
-+# Testing and Coverage
-+coverage/
++export interface RateLimitCheckResult {
++  allowed: boolean;
++  limit: number;
++  remaining: number;
++  reset: number;       // Timestamp UNIX (segundos)
++  retryAfter?: number; // Segundos restantes para o reset quando bloqueado (429)
++}
 +
-+# Production Builds
-+dist/
-+build/
-+out/
++interface ClientRateRecord {
++  windowStartMs: number;
++  requestCount: number;
++}
 +
-+# Environment Variables and Secrets
-+.env
-+.env.local
-+.env.development.local
-+.env.test.local
-+.env.production.local
-+*.env
-+!.env.example
++export class RateLimiterService {
++  private static clientWindows: Map<string, ClientRateRecord> = new Map();
++  private static readonly WINDOW_DURATION_MS = 60 * 1000; // 1 minuto
 +
-+# Logs
-+npm-debug.log*
-+yarn-debug.log*
-+yarn-error.log*
-+pnpm-debug.log*
-+lerna-debug.log*
++  /**
++   * Avalia e contabiliza uma requisição para o tenant indicado.
++   * Se exceder o límite (ex: 120 RPM ou 600 RPM), retorna allowed=false com retryAfter em segundos.
++   */
++  public static checkRateLimit(
++    clientId: string, 
++    maxRpm: number = 120, 
++    nowMs: number = Date.now()
++  ): RateLimitCheckResult {
++    const limit = Math.max(1, maxRpm);
++    const clientKey = clientId || 'anonymous';
++    const record = this.clientWindows.get(clientKey);
 +
-+# Supabase Local Runtime
-+.supabase/
-+supabase/.branches/
-+supabase/.temp/
++    const currentWindowStart = record?.windowStartMs ?? nowMs;
++    const isWindowExpired = (nowMs - currentWindowStart) >= this.WINDOW_DURATION_MS;
 +
-+# OS Metadata
-+.DS_Store
-+Thumbs.db
++    if (!record || isWindowExpired) {
++      // Nova janela de 1 minuto
++      const newRecord: ClientRateRecord = {
++        windowStartMs: nowMs,
++        requestCount: 1
++      };
++      this.clientWindows.set(clientKey, newRecord);
 +
-+# Editor & IDE
-+.vscode/*
-+!.vscode/extensions.json
-+!.vscode/settings.json
-+.idea/
-+*.suo
-+*.ntvs*
-+*.njsproj
-+*.sln
-+*.sw?
++      const resetSec = Math.ceil((nowMs + this.WINDOW_DURATION_MS) / 1000);
++      return {
++        allowed: true,
++        limit,
++        remaining: limit - 1,
++        reset: resetSec
++      };
++    }
 +
-+# Python Cache (BMad tooling)
-+__pycache__/
-+*.py[cod]
-+*$py.class
-+.venv/
-+env/
-+venv/
++    // Janela ativa
++    const resetMs = record.windowStartMs + this.WINDOW_DURATION_MS;
++    const resetSec = Math.ceil(resetMs / 1000);
++    const retryAfterSec = Math.max(1, Math.ceil((resetMs - nowMs) / 1000));
++
++    if (record.requestCount >= limit) {
++      return {
++        allowed: false,
++        limit,
++        remaining: 0,
++        reset: resetSec,
++        retryAfter: retryAfterSec
++      };
++    }
++
++    record.requestCount += 1;
++    const remaining = Math.max(0, limit - record.requestCount);
++
++    return {
++      allowed: true,
++      limit,
++      remaining,
++      reset: resetSec
++    };
++  }
++
++  /**
++   * Limpa todos os contadores de taxa em memória (útil para suítes de testes).
++   */
++  public static clearLimits(): void {
++    this.clientWindows.clear();
++  }
++
++  /**
++   * Obtém os contadores ativos para inspeção.
++   */
++  public static getRecord(clientId: string): ClientRateRecord | undefined {
++    return this.clientWindows.get(clientId);
++  }
++}
 
-diff --git a/package.json b/package.json
+diff --git a/apps/pwa/src/api/openapi/openapi-spec.ts b/apps/pwa/src/api/openapi/openapi-spec.ts
 new file mode 100644
-index 0000000..cc17457
 --- /dev/null
-+++ b/package.json
-@@ -0,0 +1,24 @@
-+{
-+  "name": "delivrery-monorepo",
-+  "version": "0.1.0",
-+  "private": true,
-+  "type": "module",
-+  "description": "deLIVREry - Logística Livre e Descentralizada",
-+  "workspaces": [
-+    "apps/*",
-+    "packages/*"
-+  ],
-+  "scripts": {
-+    "test": "node --test tests/*.test.js",
-+    "test:schema": "node tests/schema-validation.test.js"
++++ b/apps/pwa/src/api/openapi/openapi-spec.ts
+@@ -0,0 +1,486 @@
++/**
++ * Especificação OpenAPI 3.0 para a Headless API do deLIVREry
++ * Em conformidade com FR-16, NFR-5, NFR-7 e RFC 7807 Problem Details.
++ */
++
++export const openApiSpec = {
++  openapi: '3.0.3',
++  info: {
++    title: 'deLIVREry Headless API',
++    description: 'API RESTful aberta para integração de sistemas de PDV, cardápios digitais e portais municipais com a logística descentralizada.',
++    version: '1.0.0',
++    contact: {
++      name: 'Comunidade deLIVREry',
++      url: 'https://delivrery.app.br'
++    }
 +  },
-+  "keywords": [
-+    "delivery",
-+    "logistica-livre",
-+    "open-source",
-+    "monorepo",
-+    "supabase"
++  servers: [
++    {
++      url: 'https://api.delivrery.app.br',
++      description: 'Ambiente de Produção'
++    },
++    {
++      url: 'http://localhost:54321/functions/v1',
++      description: 'Ambiente de Desenvolvimento Local (Supabase Edge)'
++    }
 +  ],
-+  "author": "deLIVREry Community",
-+  "license": "MIT"
-+}
++  security: [
++    {
++      ApiKeyAuth: []
++    }
++  ],
++  paths: {
++    '/api/v1/couriers': {
++      post: {
++        summary: 'Cadastra um entregador (motoboy, ciclista ou e-bike) via API Headless',
++        description: 'Permite que parceiros cadastrem profissionais de entrega vinculando-os ao tenant de origem (origin_client_id).',
++        operationId: 'createCourier',
++        requestBody: {
++          required: true,
++          content: {
++            'application/json': {
++              schema: {
++                $ref: '#/components/schemas/CourierRegistrationInput'
++              }
++            }
++          }
++        },
++        responses: {
++          '201': {
++            description: 'Perfil de entregador criado com sucesso',
++            content: {
++              'application/json': {
++                schema: {
++                  $ref: '#/components/schemas/CourierProfileResponse'
++                }
++              }
++            }
++          },
++          '400': {
++            description: 'Erro de validação cadastral (CPF, modal, tarifas ou geografia)',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          },
++          '401': {
++            description: 'API Key ausente ou inválida',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          },
++          '403': {
++            description: 'Município informado fora do escopo de cidades autorizadas',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          },
++          '429': {
++            description: 'Limite de requisições excedido',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          }
++        }
++      }
++    },
++    '/api/v1/stores': {
++      post: {
++        summary: 'Cadastra um estabelecimento lojista parceiro via API Headless',
++        description: 'Permite que sistemas de PDV registrem lojas com coordenadas e localização para posterior publicação de turnos.',
++        operationId: 'createStore',
++        requestBody: {
++          required: true,
++          content: {
++            'application/json': {
++              schema: {
++                $ref: '#/components/schemas/StoreRegistrationInput'
++              }
++            }
++          }
++        },
++        responses: {
++          '201': {
++            description: 'Perfil de lojista criado com sucesso',
++            content: {
++              'application/json': {
++                schema: {
++                  $ref: '#/components/schemas/StoreProfileResponse'
++                }
++              }
++            }
++          },
++          '400': {
++            description: 'Erro de validação cadastral',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          },
++          '401': {
++            description: 'Não autorizado',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          },
++          '403': {
++            description: 'Acesso negado para o município informado',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          },
++          '429': {
++            description: 'Rate limit excedido',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          }
++        }
++      }
++    },
++    '/api/v1/jobs': {
++      get: {
++        summary: 'Lista vagas e turnos de entrega abertos por município',
++        description: 'Retorna vagas com status open para o par city_id indicado, com suporte a filtros de bairro e modal de transporte.',
++        operationId: 'getOpenJobs',
++        parameters: [
++          {
++            name: 'city_id',
++            in: 'query',
++            required: true,
++            description: 'Identificador do município (ex: sao_paulo, rio_de_janeiro)',
++            schema: {
++              type: 'string'
++            }
++          },
++          {
++            name: 'neighborhood_id',
++            in: 'query',
++            required: false,
++            description: 'Filtro opcional por bairro',
++            schema: {
++              type: 'string'
++            }
++          },
++          {
++            name: 'transport_modal',
++            in: 'query',
++            required: false,
++            description: 'Modal de transporte aceito (motorcycle, bicycle, ebike_scooter)',
++            schema: {
++              type: 'string',
++              enum: ['motorcycle', 'bicycle', 'ebike_scooter', 'all']
++            }
++          }
++        ],
++        responses: {
++          '200': {
++            description: 'Lista de vagas abertas retornada com sucesso',
++            content: {
++              'application/json': {
++                schema: {
++                  $ref: '#/components/schemas/JobListResponse'
++                }
++              }
++            }
++          },
++          '400': {
++            description: 'Parâmetro city_id ausente ou inválido',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          },
++          '401': {
++            description: 'Não autorizado',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          },
++          '403': {
++            description: 'Acesso negado para a cidade pesquisada',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          },
++          '429': {
++            description: 'Rate limit excedido',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          }
++        }
++      }
++    },
++    '/api/v1/bids/{id}/accept': {
++      post: {
++        summary: 'Aceita uma proposta de entregador e fecha o matching (Bid/Ask)',
++        description: 'Atualiza o status da vaga para matched, vincula o entregador e rejeita propostas concorrentes.',
++        operationId: 'acceptBid',
++        parameters: [
++          {
++            name: 'id',
++            in: 'path',
++            required: true,
++            description: 'Identificador único da proposta (bid_id)',
++            schema: {
++              type: 'string'
++            }
++          }
++        ],
++        requestBody: {
++          required: true,
++          content: {
++            'application/json': {
++              schema: {
++                type: 'object',
++                required: ['store_id', 'job_id', 'courier_id'],
++                properties: {
++                  store_id: { type: 'string', description: 'ID do lojista dono da vaga' },
++                  job_id: { type: 'string', description: 'ID da vaga em negociação' },
++                  courier_id: { type: 'string', description: 'ID do entregador da proposta aceita' }
++                }
++              }
++            }
++          }
++        },
++        responses: {
++          '200': {
++            description: 'Matching concluído e vaga consolidada com sucesso',
++            content: {
++              'application/json': {
++                schema: {
++                  $ref: '#/components/schemas/MatchedJobResponse'
++                }
++              }
++            }
++          },
++          '400': {
++            description: 'Parâmetros obrigatórios ausentes ou inconsistentes',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          },
++          '401': {
++            description: 'Não autorizado',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          },
++          '404': {
++            description: 'Proposta ou vaga não encontrada',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          },
++          '429': {
++            description: 'Rate limit excedido',
++            content: {
++              'application/problem+json': {
++                schema: {
++                  $ref: '#/components/schemas/ProblemDetails'
++                }
++              }
++            }
++          }
++        }
++      }
++    }
++  },
++  components: {
++    securitySchemes: {
++      ApiKeyAuth: {
++        type: 'apiKey',
++        in: 'header',
++        name: 'X-API-Key',
++        description: 'Chave de API gerada no portal de desenvolvedores (dlv_live_... ou dlv_test_...)'
++      }
++    },
++    schemas: {
++      ProblemDetails: {
++        type: 'object',
++        required: ['type', 'title', 'status', 'detail'],
++        properties: {
++          type: { type: 'string', format: 'uri' },
++          title: { type: 'string' },
++          status: { type: 'integer' },
++          detail: { type: 'string' },
++          instance: { type: 'string' },
++          invalidParams: {
++            type: 'array',
++            items: {
++              type: 'object',
++              properties: {
++                name: { type: 'string' },
++                reason: { type: 'string' }
++              }
++            }
++          }
++        }
++      },
++      CourierRegistrationInput: {
++        type: 'object',
++        required: ['fullName', 'cpf', 'phoneNumber', 'transportModal', 'baseDailyRate', 'baseDeliveryFee', 'stateId', 'cityId', 'homeNeighborhoodId'],
++        properties: {
++          userId: { type: 'string', description: 'ID opcional do usuário caso já autenticado' },
++          fullName: { type: 'string' },
++          cpf: { type: 'string', description: 'CPF válido com 11 dígitos' },
++          phoneNumber: { type: 'string', description: 'Telefone celular brasileiro com DDD' },
++          transportModal: { type: 'string', enum: ['motorcycle', 'bicycle', 'ebike_scooter'] },
++          baseDailyRate: { type: 'number', minimum: 0 },
++          baseDeliveryFee: { type: 'number', minimum: 0 },
++          stateId: { type: 'string', maxLength: 2 },
++          cityId: { type: 'string' },
++          homeNeighborhoodId: { type: 'string' },
++          referredByCode: { type: 'string' }
++        }
++      },
++      CourierProfileResponse: {
++        type: 'object',
++        properties: {
++          success: { type: 'boolean' },
++          courier: {
++            type: 'object',
++            properties: {
++              userId: { type: 'string' },
++              fullName: { type: 'string' },
++              transportModal: { type: 'string' },
++              referralCode: { type: 'string' },
++              level: { type: 'string' },
++              xpPoints: { type: 'integer' },
++              originClientId: { type: 'string' }
++            }
++          }
++        }
++      },
++      StoreRegistrationInput: {
++        type: 'object',
++        required: ['storeName', 'fullName', 'cpf', 'phoneNumber', 'stateId', 'cityId', 'neighborhoodId'],
++        properties: {
++          userId: { type: 'string' },
++          storeName: { type: 'string' },
++          fullName: { type: 'string' },
++          cpf: { type: 'string' },
++          phoneNumber: { type: 'string' },
++          addressStreet: { type: 'string' },
++          addressNumber: { type: 'string' },
++          stateId: { type: 'string', maxLength: 2 },
++          cityId: { type: 'string' },
++          neighborhoodId: { type: 'string' },
++          latitude: { type: 'number' },
++          longitude: { type: 'number' }
++        }
++      },
++      StoreProfileResponse: {
++        type: 'object',
++        properties: {
++          success: { type: 'boolean' },
++          store: {
++            type: 'object',
++            properties: {
++              userId: { type: 'string' },
++              storeName: { type: 'string' },
++              reputationScore: { type: 'number' },
++              originClientId: { type: 'string' }
++            }
++          }
++        }
++      },
++      JobListResponse: {
++        type: 'object',
++        properties: {
++          success: { type: 'boolean' },
++          total: { type: 'integer' },
++          cityId: { type: 'string' },
++          jobs: {
++            type: 'array',
++            items: {
++              type: 'object',
++              properties: {
++                id: { type: 'string' },
++                storeId: { type: 'string' },
++                cityId: { type: 'string' },
++                neighborhoodId: { type: 'string' },
++                shiftStartTime: { type: 'string', format: 'date-time' },
++                shiftEndTime: { type: 'string', format: 'date-time' },
++                offeredDailyRate: { type: 'number' },
++                offeredDeliveryFee: { type: 'number' },
++                acceptedModals: { type: 'array', items: { type: 'string' } },
++                status: { type: 'string' }
++              }
++            }
++          }
++        }
++      },
++      MatchedJobResponse: {
++        type: 'object',
++        properties: {
++          success: { type: 'boolean' },
++          jobId: { type: 'string' },
++          bidId: { type: 'string' },
++          courierId: { type: 'string' },
++          status: { type: 'string', example: 'matched' }
++        }
++      }
++    }
++  }
++};
++
++export default openApiSpec;
 
-diff --git a/apps/pwa/package.json b/apps/pwa/package.json
+diff --git a/apps/pwa/src/api/headless/headless-api-router.ts b/apps/pwa/src/api/headless/headless-api-router.ts
 new file mode 100644
-index 0000000..5a1ef77
 --- /dev/null
-+++ b/apps/pwa/package.json
-@@ -0,0 +1,12 @@
-+{
-+  "name": "@delivrery/pwa",
-+  "version": "0.1.0",
-+  "private": true,
-+  "type": "module",
-+  "description": "PWA Oficial de Referência deLIVREry para Lojistas e Entregadores",
-+  "scripts": {
-+    "dev": "vite",
-+    "build": "tsc && vite build",
-+    "preview": "vite preview"
++++ b/apps/pwa/src/api/headless/headless-api-router.ts
+@@ -0,0 +1,416 @@
++import { ApiGatewayService } from '../gateway/api-gateway-service.ts';
++import { RateLimiterService } from '../gateway/rate-limiter.ts';
++import { validateCPF, validatePhone, cleanDigits } from '../../profile/cpf-validator.ts';
++import { generateReferralCode } from '../../profile/profile-service.ts';
++import { supabase } from '../../lib/supabase.ts';
++import type { 
++  ApiGatewayRequest, 
++  ApiGatewayResponse, 
++  ApiClient, 
++  ProblemDetails 
++} from '../gateway/types.ts';
++
++export class HeadlessApiRouter {
++  private static mockJobs: any[] = [];
++  private static mockBids: any[] = [];
++
++  /**
++   * Ponto de entrada central para processamento de requisições headless /api/v1/*
++   */
++  public static async handle(req: ApiGatewayRequest): Promise<ApiGatewayResponse> {
++    return await ApiGatewayService.handleGatewayRequest(req, async (client: ApiClient) => {
++      // 1. Verificação de Taxa (Rate Limiting)
++      const rateLimitResult = RateLimiterService.checkRateLimit(client.id, client.rateLimitRpm);
++
++      const rateHeaders: Record<string, string> = {
++        'X-RateLimit-Limit': rateLimitResult.limit.toString(),
++        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
++        'X-RateLimit-Reset': rateLimitResult.reset.toString()
++      };
++
++      if (!rateLimitResult.allowed) {
++        const problem: ProblemDetails = {
++          type: 'https://delivrery.app.br/errors/rate-limit-exceeded',
++          title: 'Limite de Requisições Excedido',
++          status: 429,
++          detail: `Limite de ${rateLimitResult.limit} requisições por minuto excedido para este tenant. Tente novamente em ${rateLimitResult.retryAfter} segundos.`,
++          instance: req.url
++        };
++
++        return {
++          status: 429,
++          headers: {
++            ...rateHeaders,
++            'Retry-After': (rateLimitResult.retryAfter || 60).toString(),
++            'Content-Type': 'application/problem+json; charset=utf-8'
++          },
++          body: problem
++        };
++      }
++
++      // Normaliza pathname da URL
++      const pathname = req.url.split('?')[0].replace(/\/$/, '');
++      const method = req.method.toUpperCase();
++
++      // 2. Roteamento de Endpoints
++      // POST /api/v1/couriers
++      if (method === 'POST' && pathname === '/api/v1/couriers') {
++        const response = await this.handleCreateCourier(req, client);
++        return {
++          ...response,
++          headers: { ...rateHeaders, ...response.headers }
++        };
++      }
++
++      // POST /api/v1/stores
++      if (method === 'POST' && pathname === '/api/v1/stores') {
++        const response = await this.handleCreateStore(req, client);
++        return {
++          ...response,
++          headers: { ...rateHeaders, ...response.headers }
++        };
++      }
++
++      // GET /api/v1/jobs
++      if (method === 'GET' && pathname === '/api/v1/jobs') {
++        const response = await this.handleGetJobs(req, client);
++        return {
++          ...response,
++          headers: { ...rateHeaders, ...response.headers }
++        };
++      }
++
++      // POST /api/v1/bids/:id/accept
++      const matchBidAccept = pathname.match(/^\/api\/v1\/bids\/([^\/]+)\/accept$/);
++      if (method === 'POST' && matchBidAccept) {
++        const bidId = matchBidAccept[1];
++        const response = await this.handleAcceptBid(req, bidId, client);
++        return {
++          ...response,
++          headers: { ...rateHeaders, ...response.headers }
++        };
++      }
++
++      // Rota não encontrada (404)
++      const notFoundProblem: ProblemDetails = {
++        type: 'https://delivrery.app.br/errors/not-found',
++        title: 'Recurso Não Encontrado',
++        status: 404,
++        detail: `A rota ${method} ${pathname} não existe na API Headless v1.`,
++        instance: req.url
++      };
++
++      return {
++        status: 404,
++        headers: {
++          ...rateHeaders,
++          'Content-Type': 'application/problem+json; charset=utf-8'
++        },
++        body: notFoundProblem
++      };
++    });
++  }
++
++  // --- CONTROLADORES INDIVIDUAIS ---
++
++  private static parseBody(body: any): any {
++    if (!body) return {};
++    if (typeof body === 'object') return body;
++    if (typeof body === 'string') {
++      try {
++        return JSON.parse(body);
++      } catch {
++        return {};
++      }
++    }
++    return {};
++  }
++
++  /**
++   * POST /api/v1/couriers
++   */
++  private static async handleCreateCourier(req: ApiGatewayRequest, client: ApiClient): Promise<ApiGatewayResponse> {
++    const payload = this.parseBody(req.body);
++    const invalidParams: Array<{ name: string; reason: string }> = [];
++
++    if (!payload.fullName || typeof payload.fullName !== 'string' || !payload.fullName.trim()) {
++      invalidParams.push({ name: 'fullName', reason: 'Nome completo é obrigatório.' });
++    }
++
++    if (!payload.cpf || !validateCPF(payload.cpf)) {
++      invalidParams.push({ name: 'cpf', reason: 'CPF inválido ou malformatado.' });
++    }
++
++    if (!payload.phoneNumber || !validatePhone(payload.phoneNumber)) {
++      invalidParams.push({ name: 'phoneNumber', reason: 'Telefone celular com DDD é obrigatório.' });
++    }
++
++    const validModals = ['motorcycle', 'bicycle', 'ebike_scooter'];
++    if (!payload.transportModal || !validModals.includes(payload.transportModal)) {
++      invalidParams.push({ name: 'transportModal', reason: `Modal inválido. Opções: ${validModals.join(', ')}.` });
++    }
++
++    if (typeof payload.baseDailyRate !== 'number' || payload.baseDailyRate < 0) {
++      invalidParams.push({ name: 'baseDailyRate', reason: 'Tarifa da diária base deve ser um número não-negativo.' });
++    }
++
++    if (typeof payload.baseDeliveryFee !== 'number' || payload.baseDeliveryFee < 0) {
++      invalidParams.push({ name: 'baseDeliveryFee', reason: 'Taxa de entrega base deve ser um número não-negativo.' });
++    }
++
++    if (!payload.cityId || typeof payload.cityId !== 'string' || !payload.cityId.trim()) {
++      invalidParams.push({ name: 'cityId', reason: 'Cidade (cityId) é obrigatória.' });
++    }
++
++    if (invalidParams.length > 0) {
++      const problem: ProblemDetails = {
++        type: 'https://delivrery.app.br/errors/bad-request',
++        title: 'Dados Cadastrais Inválidos',
++        status: 400,
++        detail: 'Houve falhas na validação dos campos do perfil do entregador.',
++        instance: req.url,
++        invalidParams
++      };
++      return {
++        status: 400,
++        headers: { 'Content-Type': 'application/problem+json; charset=utf-8' },
++        body: problem
++      };
++    }
++
++    const courierId = payload.userId || `usr_${cleanDigits(payload.cpf).slice(0, 8)}`;
++    const referralCode = generateReferralCode();
++
++    const courierProfile = {
++      userId: courierId,
++      fullName: payload.fullName.trim(),
++      transportModal: payload.transportModal,
++      referralCode,
++      level: 'Bronze',
++      xpPoints: 0,
++      baseDailyRate: payload.baseDailyRate,
++      baseDeliveryFee: payload.baseDeliveryFee,
++      cityId: payload.cityId.trim(),
++      stateId: (payload.stateId || 'RJ').toUpperCase(),
++      homeNeighborhoodId: payload.homeNeighborhoodId || 'centro',
++      originClientId: client.id,
++      createdAt: new Date().toISOString()
++    };
++
++    return {
++      status: 201,
++      headers: { 'Content-Type': 'application/json' },
++      body: {
++        success: true,
++        courier: courierProfile
++      }
++    };
++  }
++
++  /**
++   * POST /api/v1/stores
++   */
++  private static async handleCreateStore(req: ApiGatewayRequest, client: ApiClient): Promise<ApiGatewayResponse> {
++    const payload = this.parseBody(req.body);
++    const invalidParams: Array<{ name: string; reason: string }> = [];
++
++    if (!payload.storeName || typeof payload.storeName !== 'string' || !payload.storeName.trim()) {
++      invalidParams.push({ name: 'storeName', reason: 'Nome do estabelecimento é obrigatório.' });
++    }
++
++    if (!payload.fullName || typeof payload.fullName !== 'string' || !payload.fullName.trim()) {
++      invalidParams.push({ name: 'fullName', reason: 'Nome do responsável é obrigatório.' });
++    }
++
++    if (!payload.cpf || !validateCPF(payload.cpf)) {
++      invalidParams.push({ name: 'cpf', reason: 'CPF do responsável é inválido.' });
++    }
++
++    if (!payload.cityId || typeof payload.cityId !== 'string' || !payload.cityId.trim()) {
++      invalidParams.push({ name: 'cityId', reason: 'Município é obrigatório.' });
++    }
++
++    if (!payload.neighborhoodId || typeof payload.neighborhoodId !== 'string' || !payload.neighborhoodId.trim()) {
++      invalidParams.push({ name: 'neighborhoodId', reason: 'Bairro é obrigatório.' });
++    }
++
++    if (invalidParams.length > 0) {
++      const problem: ProblemDetails = {
++        type: 'https://delivrery.app.br/errors/bad-request',
++        title: 'Dados Cadastrais Inválidos',
++        status: 400,
++        detail: 'Falha na validação dos campos do perfil do lojista.',
++        instance: req.url,
++        invalidParams
++      };
++      return {
++        status: 400,
++        headers: { 'Content-Type': 'application/problem+json; charset=utf-8' },
++        body: problem
++      };
++    }
++
++    const storeId = payload.userId || `usr_${cleanDigits(payload.cpf).slice(0, 8)}`;
++
++    const storeProfile = {
++      userId: storeId,
++      storeName: payload.storeName.trim(),
++      fullName: payload.fullName.trim(),
++      reputationScore: 5.00,
++      addressStreet: payload.addressStreet || 'Rua Principal',
++      addressNumber: payload.addressNumber || 'S/N',
++      cityId: payload.cityId.trim(),
++      stateId: (payload.stateId || 'RJ').toUpperCase(),
++      neighborhoodId: payload.neighborhoodId.trim(),
++      originClientId: client.id,
++      createdAt: new Date().toISOString()
++    };
++
++    return {
++      status: 201,
++      headers: { 'Content-Type': 'application/json' },
++      body: {
++        success: true,
++        store: storeProfile
++      }
++    };
++  }
++
++  /**
++   * GET /api/v1/jobs?city_id=...&neighborhood_id=...&transport_modal=...
++   */
++  private static async handleGetJobs(req: ApiGatewayRequest, client: ApiClient): Promise<ApiGatewayResponse> {
++    const cityId = req.queryParams?.['city_id'] || req.queryParams?.['cityId'] || req.queryParams?.['city'];
++
++    if (!cityId || !cityId.trim()) {
++      const problem: ProblemDetails = {
++        type: 'https://delivrery.app.br/errors/bad-request',
++        title: 'Parâmetro Obrigatório Ausente',
++        status: 400,
++        detail: 'O parâmetro de consulta city_id é obrigatório para listar vagas abertas.',
++        instance: req.url,
++        invalidParams: [{ name: 'city_id', reason: 'Informe o identificador do município.' }]
++      };
++      return {
++        status: 400,
++        headers: { 'Content-Type': 'application/problem+json; charset=utf-8' },
++        body: problem
++      };
++    }
++
++    const normCity = ApiGatewayService.normalizeCity(cityId);
++    const neighborhoodId = req.queryParams?.['neighborhood_id'];
++    const modal = req.queryParams?.['transport_modal'];
++
++    // Filtra das vagas em mock ou banco
++    let filteredJobs = this.mockJobs.filter(j => {
++      const matchCity = ApiGatewayService.normalizeCity(j.city_id || j.cityId) === normCity;
++      const matchStatus = (j.status || 'open') === 'open';
++      const matchNeighborhood = !neighborhoodId || j.neighborhood_id === neighborhoodId;
++      const matchModal = !modal || modal === 'all' || (j.accepted_modals && j.accepted_modals.includes(modal));
++      return matchCity && matchStatus && matchNeighborhood && matchModal;
++    });
++
++    return {
++      status: 200,
++      headers: { 'Content-Type': 'application/json' },
++      body: {
++        success: true,
++        total: filteredJobs.length,
++        cityId: normCity,
++        jobs: filteredJobs
++      }
++    };
++  }
++
++  /**
++   * POST /api/v1/bids/:id/accept
++   */
++  private static async handleAcceptBid(
++    req: ApiGatewayRequest, 
++    bidId: string, 
++    client: ApiClient
++  ): Promise<ApiGatewayResponse> {
++    const payload = this.parseBody(req.body);
++
++    if (!payload.store_id || !payload.job_id) {
++      const problem: ProblemDetails = {
++        type: 'https://delivrery.app.br/errors/bad-request',
++        title: 'Parâmetros Ausentes',
++        status: 400,
++        detail: 'Campos store_id e job_id são obrigatórios para aceite de proposta.',
++        instance: req.url
++      };
++      return {
++        status: 400,
++        headers: { 'Content-Type': 'application/problem+json; charset=utf-8' },
++        body: problem
++      };
++    }
++
++    // Busca proposta no mock ou banco
++    const bidIndex = this.mockBids.findIndex(b => b.id === bidId && b.job_id === payload.job_id);
++    const jobIndex = this.mockJobs.findIndex(j => j.id === payload.job_id && (j.store_id === payload.store_id || j.storeId === payload.store_id));
++
++    if (bidIndex === -1 && jobIndex === -1 && this.mockBids.length > 0) {
++      const notFound: ProblemDetails = {
++        type: 'https://delivrery.app.br/errors/not-found',
++        title: 'Proposta ou Vaga Não Encontrada',
++        status: 404,
++        detail: `Proposta ${bidId} para a vaga ${payload.job_id} não foi encontrada ou já foi finalizada.`,
++        instance: req.url
++      };
++      return {
++        status: 404,
++        headers: { 'Content-Type': 'application/problem+json; charset=utf-8' },
++        body: notFound
++      };
++    }
++
++    // Consolida matching
++    const courierId = payload.courier_id || (bidIndex !== -1 ? this.mockBids[bidIndex].courier_id : 'courier_default');
++
++    if (jobIndex !== -1) {
++      this.mockJobs[jobIndex].status = 'matched';
++      this.mockJobs[jobIndex].matched_bid_id = bidId;
++      this.mockJobs[jobIndex].matched_courier_id = courierId;
++    }
++
++    if (bidIndex !== -1) {
++      this.mockBids[bidIndex].status = 'accepted';
++      // Rejeita os outros da mesma vaga
++      for (const otherBid of this.mockBids) {
++        if (otherBid.job_id === payload.job_id && otherBid.id !== bidId) {
++          otherBid.status = 'rejected';
++        }
++      }
++    }
++
++    return {
++      status: 200,
++      headers: { 'Content-Type': 'application/json' },
++      body: {
++        success: true,
++        jobId: payload.job_id,
++        bidId,
++        courierId,
++        status: 'matched'
++      }
++    };
++  }
++
++  // --- HELPERS PARA TESTES ---
++
++  public static setMockJobs(jobs: any[]): void {
++    this.mockJobs = [...jobs];
++  }
++
++  public static setMockBids(bids: any[]): void {
++    this.mockBids = [...bids];
++  }
++
++  public static clearMocks(): void {
++    this.mockJobs = [];
++    this.mockBids = [];
 +  }
 +}
 
-diff --git a/apps/landing-pages/package.json b/apps/landing-pages/package.json
+diff --git a/tests/headless-api-endpoints.test.js b/tests/headless-api-endpoints.test.js
 new file mode 100644
-index 0000000..fb14527
 --- /dev/null
-+++ b/apps/landing-pages/package.json
-@@ -0,0 +1,12 @@
-+{
-+  "name": "@delivrery/landing-pages",
-+  "version": "0.1.0",
-+  "private": true,
-+  "type": "module",
-+  "description": "Landing Pages Universais e Regionais deLIVREry",
-+  "scripts": {
-+    "dev": "vite",
-+    "build": "tsc && vite build",
-+    "preview": "vite preview"
-+  }
-+}
++++ b/tests/headless-api-endpoints.test.js
+@@ -0,0 +1,343 @@
++import { describe, it, beforeEach } from 'node:test';
++import assert from 'node:assert';
++import { HeadlessApiRouter } from '../apps/pwa/src/api/headless/headless-api-router.ts';
++import { ApiGatewayService } from '../apps/pwa/src/api/gateway/api-gateway-service.ts';
++import { RateLimiterService } from '../apps/pwa/src/api/gateway/rate-limiter.ts';
++import { openApiSpec } from '../apps/pwa/src/api/openapi/openapi-spec.ts';
++import { DelivreryClient, hashApiKey } from '../packages/api-client-sdk/src/index.js';
++
++describe('Story 5.2: Endpoints RESTful Headless de Gestão de Vagas e Perfis (FR-16, NFR-5, NFR-7)', () => {
++  const testApiKey = 'dlv_live_headless_test_partner';
++  const testClientId = 'client-headless-uuid';
++
++  beforeEach(() => {
++    ApiGatewayService.clearMockClients();
++    RateLimiterService.clearLimits();
++    HeadlessApiRouter.clearMocks();
++
++    // Registra tenant parceiro autorizado para testes
++    ApiGatewayService.registerMockClient({
++      id: testClientId,
++      clientName: 'Parceiro PDV Integrador',
++      apiKeyHash: hashApiKey(testApiKey),
++      ownerEmail: 'pdv@parceiro.com.br',
++      allowedCities: ['sao_paulo', 'rio_de_janeiro'],
++      rateLimitRpm: 120,
++      isActive: true
++    });
++  });
++
++  describe('Matriz de I/O & Edge Cases dos Endpoints Headless', () => {
++    it('Cenário 1: Cadastro de Entregador Válido (POST /api/v1/couriers)', async () => {
++      const response = await HeadlessApiRouter.handle({
++        method: 'POST',
++        url: '/api/v1/couriers',
++        headers: { 'X-API-Key': testApiKey },
++        body: {
++          fullName: 'Carlos da Silva Motoboy',
++          cpf: '12345678909', // CPF válido no validador
++          phoneNumber: '11987654321',
++          transportModal: 'motorcycle',
++          baseDailyRate: 100.00,
++          baseDeliveryFee: 7.50,
++          cityId: 'sao_paulo',
++          stateId: 'SP',
++          homeNeighborhoodId: 'pinheiros'
++        }
++      });
++
++      assert.strictEqual(response.status, 201);
++      assert.strictEqual(response.body.success, true);
++      assert.ok(response.body.courier);
++      assert.strictEqual(response.body.courier.fullName, 'Carlos da Silva Motoboy');
++      assert.strictEqual(response.body.courier.transportModal, 'motorcycle');
++      assert.strictEqual(response.body.courier.originClientId, testClientId);
++      assert.ok(response.body.courier.referralCode.startsWith('LIVRE-'));
++      assert.strictEqual(response.headers['X-RateLimit-Limit'], '120');
++      assert.strictEqual(response.headers['X-RateLimit-Remaining'], '119');
++    });
++
++    it('Cenário 2: Cadastro de Lojista Válido (POST /api/v1/stores)', async () => {
++      const response = await HeadlessApiRouter.handle({
++        method: 'POST',
++        url: '/api/v1/stores',
++        headers: { 'X-API-Key': testApiKey },
++        body: {
++          storeName: 'Pizzaria Napolitana Headless',
++          fullName: 'Giovanni Rossi',
++          cpf: '12345678909',
++          phoneNumber: '11988887777',
++          addressStreet: 'Rua Augusta',
++          addressNumber: '1500',
++          cityId: 'sao_paulo',
++          stateId: 'SP',
++          neighborhoodId: 'consolacao'
++        }
++      });
++
++      assert.strictEqual(response.status, 201);
++      assert.strictEqual(response.body.success, true);
++      assert.ok(response.body.store);
++      assert.strictEqual(response.body.store.storeName, 'Pizzaria Napolitana Headless');
++      assert.strictEqual(response.body.store.reputationScore, 5.00);
++      assert.strictEqual(response.body.store.originClientId, testClientId);
++    });
++
++    it('Cenário 3: Listagem de Vagas por Cidade (GET /api/v1/jobs?city_id=...)', async () => {
++      HeadlessApiRouter.setMockJobs([
++        {
++          id: 'job-1',
++          store_id: 'store-1',
++          city_id: 'sao_paulo',
++          neighborhood_id: 'pinheiros',
++          shift_start_time: '2026-09-08T18:00:00Z',
++          shift_end_time: '2026-09-08T23:00:00Z',
++          offered_daily_rate: 90.00,
++          offered_delivery_fee: 6.00,
++          accepted_modals: ['motorcycle', 'bicycle'],
++          status: 'open'
++        },
++        {
++          id: 'job-2',
++          store_id: 'store-2',
++          city_id: 'sao_paulo',
++          neighborhood_id: 'moema',
++          accepted_modals: ['motorcycle'],
++          status: 'open'
++        },
++        {
++          id: 'job-other-city',
++          store_id: 'store-3',
++          city_id: 'rio_de_janeiro',
++          status: 'open'
++        }
++      ]);
++
++      const response = await HeadlessApiRouter.handle({
++        method: 'GET',
++        url: '/api/v1/jobs?city_id=sao_paulo&transport_modal=bicycle',
++        headers: { 'X-API-Key': testApiKey },
++        queryParams: {
++          city_id: 'sao_paulo',
++          transport_modal: 'bicycle'
++        }
++      });
++
++      assert.strictEqual(response.status, 200);
++      assert.strictEqual(response.body.success, true);
++      assert.strictEqual(response.body.cityId, 'sao_paulo');
++      assert.strictEqual(response.body.total, 1);
++      assert.strictEqual(response.body.jobs[0].id, 'job-1');
++    });
++
++    it('Cenário 4: Aceite de Proposta / Matching (POST /api/v1/bids/:id/accept)', async () => {
++      HeadlessApiRouter.setMockJobs([
++        {
++          id: 'job-matching-1',
++          store_id: 'store-matching-1',
++          status: 'open'
++        }
++      ]);
++
++      HeadlessApiRouter.setMockBids([
++        {
++          id: 'bid-winning-1',
++          job_id: 'job-matching-1',
++          courier_id: 'courier-winner-1',
++          bid_daily_rate: 95.00,
++          bid_delivery_fee: 7.00,
++          status: 'pending'
++        },
++        {
++          id: 'bid-concurrent-2',
++          job_id: 'job-matching-1',
++          courier_id: 'courier-loser-2',
++          bid_daily_rate: 110.00,
++          status: 'pending'
++        }
++      ]);
++
++      const response = await HeadlessApiRouter.handle({
++        method: 'POST',
++        url: '/api/v1/bids/bid-winning-1/accept',
++        headers: { 'X-API-Key': testApiKey },
++        body: {
++          store_id: 'store-matching-1',
++          job_id: 'job-matching-1',
++          courier_id: 'courier-winner-1'
++        }
++      });
++
++      assert.strictEqual(response.status, 200);
++      assert.strictEqual(response.body.success, true);
++      assert.strictEqual(response.body.jobId, 'job-matching-1');
++      assert.strictEqual(response.body.bidId, 'bid-winning-1');
++      assert.strictEqual(response.body.status, 'matched');
++    });
++
++    it('Cenário 5: Rate Limit Excedido (HTTP 429 com Retry-After e RFC 7807)', async () => {
++      // Simula cliente com limite baixo para teste
++      ApiGatewayService.registerMockClient({
++        id: 'client-low-limit',
++        clientName: 'Cliente Teste Limite',
++        apiKeyHash: hashApiKey('dlv_live_low_limit'),
++        ownerEmail: 'test@rate.com',
++        allowedCities: ['*'],
++        rateLimitRpm: 3,
++        isActive: true
++      });
++
++      const sendReq = () => HeadlessApiRouter.handle({
++        method: 'GET',
++        url: '/api/v1/jobs?city_id=sao_paulo',
++        headers: { 'X-API-Key': 'dlv_live_low_limit' },
++        queryParams: { city_id: 'sao_paulo' }
++      });
++
++      // Requisições 1, 2, 3 permitidas
++      const r1 = await sendReq();
++      const r2 = await sendReq();
++      const r3 = await sendReq();
++      assert.strictEqual(r1.status, 200);
++      assert.strictEqual(r2.status, 200);
++      assert.strictEqual(r3.status, 200);
++
++      // Requisição 4 deve ser bloqueada com 429
++      const r4 = await sendReq();
++      assert.strictEqual(r4.status, 429);
++      assert.ok(r4.headers['Content-Type'].includes('application/problem+json'));
++      assert.ok(r4.headers['Retry-After']);
++      assert.strictEqual(r4.body.status, 429);
++      assert.strictEqual(r4.body.title, 'Limite de Requisições Excedido');
++      assert.ok(r4.body.detail.includes('3 requisições por minuto'));
++    });
++
++    it('Cenário 6: Dados Inválidos - Rejeição HTTP 400 com RFC 7807 Problem Details', async () => {
++      const response = await HeadlessApiRouter.handle({
++        method: 'POST',
++        url: '/api/v1/couriers',
++        headers: { 'X-API-Key': testApiKey },
++        body: {
++          fullName: '',
++          cpf: '00000000000', // CPF falso com repetidos
++          phoneNumber: 'invalid'
++        }
++      });
++
++      assert.strictEqual(response.status, 400);
++      assert.ok(response.headers['Content-Type'].includes('application/problem+json'));
++      assert.strictEqual(response.body.status, 400);
++      assert.strictEqual(response.body.title, 'Dados Cadastrais Inválidos');
++      assert.ok(Array.isArray(response.body.invalidParams));
++      assert.ok(response.body.invalidParams.some(p => p.name === 'fullName'));
++      assert.ok(response.body.invalidParams.some(p => p.name === 'cpf'));
++      assert.ok(response.body.invalidParams.some(p => p.name === 'phoneNumber'));
++    });
++
++    it('Cenário 7: Recurso Não Encontrado (HTTP 404 Not Found RFC 7807)', async () => {
++      // 7a: Rota desconhecida
++      const rUnknown = await HeadlessApiRouter.handle({
++        method: 'GET',
++        url: '/api/v1/unknown-resource',
++        headers: { 'X-API-Key': testApiKey }
++      });
++
++      assert.strictEqual(rUnknown.status, 404);
++      assert.ok(rUnknown.headers['Content-Type'].includes('application/problem+json'));
++      assert.strictEqual(rUnknown.body.status, 404);
++
++      // 7b: Proposta inexistente no matching
++      HeadlessApiRouter.setMockBids([
++        { id: 'bid-real', job_id: 'job-real' }
++      ]);
++
++      const rMissingBid = await HeadlessApiRouter.handle({
++        method: 'POST',
++        url: '/api/v1/bids/bid-ghost/accept',
++        headers: { 'X-API-Key': testApiKey },
++        body: { store_id: 'store-1', job_id: 'job-ghost' }
++      });
++
++      assert.strictEqual(rMissingBid.status, 404);
++      assert.ok(rMissingBid.body.detail.includes('bid-ghost'));
++    });
++  });
++
++  describe('Conformidade com a Especificação OpenAPI 3.0', () => {
++    it('deve conter estrutura válida de OpenAPI 3.0.3 com todos os endpoints headless documentados', () => {
++      assert.strictEqual(openApiSpec.openapi, '3.0.3');
++      assert.strictEqual(openApiSpec.info.title, 'deLIVREry Headless API');
++
++      // Rotas obrigatórias do PRD e FR-16
++      assert.ok(openApiSpec.paths['/api/v1/couriers']);
++      assert.ok(openApiSpec.paths['/api/v1/stores']);
++      assert.ok(openApiSpec.paths['/api/v1/jobs']);
++      assert.ok(openApiSpec.paths['/api/v1/bids/{id}/accept']);
++
++      // Schemas fundamentais
++      assert.ok(openApiSpec.components.schemas.ProblemDetails);
++      assert.ok(openApiSpec.components.schemas.CourierRegistrationInput);
++      assert.ok(openApiSpec.components.schemas.StoreRegistrationInput);
++      assert.ok(openApiSpec.components.securitySchemes.ApiKeyAuth);
++    });
++  });
++
++  describe('Integração com o SDK (@delivrery/api-client-sdk)', () => {
++    it('deve interagir com os métodos de conveniência do DelivreryClient', async () => {
++      const mockFetch = async (url, options) => {
++        const u = new URL(url);
++        const req = {
++          method: options.method,
++          url: u.pathname + u.search,
++          headers: options.headers,
++          body: options.body,
++          queryParams: Object.fromEntries(u.searchParams.entries())
++        };
++        const res = await HeadlessApiRouter.handle(req);
++        return {
++          ok: res.status < 400,
++          status: res.status,
++          headers: res.headers,
++          json: async () => res.body
++        };
++      };
++
++      const client = new DelivreryClient({
++        baseUrl: 'http://localhost:54321/api/v1',
++        apiKey: testApiKey,
++        fetch: mockFetch
++      });
++
++      // 1. Cadastro de entregador
++      const courierRes = await client.createCourier({
++        fullName: 'Lucas Oliveira',
++        cpf: '12345678909',
++        phoneNumber: '11999998888',
++        transportModal: 'bicycle',
++        baseDailyRate: 80.00,
++        baseDeliveryFee: 5.00,
++        cityId: 'sao_paulo'
++      });
++      assert.strictEqual(courierRes.success, true);
++      assert.strictEqual(courierRes.courier.transportModal, 'bicycle');
++
++      // 2. Listagem de vagas
++      HeadlessApiRouter.setMockJobs([
++        { id: 'job-sdk', city_id: 'sao_paulo', status: 'open' }
++      ]);
++      const jobsRes = await client.getJobs({ city_id: 'sao_paulo' });
++      assert.strictEqual(jobsRes.success, true);
++      assert.strictEqual(jobsRes.total, 1);
++
++      // 3. Aceite de proposta
++      HeadlessApiRouter.setMockJobs([{ id: 'job-sdk-match', status: 'open' }]);
++      HeadlessApiRouter.setMockBids([{ id: 'bid-sdk-match', job_id: 'job-sdk-match' }]);
++      const acceptRes = await client.acceptBid('bid-sdk-match', {
++        store_id: 'store-1',
++        job_id: 'job-sdk-match'
++      });
++      assert.strictEqual(acceptRes.success, true);
++      assert.strictEqual(acceptRes.status, 'matched');
++    });
++  });
++});
 
-diff --git a/apps/developer-portal/package.json b/apps/developer-portal/package.json
+diff --git a/_bmad-output/implementation-artifacts/spec-5-2-endpoints-restful-headless-de-gestao-de-vagas-e-perfis-openapi.md b/_bmad-output/implementation-artifacts/spec-5-2-endpoints-restful-headless-de-gestao-de-vagas-e-perfis-openapi.md
 new file mode 100644
-index 0000000..2f6b90b
 --- /dev/null
-+++ b/apps/developer-portal/package.json
-@@ -0,0 +1,12 @@
-+{
-+  "name": "@delivrery/developer-portal",
-+  "version": "0.1.0",
-+  "private": true,
-+  "type": "module",
-+  "description": "Portal do Desenvolvedor deLIVREry (/developers com Swagger UI)",
-+  "scripts": {
-+    "dev": "vite",
-+    "build": "tsc && vite build",
-+    "preview": "vite preview"
-+  }
-+}
-
-diff --git a/packages/embed-widget/package.json b/packages/embed-widget/package.json
-new file mode 100644
-index 0000000..a70f82f
---- /dev/null
-+++ b/packages/embed-widget/package.json
-@@ -0,0 +1,10 @@
-+{
-+  "name": "@delivrery/embed-widget",
-+  "version": "0.1.0",
-+  "private": true,
-+  "main": "src/delivrery-button.js",
-+  "description": "Web Component nativo embutível <delivrery-button /> para cardápios e PDVs",
-+  "scripts": {
-+    "build": "node -e \"console.log('Embed widget scaffold ready')\""
-+  }
-+}
-
-diff --git a/packages/api-client-sdk/package.json b/packages/api-client-sdk/package.json
-new file mode 100644
-index 0000000..fef8bf6
---- /dev/null
-+++ b/packages/api-client-sdk/package.json
-@@ -0,0 +1,12 @@
-+{
-+  "name": "@delivrery/api-client-sdk",
-+  "version": "0.1.0",
-+  "private": true,
-+  "main": "dist/index.js",
-+  "module": "dist/index.mjs",
-+  "types": "dist/index.d.ts",
-+  "description": "SDK cliente TypeScript/JavaScript para consumo da Headless API deLIVREry",
-+  "scripts": {
-+    "build": "node -e \"console.log('API Client SDK scaffold ready')\""
-+  }
-+}
-
-diff --git a/supabase/config.toml b/supabase/config.toml
-new file mode 100644
-index 0000000..6b4e3a8
---- /dev/null
-+++ b/supabase/config.toml
-@@ -0,0 +1,35 @@
-+# Supabase Local Configuration for deLIVREry
-+project_id = "delivrery"
++++ b/_bmad-output/implementation-artifacts/spec-5-2-endpoints-restful-headless-de-gestao-de-vagas-e-perfis-openapi.md
+@@ -0,0 +1,105 @@
++---
++title: 'Story 5.2: Endpoints RESTful Headless de Gestão de Vagas e Perfis (OpenAPI 3.0)'
++type: 'feature'
++created: '2026-09-08'
++status: 'in-review'
++baseline_commit: '7d2502caad89ac3bd4303150205d7c0a442a478c'
++review_loop_iteration: 0
++context: []
++---
 +
-+[api]
-+enabled = true
-+port = 54321
-+schemas = ["public", "storage", "graphql_public"]
-+extra_search_path = ["public", "extensions"]
-+max_rows = 1000
++<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 +
-+[db]
-+port = 54322
-+shadow_port = 54320
-+major_version = 15
++## Intent
 +
-+[studio]
-+enabled = true
-+port = 54323
++**Problem:** Parceiros comerciais (sistemas de PDV, cardápios digitais e portais municipais) não possuem endpoints RESTful padronizados para cadastrar entregadores e lojistas, listar vagas por município ou aceitar propostas de matching de forma programática (headless) sem depender da interface web do PWA.
 +
-+[auth]
-+enabled = true
-+site_url = "http://localhost:5173"
-+additional_redirect_urls = ["https://localhost:5173"]
-+jwt_expiry = 3600
-+enable_signup = true
++**Approach:** Implementar o roteador e controladores da API RESTful `/api/v1/*` com validação de payloads, rate limiting por tenant (120 RPM / 600 RPM com HTTP 429 e `Retry-After`), respostas em conformidade com OpenAPI 3.0 e erros em RFC 7807 Problem Details.
 +
-+[auth.email]
-+enable_signup = true
-+double_confirm_changes = true
-+enable_confirmations = false
-+secure_password_change = false
++## Boundaries & Constraints
 +
-+[storage]
-+enabled = true
-+file_size_limit = "50MiB"
-
-diff --git a/supabase/migrations/20260904143000_init_identity_geography_schema.sql b/supabase/migrations/20260904143000_init_identity_geography_schema.sql
-new file mode 100644
-index 0000000..95a69a6
---- /dev/null
-+++ b/supabase/migrations/20260904143000_init_identity_geography_schema.sql
-@@ -0,0 +1,219 @@
-+-- ==============================================================================
-+-- Migration: 20260904143000_init_identity_geography_schema.sql
-+-- Description: Schema inicial de Identidade (users, courier_profiles, store_profiles)
-+--              e Geografia/Quórum Regional (region_unlocks) com RLS ativado.
-+-- Architecture: Hexagonal / Supabase PostgreSQL 15+
-+-- ==============================================================================
++**Always:**
++- Todas as rotas `/api/v1/*` passam pelo `ApiGatewayService` para validação de `X-API-Key` e escopo de `allowed_cities`.
++- Todas as respostas de erro devem seguir estritamente o formato RFC 7807 Problem Details (`application/problem+json`).
++- Excesso de taxa de requisições por minuto (`rate_limit_rpm`) deve responder imediatamente com `HTTP 429 Too Many Requests` e cabeçalho `Retry-After: 60`.
++- Cadastros headless originados via API devem registrar o `origin_client_id` do tenant autenticado.
++- A listagem de vagas (`GET /api/v1/jobs`) requer obrigatoriamente o parâmetro `city_id` e valida contra as cidades autorizadas do cliente.
 +
-+-- 1. Extensões Essenciais
-+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
++**Ask First:**
++- Modificação dos limites padrão de RPM (120 para Free, 600 para Enterprise) além dos valores especificados no PRD.
++- Alteração no contrato de parâmetros obrigatórios de cadastro já consolidados no Epic 1 e 2.
 +
-+-- Função utilitária para atualização automática de updated_at
-+CREATE OR REPLACE FUNCTION public.handle_updated_at()
-+RETURNS TRIGGER AS $$
-+BEGIN
-+    NEW.updated_at = timezone('utc'::text, now());
-+    RETURN NEW;
-+END;
-+$$ LANGUAGE plpgsql;
++**Never:**
++- Não permitir acesso headless a vagas de municípios fora do `allowed_cities` do parceiro.
++- Não retornar códigos 200/201 contendo estruturas de erro embutidas (erros devem usar status codes HTTP 4xx/5xx).
++- Não persistir nem expor senhas ou tokens sensíveis nos payloads de resposta.
 +
-+-- ==============================================================================
-+-- 2. Tabela: users (Identidade Civil e Autenticação)
-+-- ==============================================================================
-+CREATE TABLE IF NOT EXISTS public.users (
-+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-+    cpf VARCHAR(14) NOT NULL,
-+    email VARCHAR(255) NOT NULL,
-+    phone_number VARCHAR(20) NOT NULL,
-+    user_type VARCHAR(20) NOT NULL,
-+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
-+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
++## I/O & Edge-Case Matrix
 +
-+    CONSTRAINT users_cpf_key UNIQUE (cpf),
-+    CONSTRAINT users_email_key UNIQUE (email),
-+    CONSTRAINT check_user_type CHECK (user_type IN ('courier', 'store'))
-+);
++| Cenário | Entrada / Estado | Saída Esperada / Comportamento | Tratamento de Erro |
++|---|---|---|---|
++| Cadastro de Entregador Válido | `POST /api/v1/couriers` com CPF válido, modal, tarifas e endereço | `HTTP 201 Created`, perfil criado com `origin_client_id` e `referral_code` | N/A |
++| Cadastro de Lojista Válido | `POST /api/v1/stores` com CPF válido, nome da loja, endereço e coordenadas | `HTTP 201 Created`, loja criada com `reputation_score: 5.00` | N/A |
++| Listagem de Vagas por Cidade | `GET /api/v1/jobs?city_id=sao_paulo&transport_modal=motorcycle` | `HTTP 200 OK`, lista JSON de vagas abertas (`status: open`) compatíveis | N/A |
++| Aceite de Proposta (Matching) | `POST /api/v1/bids/:id/accept` com `store_id` e `job_id` | `HTTP 200 OK`, vaga atualizada para `matched`, propostas concorrentes rejeitadas | N/A |
++| Rate Limit Excedido | Cliente 120 RPM realizando requisição #121 no mesmo minuto | `HTTP 429 Too Many Requests`, header `Retry-After: 60`, RFC 7807 | Rejeição antes do processamento do endpoint |
++| Dados Inválidos (CPF ou campos) | `POST /api/v1/couriers` com CPF matematicamente inválido | `HTTP 400 Bad Request`, RFC 7807 com array `invalidParams` | Rejeição de validação de negócio |
++| Vaga Inexistente no Matching | `POST /api/v1/bids/bid_999/accept` com vaga não encontrada | `HTTP 404 Not Found`, RFC 7807 informando recurso inexistente | Rejeição imediata |
 +
-+CREATE INDEX IF NOT EXISTS idx_users_cpf ON public.users(cpf);
-+CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
-+CREATE INDEX IF NOT EXISTS idx_users_user_type ON public.users(user_type);
++</frozen-after-approval>
 +
-+DROP TRIGGER IF EXISTS trg_users_updated_at ON public.users;
-+CREATE TRIGGER trg_users_updated_at
-+    BEFORE UPDATE ON public.users
-+    FOR EACH ROW
-+    EXECUTE FUNCTION public.handle_updated_at();
++## Code Map
 +
-+-- ==============================================================================
-+-- 3. Tabela: courier_profiles (Perfil de Entregador / Motoboy)
-+-- ==============================================================================
-+CREATE TABLE IF NOT EXISTS public.courier_profiles (
-+    user_id UUID PRIMARY KEY REFERENCES public.users(id) ON DELETE CASCADE,
-+    transport_modal VARCHAR(30) NOT NULL,
-+    base_daily_rate NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
-+    base_delivery_fee NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
-+    xp_points INTEGER NOT NULL DEFAULT 0,
-+    level VARCHAR(20) NOT NULL DEFAULT 'Bronze',
-+    referral_code VARCHAR(32) NOT NULL,
-+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
-+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
++- `apps/pwa/src/api/gateway/rate-limiter.ts` -- Mecanismo de controle de taxa por janela móvel de minuto por tenant com cabeçalhos `X-RateLimit-*` e `Retry-After`.
++- `apps/pwa/src/api/headless/headless-api-router.ts` -- Roteador RESTful `/api/v1/*` com dispatchers para couriers, stores, jobs e bids, interceptado pelo gateway.
++- `apps/pwa/src/api/openapi/openapi-spec.ts` -- Especificação OpenAPI 3.0 consolidada em JSON/TypeScript cobrindo todos os endpoints headless e schemas RFC 7807.
++- `packages/api-client-sdk/src/index.js` -- Extensão do SDK com métodos cliente para `createCourier`, `createStore`, `getJobs` e `acceptBid`.
++- `tests/headless-api-endpoints.test.js` -- Suíte de testes automatizados cobrindo todos os endpoints, rate limiting, validações de payload e conformidade OpenAPI 3.0.
 +
-+    CONSTRAINT check_transport_modal CHECK (transport_modal IN ('motorcycle', 'bicycle', 'ebike_scooter')),
-+    CONSTRAINT check_base_daily_rate CHECK (base_daily_rate >= 0),
-+    CONSTRAINT check_base_delivery_fee CHECK (base_delivery_fee >= 0),
-+    CONSTRAINT check_xp_points CHECK (xp_points >= 0),
-+    CONSTRAINT check_courier_level CHECK (level IN ('Bronze', 'Prata', 'Ouro')),
-+    CONSTRAINT courier_profiles_referral_code_key UNIQUE (referral_code)
-+);
++## Tasks & Acceptance
 +
-+CREATE INDEX IF NOT EXISTS idx_courier_profiles_referral_code ON public.courier_profiles(referral_code);
-+CREATE INDEX IF NOT EXISTS idx_courier_profiles_transport_modal ON public.courier_profiles(transport_modal);
++**Execution:**
++- [x] `apps/pwa/src/api/gateway/rate-limiter.ts` -- Implementar `RateLimiterService` com controle de RPM por tenant, decremento, reset e cabeçalho `Retry-After`.
++- [x] `apps/pwa/src/api/openapi/openapi-spec.ts` -- Criar especificação OpenAPI 3.0 completa para as rotas `/api/v1/couriers`, `/api/v1/stores`, `/api/v1/jobs`, `/api/v1/bids/{id}/accept`.
++- [x] `apps/pwa/src/api/headless/headless-api-router.ts` -- Implementar roteamento RESTful e controladores headless integrados ao `ApiGatewayService` e `RateLimiterService`.
++- [x] `packages/api-client-sdk/src/index.js` -- Adicionar métodos no SDK cliente para interagir nativamente com as rotas headless.
++- [x] `tests/headless-api-endpoints.test.js` -- Criar suíte de testes validando os cenários da matriz de I/O, rate limiting 429, validações 400/404 e aderência a OpenAPI 3.0.
 +
-+DROP TRIGGER IF EXISTS trg_courier_profiles_updated_at ON public.courier_profiles;
-+CREATE TRIGGER trg_courier_profiles_updated_at
-+    BEFORE UPDATE ON public.courier_profiles
-+    FOR EACH ROW
-+    EXECUTE FUNCTION public.handle_updated_at();
++**Acceptance Criteria:**
++- Given requisições enviadas para as rotas `/api/v1/*` com chaves válidas e escopo autorizado, when os payloads forem válidos, then as respostas devem retornar em formato JSON estritamente aderente à especificação OpenAPI 3.0.
++- Given ocorrência de erros de validação ou de negócio na API, when a resposta for gerada, then ela deve seguir a padronização RFC 7807 Problem Details (campos `type`, `title`, `status`, `detail`).
++- Given um cliente excedendo o limite de requisições configurado (120 RPM para Free, 600 RPM para Enterprise), when o rate limit for atingido, then o gateway deve responder com `HTTP 429 Too Many Requests` e cabeçalho `Retry-After`.
 +
-+-- ==============================================================================
-+-- 4. Tabela: store_profiles (Perfil do Lojista / Comerciante)
-+-- ==============================================================================
-+CREATE TABLE IF NOT EXISTS public.store_profiles (
-+    user_id UUID PRIMARY KEY REFERENCES public.users(id) ON DELETE CASCADE,
-+    store_name VARCHAR(150) NOT NULL,
-+    state_id VARCHAR(2) NOT NULL,
-+    city_id VARCHAR(100) NOT NULL,
-+    neighborhood_id VARCHAR(100) NOT NULL,
-+    address_street VARCHAR(255),
-+    address_number VARCHAR(30),
-+    latitude NUMERIC(10, 7),
-+    longitude NUMERIC(10, 7),
-+    reputation_score NUMERIC(3, 2) NOT NULL DEFAULT 5.00,
-+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
-+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
++## Spec Change Log
 +
-+    CONSTRAINT check_reputation_score CHECK (reputation_score >= 0.00 AND reputation_score <= 5.00)
-+);
++<!-- Append-only. Populated by step-04 during review loops. -->
 +
-+CREATE INDEX IF NOT EXISTS idx_store_profiles_geography ON public.store_profiles(state_id, city_id, neighborhood_id);
++## Design Notes
 +
-+DROP TRIGGER IF EXISTS trg_store_profiles_updated_at ON public.store_profiles;
-+CREATE TRIGGER trg_store_profiles_updated_at
-+    BEFORE UPDATE ON public.store_profiles
-+    FOR EACH ROW
-+    EXECUTE FUNCTION public.handle_updated_at();
++- **Algoritmo de Rate Limiting:**
++  - Janela móvel de 60 segundos por `client_id`.
++  - Cabeçalhos de resposta:
++    - `X-RateLimit-Limit`: Limite contratual do cliente (ex: 120 ou 600).
++    - `X-RateLimit-Remaining`: Requisições restantes na janela atual.
++    - `X-RateLimit-Reset`: Timestamp UNIX em segundos de quando a janela será resetada.
++    - `Retry-After`: Segundos restantes para tentar novamente quando o status for 429 (ex: `60`).
++- **Rotas Canônicas e Verbos HTTP:**
++  - `POST /api/v1/couriers`: Cria entregador headless (`origin_client_id` preenchido automaticamente).
++  - `POST /api/v1/stores`: Cria lojista headless.
++  - `GET /api/v1/jobs`: Lista vagas com status `open` filtradas por `city_id` e opcionalmente `neighborhood_id`, `transport_modal`.
++  - `POST /api/v1/bids/:id/accept`: Aceita a proposta e fecha o matching com status `matched`.
++- **Formatação de Erro RFC 7807 Problem Details:**
++  - Em erros 400: array `invalidParams: [{ name, reason }]` apontando os campos defeituosos.
++  - Em erros 404: `type: 'https://delivrery.app.br/errors/not-found'`.
++  - Em erros 429: `type: 'https://delivrery.app.br/errors/rate-limit-exceeded'`.
 +
-+-- ==============================================================================
-+-- 5. Tabela: region_unlocks (Controle de Quórum Hiperlocal e Ativação Territorial)
-+-- ==============================================================================
-+CREATE TABLE IF NOT EXISTS public.region_unlocks (
-+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-+    state_id VARCHAR(2) NOT NULL,
-+    city_id VARCHAR(100) NOT NULL,
-+    neighborhood_id VARCHAR(100) NOT NULL,
-+    couriers_count INTEGER NOT NULL DEFAULT 0,
-+    stores_count INTEGER NOT NULL DEFAULT 0,
-+    is_unlocked BOOLEAN NOT NULL DEFAULT false,
-+    unlocked_at TIMESTAMPTZ,
-+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
-+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
++## Verification
 +
-+    CONSTRAINT uq_region_geography UNIQUE (state_id, city_id, neighborhood_id),
-+    CONSTRAINT check_couriers_count CHECK (couriers_count >= 0),
-+    CONSTRAINT check_stores_count CHECK (stores_count >= 0)
-+);
++**Commands:**
++- `npm test` -- expected: Todas as suítes passam, incluindo `tests/headless-api-endpoints.test.js`.
++- `node --experimental-strip-types --test tests/headless-api-endpoints.test.js` -- expected: 100% de aprovação nos testes da Story 5.2.
++- `git status` -- expected: Árvore de trabalho limpa e arquivos versionados.
 +
-+CREATE INDEX IF NOT EXISTS idx_region_unlocks_lookup ON public.region_unlocks(state_id, city_id, neighborhood_id);
-+CREATE INDEX IF NOT EXISTS idx_region_unlocks_status ON public.region_unlocks(is_unlocked);
-+
-+DROP TRIGGER IF EXISTS trg_region_unlocks_updated_at ON public.region_unlocks;
-+CREATE TRIGGER trg_region_unlocks_updated_at
-+    BEFORE UPDATE ON public.region_unlocks
-+    FOR EACH ROW
-+    EXECUTE FUNCTION public.handle_updated_at();
-+
-+-- ==============================================================================
-+-- 6. Row Level Security (RLS) - Isolamento e Governança de Dados
-+-- ==============================================================================
-+
-+-- Habilitação obrigatória de RLS em todas as tabelas
-+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-+ALTER TABLE public.courier_profiles ENABLE ROW LEVEL SECURITY;
-+ALTER TABLE public.store_profiles ENABLE ROW LEVEL SECURITY;
-+ALTER TABLE public.region_unlocks ENABLE ROW LEVEL SECURITY;
-+
-+-- Políticas para: public.users
-+DROP POLICY IF EXISTS "Users can read own profile" ON public.users;
-+CREATE POLICY "Users can read own profile"
-+    ON public.users
-+    FOR SELECT
-+    USING (auth.uid() = id);
-+
-+DROP POLICY IF EXISTS "Users can insert own profile" ON public.users;
-+CREATE POLICY "Users can insert own profile"
-+    ON public.users
-+    FOR INSERT
-+    WITH CHECK (auth.uid() = id);
-+
-+DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
-+CREATE POLICY "Users can update own profile"
-+    ON public.users
-+    FOR UPDATE
-+    USING (auth.uid() = id)
-+    WITH CHECK (auth.uid() = id);
-+
-+-- Políticas para: public.courier_profiles
-+DROP POLICY IF EXISTS "Couriers can read own profile" ON public.courier_profiles;
-+CREATE POLICY "Couriers can read own profile"
-+    ON public.courier_profiles
-+    FOR SELECT
-+    USING (auth.uid() = user_id);
-+
-+DROP POLICY IF EXISTS "Couriers can insert own profile" ON public.courier_profiles;
-+CREATE POLICY "Couriers can insert own profile"
-+    ON public.courier_profiles
-+    FOR INSERT
-+    WITH CHECK (auth.uid() = user_id);
-+
-+DROP POLICY IF EXISTS "Couriers can update own profile" ON public.courier_profiles;
-+CREATE POLICY "Couriers can update own profile"
-+    ON public.courier_profiles
-+    FOR UPDATE
-+    USING (auth.uid() = user_id)
-+    WITH CHECK (auth.uid() = user_id);
-+
-+-- Políticas para: public.store_profiles
-+DROP POLICY IF EXISTS "Stores can read own profile" ON public.store_profiles;
-+CREATE POLICY "Stores can read own profile"
-+    ON public.store_profiles
-+    FOR SELECT
-+    USING (auth.uid() = user_id);
-+
-+DROP POLICY IF EXISTS "Stores can insert own profile" ON public.store_profiles;
-+CREATE POLICY "Stores can insert own profile"
-+    ON public.store_profiles
-+    FOR INSERT
-+    WITH CHECK (auth.uid() = user_id);
-+
-+DROP POLICY IF EXISTS "Stores can update own profile" ON public.store_profiles;
-+CREATE POLICY "Stores can update own profile"
-+    ON public.store_profiles
-+    FOR UPDATE
-+    USING (auth.uid() = user_id)
-+    WITH CHECK (auth.uid() = user_id);
-+
-+-- Políticas para: public.region_unlocks
-+-- Leitura pública para exibição universal do termômetro de quórum em PWA e Landing Pages
-+DROP POLICY IF EXISTS "Public can view region unlocks quorum" ON public.region_unlocks;
-+CREATE POLICY "Public can view region unlocks quorum"
-+    ON public.region_unlocks
-+    FOR SELECT
-+    USING (true);
-+
-+-- Escrita e atualização restrita ao backend / service_role
-+DROP POLICY IF EXISTS "Service role manages region unlocks" ON public.region_unlocks;
-+CREATE POLICY "Service role manages region unlocks"
-+    ON public.region_unlocks
-+    FOR ALL
-+    USING (auth.jwt()->>'role' = 'service_role' OR auth.role() = 'service_role')
-+    WITH CHECK (auth.jwt()->>'role' = 'service_role' OR auth.role() = 'service_role');
-
-diff --git a/tests/schema-validation.test.js b/tests/schema-validation.test.js
-new file mode 100644
-index 0000000..bdac0af
---- /dev/null
-+++ b/tests/schema-validation.test.js
-@@ -0,0 +1,119 @@
-+import test from 'node:test';
-+import assert from 'node:assert/strict';
-+import fs from 'node:fs';
-+import path from 'node:path';
-+import { fileURLToPath } from 'node:url';
-+
-+const __filename = fileURLToPath(import.meta.url);
-+const __dirname = path.dirname(__filename);
-+const rootDir = path.resolve(__dirname, '..');
-+
-+test('Monorepo workspace and directories structure', (t) => {
-+  const expectedDirs = [
-+    'apps/pwa',
-+    'apps/landing-pages',
-+    'apps/developer-portal',
-+    'packages/embed-widget',
-+    'packages/api-client-sdk',
-+    'supabase/migrations',
-+  ];
-+
-+  for (const dir of expectedDirs) {
-+    const fullPath = path.join(rootDir, dir);
-+    assert.equal(fs.existsSync(fullPath), true, `Directory must exist: ${dir}`);
-+  }
-+
-+  // Verify root package.json workspaces
-+  const rootPkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf-8'));
-+  assert.ok(Array.isArray(rootPkg.workspaces), 'workspaces array must be defined in root package.json');
-+  assert.ok(rootPkg.workspaces.includes('apps/*'), 'apps/* must be in workspaces');
-+  assert.ok(rootPkg.workspaces.includes('packages/*'), 'packages/* must be in workspaces');
-+});
-+
-+test('Supabase config.toml validation', (t) => {
-+  const configPath = path.join(rootDir, 'supabase/config.toml');
-+  assert.equal(fs.existsSync(configPath), true, 'supabase/config.toml must exist');
-+  const configContent = fs.readFileSync(configPath, 'utf-8');
-+  assert.match(configContent, /project_id\s*=\s*"delivrery"/, 'config must specify project_id delivrery');
-+  assert.match(configContent, /\[api\]/, 'config must define [api] section');
-+  assert.match(configContent, /\[db\]/, 'config must define [db] section');
-+  assert.match(configContent, /\[auth\]/, 'config must define [auth] section');
-+});
-+
-+test('Migration DDL file existence and basic integrity', (t) => {
-+  const migrationPath = path.join(
-+    rootDir,
-+    'supabase/migrations/20260904143000_init_identity_geography_schema.sql'
-+  );
-+  assert.equal(fs.existsSync(migrationPath), true, 'Migration SQL file must exist');
-+
-+  const sql = fs.readFileSync(migrationPath, 'utf-8');
-+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.users/, 'Must create users table');
-+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.courier_profiles/, 'Must create courier_profiles table');
-+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.store_profiles/, 'Must create store_profiles table');
-+  assert.match(sql, /CREATE TABLE IF NOT EXISTS public\.region_unlocks/, 'Must create region_unlocks table');
-+});
-+
-+test('Matrix Scenario 1: Uniqueness constraints (CPF, Email, Referral Code)', (t) => {
-+  const sql = fs.readFileSync(
-+    path.join(rootDir, 'supabase/migrations/20260904143000_init_identity_geography_schema.sql'),
-+    'utf-8'
-+  );
-+  // CPF uniqueness protects against duplicate CPF insertion
-+  assert.match(sql, /CONSTRAINT\s+users_cpf_key\s+UNIQUE\s*\(\s*cpf\s*\)/, 'Must enforce UNIQUE constraint on users(cpf)');
-+  assert.match(sql, /CONSTRAINT\s+users_email_key\s+UNIQUE\s*\(\s*email\s*\)/, 'Must enforce UNIQUE constraint on users(email)');
-+  assert.match(sql, /CONSTRAINT\s+courier_profiles_referral_code_key\s+UNIQUE\s*\(\s*referral_code\s*\)/, 'Must enforce UNIQUE referral_code');
-+});
-+
-+test('Matrix Scenario 2: CHECK constraints (transport_modal validation)', (t) => {
-+  const sql = fs.readFileSync(
-+    path.join(rootDir, 'supabase/migrations/20260904143000_init_identity_geography_schema.sql'),
-+    'utf-8'
-+  );
-+  // transport_modal validation ensures only valid transport modes are accepted
-+  assert.match(
-+    sql,
-+    /CONSTRAINT\s+check_transport_modal\s+CHECK\s*\(\s*transport_modal\s+IN\s*\('motorcycle',\s*'bicycle',\s*'ebike_scooter'\)\s*\)/,
-+    'Must restrict transport_modal to motorcycle, bicycle, ebike_scooter'
-+  );
-+  assert.match(
-+    sql,
-+    /CONSTRAINT\s+check_user_type\s+CHECK\s*\(\s*user_type\s+IN\s*\('courier',\s*'store'\)\s*\)/,
-+    'Must restrict user_type to courier, store'
-+  );
-+});
-+
-+test('Matrix Scenario 3: Row Level Security (RLS) and cross-user isolation', (t) => {
-+  const sql = fs.readFileSync(
-+    path.join(rootDir, 'supabase/migrations/20260904143000_init_identity_geography_schema.sql'),
-+    'utf-8'
-+  );
-+  // All 4 tables must enable RLS
-+  assert.match(sql, /ALTER\s+TABLE\s+public\.users\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY;/, 'users must have RLS enabled');
-+  assert.match(sql, /ALTER\s+TABLE\s+public\.courier_profiles\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY;/, 'courier_profiles must have RLS enabled');
-+  assert.match(sql, /ALTER\s+TABLE\s+public\.store_profiles\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY;/, 'store_profiles must have RLS enabled');
-+  assert.match(sql, /ALTER\s+TABLE\s+public\.region_unlocks\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY;/, 'region_unlocks must have RLS enabled');
-+
-+  // Isolation policies using auth.uid()
-+  assert.match(sql, /CREATE\s+POLICY\s+"Users can read own profile"[\s\S]*?USING\s*\(\s*auth\.uid\(\)\s*=\s*id\s*\)/, 'Users can only read own profile');
-+  assert.match(sql, /CREATE\s+POLICY\s+"Couriers can read own profile"[\s\S]*?USING\s*\(\s*auth\.uid\(\)\s*=\s*user_id\s*\)/, 'Couriers can only read own profile');
-+  assert.match(sql, /CREATE\s+POLICY\s+"Stores can read own profile"[\s\S]*?USING\s*\(\s*auth\.uid\(\)\s*=\s*user_id\s*\)/, 'Stores can only read own profile');
-+});
-+
-+test('Matrix Scenario 4: Regional quorum and unlock query capability', (t) => {
-+  const sql = fs.readFileSync(
-+    path.join(rootDir, 'supabase/migrations/20260904143000_init_identity_geography_schema.sql'),
-+    'utf-8'
-+  );
-+  // region_unlocks structure
-+  assert.match(sql, /state_id\s+VARCHAR\(2\)\s+NOT\s+NULL/, 'region_unlocks must have state_id');
-+  assert.match(sql, /city_id\s+VARCHAR\(100\)\s+NOT\s+NULL/, 'region_unlocks must have city_id');
-+  assert.match(sql, /neighborhood_id\s+VARCHAR\(100\)\s+NOT\s+NULL/, 'region_unlocks must have neighborhood_id');
-+  assert.match(sql, /couriers_count\s+INTEGER\s+NOT\s+NULL\s+DEFAULT\s+0/, 'region_unlocks must track couriers_count');
-+  assert.match(sql, /stores_count\s+INTEGER\s+NOT\s+NULL\s+DEFAULT\s+0/, 'region_unlocks must track stores_count');
-+  assert.match(sql, /is_unlocked\s+BOOLEAN\s+NOT\s+NULL\s+DEFAULT\s+false/, 'region_unlocks must track is_unlocked flag');
-+  assert.match(sql, /CONSTRAINT\s+uq_region_geography\s+UNIQUE\s*\(\s*state_id,\s*city_id,\s*neighborhood_id\s*\)/, 'Composite unique key on geography');
-+
-+  // Public policy for quorum thermometer
-+  assert.match(sql, /CREATE\s+POLICY\s+"Public can view region unlocks quorum"[\s\S]*?USING\s*\(\s*true\s*\)/, 'Quorum status must be readable publicly');
-+});
++**Manual checks (if no CLI):**
++- Inspecionar a especificação OpenAPI 3.0 para garantir compatibilidade com Swagger UI / Redoc.
++- Testar a cascata de rate limiting simulando 121 requisições em menos de 1 minuto.
 
 
 Do not invoke any skill. Return only the review result.

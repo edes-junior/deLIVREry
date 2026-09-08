@@ -47,3 +47,13 @@ Permitir que entregadores e lojistas de qualquer município do Brasil autentique
 - **Story 1.2** depende da estrutura de app e configuração do Supabase client da Story 1.1.
 - **Story 1.3** depende da sessão autenticada da Story 1.2 e dos schemas de perfis da Story 1.1.
 - **Story 1.4** depende dos perfis cadastrados da Story 1.3 e da tabela `region_unlocks` da Story 1.1.
+
+## Review Findings
+
+### Patches
+- [x] [Review][Patch] Normalizar ID de bairro customizado via `GeographyService.slugify` em vez de texto cru [`apps/pwa/src/components/profile/ProfileCompletionForm.tsx:151`]
+- [x] [Review][Patch] Preservar `referral_code` pré-existente ao re-salvar perfil de entregador [`apps/pwa/src/profile/profile-service.ts:145`]
+
+### Deferred
+- [x] [Review][Defer] Triggers de Quórum `sync_region_unlock_quorum` limitados a `AFTER INSERT` [`supabase/migrations/20260904160000_update_courier_profiles_geography.sql:98-109`] — deferred, pre-existing
+
