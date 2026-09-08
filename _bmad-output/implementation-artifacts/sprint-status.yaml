@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-04-2026 14:24
-last_updated: 09-08-2026 14:50
+last_updated: 09-08-2026 14:56
 project: deLIVREry
 project_key: NOKEY
 tracking_system: file-system
@@ -66,7 +66,7 @@ development_status:
   epic-5: in-progress
   5-1-schema-de-clientes-de-api-webhooks-e-gateway-de-validação: done
   5-2-endpoints-restful-headless-de-gestão-de-vagas-e-perfis-opena: done
-  5-3-dispatcher-de-webhooks-de-saída-assinados-criptograficamente: backlog
+  5-3-dispatcher-de-webhooks-de-saída-assinados-criptograficamente: done
   5-4-portal-do-desenvolvedor-developers-com-swagger-ui-interativo: backlog
   5-5-web-component-embutível-nativo-delivrery-button-para-cardápi: backlog
   epic-5-retrospective: optional

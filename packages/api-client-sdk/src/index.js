@@ -3,7 +3,7 @@
  * Neutral client SDK for interacting with deLIVREry Headless API
  */
 
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, createHmac, timingSafeEqual } from 'node:crypto';
 
 export class DelivreryClient {
   constructor(config = {}) {
@@ -162,6 +162,13 @@ export class DelivreryClient {
       brCodePayload: generatePixBrcode({ key, recipientName, city })
     };
   }
+
+  /**
+   * Valida a assinatura HMAC-SHA256 de um webhook recebido
+   */
+  verifyWebhook(secretToken, rawBody, signatureHeader) {
+    return verifyWebhookSignature(secretToken, rawBody, signatureHeader);
+  }
 }
 
 /**
@@ -184,6 +191,41 @@ export function generateWebhookSecret(byteLength = 32) {
   const entropy = randomBytes(byteLength).toString('hex');
   return `whsec_${entropy}`;
 }
+
+/**
+ * Gera assinatura HMAC-SHA256 para eventos de webhook
+ */
+export function generateWebhookSignature(secretToken, rawBody) {
+  if (!secretToken || typeof secretToken !== 'string') {
+    throw new Error('secretToken é obrigatório para gerar assinatura de webhook.');
+  }
+  const payloadString = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody);
+  return createHmac('sha256', secretToken.trim())
+    .update(payloadString, 'utf8')
+    .digest('hex');
+}
+
+/**
+ * Valida a assinatura de um webhook recebido de forma segura contra timing attacks
+ */
+export function verifyWebhookSignature(secretToken, rawBody, signatureHeader) {
+  if (!secretToken || !signatureHeader) {
+    return false;
+  }
+  try {
+    const cleanSignature = signatureHeader.replace(/^sha256=/i, '').trim();
+    const expectedSignature = generateWebhookSignature(secretToken, rawBody);
+    if (cleanSignature.length !== expectedSignature.length) {
+      return false;
+    }
+    const bufExpected = Buffer.from(expectedSignature, 'utf8');
+    const bufReceived = Buffer.from(cleanSignature, 'utf8');
+    return timingSafeEqual(bufExpected, bufReceived);
+  } catch {
+    return false;
+  }
+}
+
 
 /**
  * Funções utilitárias de BR Code PIX no padrão EMVCo / BACEN

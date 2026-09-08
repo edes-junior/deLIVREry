@@ -85,1568 +85,23 @@ Add nothing if nothing qualifies.
 
 ## CONTENT SOURCE
 
-Review the content supplied under "Review content:" in the message that launched you.
+Review the content supplied under "Review content:
 
-
-Review content:
-
-diff --git a/_bmad-output/implementation-artifacts/sprint-status.yaml b/_bmad-output/implementation-artifacts/sprint-status.yaml
-index 0c047bf..4b47ff2 100644
---- a/_bmad-output/implementation-artifacts/sprint-status.yaml
-+++ b/_bmad-output/implementation-artifacts/sprint-status.yaml
-@@ -29,7 +29,7 @@
- # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
- # - Retrospective appends its action items to action_items; the status view surfaces open ones
- generated: 09-04-2026 14:24
--last_updated: 09-08-2026 14:14
-+last_updated: 09-08-2026 14:45
- project: deLIVREry
- project_key: NOKEY
- tracking_system: file-system
-@@ -65,7 +65,7 @@ development_status:
- 
-   epic-5: in-progress
-   5-1-schema-de-clientes-de-api-webhooks-e-gateway-de-validação: done
--  5-2-endpoints-restful-headless-de-gestão-de-vagas-e-perfis-opena: backlog
-+  5-2-endpoints-restful-headless-de-gestão-de-vagas-e-perfis-opena: review
-   5-3-dispatcher-de-webhooks-de-saída-assinados-criptograficamente: backlog
-   5-4-portal-do-desenvolvedor-developers-com-swagger-ui-interativo: backlog
-   5-5-web-component-embutível-nativo-delivrery-button-para-cardápi: backlog
-diff --git a/packages/api-client-sdk/src/index.js b/packages/api-client-sdk/src/index.js
-index 7e927f1..3bb65e3 100644
---- a/packages/api-client-sdk/src/index.js
-+++ b/packages/api-client-sdk/src/index.js
-@@ -22,39 +22,18 @@ export class DelivreryClient {
-   }
- 
-   /**
--   * Consulta as métricas analíticas de preços regionais com filtro 1.5xIQR.
--   * @param {Object} params
--   * @param {string} params.cityId ou params.city_id
--   * @param {string} params.neighborhoodId ou params.neighborhood_id
--   * @param {string} [params.stateId] ou params.state_id
--   * @param {string} [params.transportModal] ou params.transport_modal
--   * @returns {Promise<Object>} Resposta com dados analíticos e sugestão de mercado
-+   * Método auxiliar para despachar requisições com headers de autenticação e tratamento RFC 7807
-    */
--  async getPricingStats(params = {}) {
--    const cityId = params.cityId || params.city_id;
--    const neighborhoodId = params.neighborhoodId || params.neighborhood_id;
--    const stateId = (params.stateId || params.state_id || 'RJ').toUpperCase();
--    const transportModal = params.transportModal || params.transport_modal || 'all';
--
--    if (!cityId || !neighborhoodId) {
--      throw new Error('city_id e neighborhood_id são obrigatórios para consultar o balizador de preços.');
--    }
--
--    const query = new URLSearchParams({
--      city_id: cityId,
--      neighborhood_id: neighborhoodId,
--      state_id: stateId,
--      transport_modal: transportModal
--    });
--
--    const url = `${this.baseUrl}/pricing-stats?${query.toString()}`;
-+  async _request(path, options = {}) {
-+    const url = `${this.baseUrl}${path.startsWith('/') ? path : '/' + path}`;
- 
-     if (!this.fetchFn) {
-       throw new Error('Nenhum cliente fetch disponível no ambiente.');
-     }
- 
-     const headers = {
--      'Accept': 'application/json'
-+      'Accept': 'application/json',
-+      ...(options.headers || {})
-     };
- 
-     if (this.apiKey) {
-@@ -62,7 +41,12 @@ export class DelivreryClient {
-       headers['Authorization'] = `Bearer ${this.apiKey}`;
-     }
- 
--    const res = await this.fetchFn(url, { method: 'GET', headers });
-+    if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
-+      headers['Content-Type'] = 'application/json';
-+      options.body = JSON.stringify(options.body);
-+    }
-+
-+    const res = await this.fetchFn(url, { ...options, headers });
- 
-     if (!res.ok) {
-       const errorBody = await res.json().catch(() => ({}));
-@@ -76,6 +60,94 @@ export class DelivreryClient {
-     return await res.json();
-   }
- 
-+  /**
-+   * Cadastra um entregador via API Headless (POST /couriers)
-+   */
-+  async createCourier(data = {}) {
-+    return await this._request('/couriers', {
-+      method: 'POST',
-+      body: data
-+    });
-+  }
-+
-+  /**
-+   * Cadastra um estabelecimento lojista via API Headless (POST /stores)
-+   */
-+  async createStore(data = {}) {
-+    return await this._request('/stores', {
-+      method: 'POST',
-+      body: data
-+    });
-+  }
-+
-+  /**
-+   * Lista vagas e turnos de entrega abertos (GET /jobs)
-+   */
-+  async getJobs(params = {}) {
-+    const cityId = params.cityId || params.city_id;
-+    if (!cityId) {
-+      throw new Error('city_id é obrigatório para consultar vagas.');
-+    }
-+
-+    const query = new URLSearchParams({
-+      city_id: cityId
-+    });
-+
-+    if (params.neighborhoodId || params.neighborhood_id) {
-+      query.set('neighborhood_id', params.neighborhoodId || params.neighborhood_id);
-+    }
-+    if (params.transportModal || params.transport_modal) {
-+      query.set('transport_modal', params.transportModal || params.transport_modal);
-+    }
-+
-+    return await this._request(`/jobs?${query.toString()}`, {
-+      method: 'GET'
-+    });
-+  }
-+
-+  /**
-+   * Aceita uma proposta formalizando o matching da vaga (POST /bids/:id/accept)
-+   */
-+  async acceptBid(bidId, params = {}) {
-+    if (!bidId) {
-+      throw new Error('bidId é obrigatório para aceite de proposta.');
-+    }
-+
-+    return await this._request(`/bids/${bidId}/accept`, {
-+      method: 'POST',
-+      body: {
-+        store_id: params.storeId || params.store_id,
-+        job_id: params.jobId || params.job_id,
-+        courier_id: params.courierId || params.courier_id
-+      }
-+    });
-+  }
-+
-+  /**
-+   * Consulta as métricas analíticas de preços regionais com filtro 1.5xIQR.
-+   */
-+  async getPricingStats(params = {}) {
-+    const cityId = params.cityId || params.city_id;
-+    const neighborhoodId = params.neighborhoodId || params.neighborhood_id;
-+    const stateId = (params.stateId || params.state_id || 'RJ').toUpperCase();
-+    const transportModal = params.transportModal || params.transport_modal || 'all';
-+
-+    if (!cityId || !neighborhoodId) {
-+      throw new Error('city_id e neighborhood_id são obrigatórios para consultar o balizador de preços.');
-+    }
-+
-+    const query = new URLSearchParams({
-+      city_id: cityId,
-+      neighborhood_id: neighborhoodId,
-+      state_id: stateId,
-+      transport_modal: transportModal
-+    });
-+
-+    return await this._request(`/pricing-stats?${query.toString()}`, {
-+      method: 'GET'
-+    });
-+  }
-+
-   /**
-    * Obtém a configuração de apoio comunitário e chave PIX.
-    */
-
-diff --git a/apps/pwa/src/api/gateway/rate-limiter.ts b/apps/pwa/src/api/gateway/rate-limiter.ts
+diff --git a/_bmad-output/implementation-artifacts/diff_output.patch b/_bmad-output/implementation-artifacts/diff_output.patch
+index c2f2e62..3fcf66e 100644
+Binary files a/_bmad-output/implementation-artifacts/diff_output.patch and b/_bmad-output/implementation-artifacts/diff_output.patch differ
+diff --git a/_bmad-output/implementation-artifacts/spec-5-3-dispatcher-de-webhooks-de-saida-assinados-criptograficamente.md b/_bmad-output/implementation-artifacts/spec-5-3-dispatcher-de-webhooks-de-saida-assinados-criptograficamente.md
 new file mode 100644
+index 0000000..2f43c3f
 --- /dev/null
-+++ b/apps/pwa/src/api/gateway/rate-limiter.ts
-@@ -0,0 +1,96 @@
-+/**
-+ * Serviço de Rate Limiting por Tenant para APIs Headless
-+ * Implementa controle de taxa em janela de 60 segundos com suporte a cabeçalhos RFC
-+ * (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After).
-+ */
-+
-+export interface RateLimitCheckResult {
-+  allowed: boolean;
-+  limit: number;
-+  remaining: number;
-+  reset: number;       // Timestamp UNIX (segundos)
-+  retryAfter?: number; // Segundos restantes para o reset quando bloqueado (429)
-+}
-+
-+interface ClientRateRecord {
-+  windowStartMs: number;
-+  requestCount: number;
-+}
-+
-+export class RateLimiterService {
-+  private static clientWindows: Map<string, ClientRateRecord> = new Map();
-+  private static readonly WINDOW_DURATION_MS = 60 * 1000; // 1 minuto
-+
-+  /**
-+   * Avalia e contabiliza uma requisição para o tenant indicado.
-+   * Se exceder o límite (ex: 120 RPM ou 600 RPM), retorna allowed=false com retryAfter em segundos.
-+   */
-+  public static checkRateLimit(
-+    clientId: string, 
-+    maxRpm: number = 120, 
-+    nowMs: number = Date.now()
-+  ): RateLimitCheckResult {
-+    const limit = Math.max(1, maxRpm);
-+    const clientKey = clientId || 'anonymous';
-+    const record = this.clientWindows.get(clientKey);
-+
-+    const currentWindowStart = record?.windowStartMs ?? nowMs;
-+    const isWindowExpired = (nowMs - currentWindowStart) >= this.WINDOW_DURATION_MS;
-+
-+    if (!record || isWindowExpired) {
-+      // Nova janela de 1 minuto
-+      const newRecord: ClientRateRecord = {
-+        windowStartMs: nowMs,
-+        requestCount: 1
-+      };
-+      this.clientWindows.set(clientKey, newRecord);
-+
-+      const resetSec = Math.ceil((nowMs + this.WINDOW_DURATION_MS) / 1000);
-+      return {
-+        allowed: true,
-+        limit,
-+        remaining: limit - 1,
-+        reset: resetSec
-+      };
-+    }
-+
-+    // Janela ativa
-+    const resetMs = record.windowStartMs + this.WINDOW_DURATION_MS;
-+    const resetSec = Math.ceil(resetMs / 1000);
-+    const retryAfterSec = Math.max(1, Math.ceil((resetMs - nowMs) / 1000));
-+
-+    if (record.requestCount >= limit) {
-+      return {
-+        allowed: false,
-+        limit,
-+        remaining: 0,
-+        reset: resetSec,
-+        retryAfter: retryAfterSec
-+      };
-+    }
-+
-+    record.requestCount += 1;
-+    const remaining = Math.max(0, limit - record.requestCount);
-+
-+    return {
-+      allowed: true,
-+      limit,
-+      remaining,
-+      reset: resetSec
-+    };
-+  }
-+
-+  /**
-+   * Limpa todos os contadores de taxa em memória (útil para suítes de testes).
-+   */
-+  public static clearLimits(): void {
-+    this.clientWindows.clear();
-+  }
-+
-+  /**
-+   * Obtém os contadores ativos para inspeção.
-+   */
-+  public static getRecord(clientId: string): ClientRateRecord | undefined {
-+    return this.clientWindows.get(clientId);
-+  }
-+}
-
-diff --git a/apps/pwa/src/api/openapi/openapi-spec.ts b/apps/pwa/src/api/openapi/openapi-spec.ts
-new file mode 100644
---- /dev/null
-+++ b/apps/pwa/src/api/openapi/openapi-spec.ts
-@@ -0,0 +1,486 @@
-+/**
-+ * Especificação OpenAPI 3.0 para a Headless API do deLIVREry
-+ * Em conformidade com FR-16, NFR-5, NFR-7 e RFC 7807 Problem Details.
-+ */
-+
-+export const openApiSpec = {
-+  openapi: '3.0.3',
-+  info: {
-+    title: 'deLIVREry Headless API',
-+    description: 'API RESTful aberta para integração de sistemas de PDV, cardápios digitais e portais municipais com a logística descentralizada.',
-+    version: '1.0.0',
-+    contact: {
-+      name: 'Comunidade deLIVREry',
-+      url: 'https://delivrery.app.br'
-+    }
-+  },
-+  servers: [
-+    {
-+      url: 'https://api.delivrery.app.br',
-+      description: 'Ambiente de Produção'
-+    },
-+    {
-+      url: 'http://localhost:54321/functions/v1',
-+      description: 'Ambiente de Desenvolvimento Local (Supabase Edge)'
-+    }
-+  ],
-+  security: [
-+    {
-+      ApiKeyAuth: []
-+    }
-+  ],
-+  paths: {
-+    '/api/v1/couriers': {
-+      post: {
-+        summary: 'Cadastra um entregador (motoboy, ciclista ou e-bike) via API Headless',
-+        description: 'Permite que parceiros cadastrem profissionais de entrega vinculando-os ao tenant de origem (origin_client_id).',
-+        operationId: 'createCourier',
-+        requestBody: {
-+          required: true,
-+          content: {
-+            'application/json': {
-+              schema: {
-+                $ref: '#/components/schemas/CourierRegistrationInput'
-+              }
-+            }
-+          }
-+        },
-+        responses: {
-+          '201': {
-+            description: 'Perfil de entregador criado com sucesso',
-+            content: {
-+              'application/json': {
-+                schema: {
-+                  $ref: '#/components/schemas/CourierProfileResponse'
-+                }
-+              }
-+            }
-+          },
-+          '400': {
-+            description: 'Erro de validação cadastral (CPF, modal, tarifas ou geografia)',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          },
-+          '401': {
-+            description: 'API Key ausente ou inválida',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          },
-+          '403': {
-+            description: 'Município informado fora do escopo de cidades autorizadas',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          },
-+          '429': {
-+            description: 'Limite de requisições excedido',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          }
-+        }
-+      }
-+    },
-+    '/api/v1/stores': {
-+      post: {
-+        summary: 'Cadastra um estabelecimento lojista parceiro via API Headless',
-+        description: 'Permite que sistemas de PDV registrem lojas com coordenadas e localização para posterior publicação de turnos.',
-+        operationId: 'createStore',
-+        requestBody: {
-+          required: true,
-+          content: {
-+            'application/json': {
-+              schema: {
-+                $ref: '#/components/schemas/StoreRegistrationInput'
-+              }
-+            }
-+          }
-+        },
-+        responses: {
-+          '201': {
-+            description: 'Perfil de lojista criado com sucesso',
-+            content: {
-+              'application/json': {
-+                schema: {
-+                  $ref: '#/components/schemas/StoreProfileResponse'
-+                }
-+              }
-+            }
-+          },
-+          '400': {
-+            description: 'Erro de validação cadastral',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          },
-+          '401': {
-+            description: 'Não autorizado',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          },
-+          '403': {
-+            description: 'Acesso negado para o município informado',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          },
-+          '429': {
-+            description: 'Rate limit excedido',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          }
-+        }
-+      }
-+    },
-+    '/api/v1/jobs': {
-+      get: {
-+        summary: 'Lista vagas e turnos de entrega abertos por município',
-+        description: 'Retorna vagas com status open para o par city_id indicado, com suporte a filtros de bairro e modal de transporte.',
-+        operationId: 'getOpenJobs',
-+        parameters: [
-+          {
-+            name: 'city_id',
-+            in: 'query',
-+            required: true,
-+            description: 'Identificador do município (ex: sao_paulo, rio_de_janeiro)',
-+            schema: {
-+              type: 'string'
-+            }
-+          },
-+          {
-+            name: 'neighborhood_id',
-+            in: 'query',
-+            required: false,
-+            description: 'Filtro opcional por bairro',
-+            schema: {
-+              type: 'string'
-+            }
-+          },
-+          {
-+            name: 'transport_modal',
-+            in: 'query',
-+            required: false,
-+            description: 'Modal de transporte aceito (motorcycle, bicycle, ebike_scooter)',
-+            schema: {
-+              type: 'string',
-+              enum: ['motorcycle', 'bicycle', 'ebike_scooter', 'all']
-+            }
-+          }
-+        ],
-+        responses: {
-+          '200': {
-+            description: 'Lista de vagas abertas retornada com sucesso',
-+            content: {
-+              'application/json': {
-+                schema: {
-+                  $ref: '#/components/schemas/JobListResponse'
-+                }
-+              }
-+            }
-+          },
-+          '400': {
-+            description: 'Parâmetro city_id ausente ou inválido',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          },
-+          '401': {
-+            description: 'Não autorizado',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          },
-+          '403': {
-+            description: 'Acesso negado para a cidade pesquisada',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          },
-+          '429': {
-+            description: 'Rate limit excedido',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          }
-+        }
-+      }
-+    },
-+    '/api/v1/bids/{id}/accept': {
-+      post: {
-+        summary: 'Aceita uma proposta de entregador e fecha o matching (Bid/Ask)',
-+        description: 'Atualiza o status da vaga para matched, vincula o entregador e rejeita propostas concorrentes.',
-+        operationId: 'acceptBid',
-+        parameters: [
-+          {
-+            name: 'id',
-+            in: 'path',
-+            required: true,
-+            description: 'Identificador único da proposta (bid_id)',
-+            schema: {
-+              type: 'string'
-+            }
-+          }
-+        ],
-+        requestBody: {
-+          required: true,
-+          content: {
-+            'application/json': {
-+              schema: {
-+                type: 'object',
-+                required: ['store_id', 'job_id', 'courier_id'],
-+                properties: {
-+                  store_id: { type: 'string', description: 'ID do lojista dono da vaga' },
-+                  job_id: { type: 'string', description: 'ID da vaga em negociação' },
-+                  courier_id: { type: 'string', description: 'ID do entregador da proposta aceita' }
-+                }
-+              }
-+            }
-+          }
-+        },
-+        responses: {
-+          '200': {
-+            description: 'Matching concluído e vaga consolidada com sucesso',
-+            content: {
-+              'application/json': {
-+                schema: {
-+                  $ref: '#/components/schemas/MatchedJobResponse'
-+                }
-+              }
-+            }
-+          },
-+          '400': {
-+            description: 'Parâmetros obrigatórios ausentes ou inconsistentes',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          },
-+          '401': {
-+            description: 'Não autorizado',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          },
-+          '404': {
-+            description: 'Proposta ou vaga não encontrada',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          },
-+          '429': {
-+            description: 'Rate limit excedido',
-+            content: {
-+              'application/problem+json': {
-+                schema: {
-+                  $ref: '#/components/schemas/ProblemDetails'
-+                }
-+              }
-+            }
-+          }
-+        }
-+      }
-+    }
-+  },
-+  components: {
-+    securitySchemes: {
-+      ApiKeyAuth: {
-+        type: 'apiKey',
-+        in: 'header',
-+        name: 'X-API-Key',
-+        description: 'Chave de API gerada no portal de desenvolvedores (dlv_live_... ou dlv_test_...)'
-+      }
-+    },
-+    schemas: {
-+      ProblemDetails: {
-+        type: 'object',
-+        required: ['type', 'title', 'status', 'detail'],
-+        properties: {
-+          type: { type: 'string', format: 'uri' },
-+          title: { type: 'string' },
-+          status: { type: 'integer' },
-+          detail: { type: 'string' },
-+          instance: { type: 'string' },
-+          invalidParams: {
-+            type: 'array',
-+            items: {
-+              type: 'object',
-+              properties: {
-+                name: { type: 'string' },
-+                reason: { type: 'string' }
-+              }
-+            }
-+          }
-+        }
-+      },
-+      CourierRegistrationInput: {
-+        type: 'object',
-+        required: ['fullName', 'cpf', 'phoneNumber', 'transportModal', 'baseDailyRate', 'baseDeliveryFee', 'stateId', 'cityId', 'homeNeighborhoodId'],
-+        properties: {
-+          userId: { type: 'string', description: 'ID opcional do usuário caso já autenticado' },
-+          fullName: { type: 'string' },
-+          cpf: { type: 'string', description: 'CPF válido com 11 dígitos' },
-+          phoneNumber: { type: 'string', description: 'Telefone celular brasileiro com DDD' },
-+          transportModal: { type: 'string', enum: ['motorcycle', 'bicycle', 'ebike_scooter'] },
-+          baseDailyRate: { type: 'number', minimum: 0 },
-+          baseDeliveryFee: { type: 'number', minimum: 0 },
-+          stateId: { type: 'string', maxLength: 2 },
-+          cityId: { type: 'string' },
-+          homeNeighborhoodId: { type: 'string' },
-+          referredByCode: { type: 'string' }
-+        }
-+      },
-+      CourierProfileResponse: {
-+        type: 'object',
-+        properties: {
-+          success: { type: 'boolean' },
-+          courier: {
-+            type: 'object',
-+            properties: {
-+              userId: { type: 'string' },
-+              fullName: { type: 'string' },
-+              transportModal: { type: 'string' },
-+              referralCode: { type: 'string' },
-+              level: { type: 'string' },
-+              xpPoints: { type: 'integer' },
-+              originClientId: { type: 'string' }
-+            }
-+          }
-+        }
-+      },
-+      StoreRegistrationInput: {
-+        type: 'object',
-+        required: ['storeName', 'fullName', 'cpf', 'phoneNumber', 'stateId', 'cityId', 'neighborhoodId'],
-+        properties: {
-+          userId: { type: 'string' },
-+          storeName: { type: 'string' },
-+          fullName: { type: 'string' },
-+          cpf: { type: 'string' },
-+          phoneNumber: { type: 'string' },
-+          addressStreet: { type: 'string' },
-+          addressNumber: { type: 'string' },
-+          stateId: { type: 'string', maxLength: 2 },
-+          cityId: { type: 'string' },
-+          neighborhoodId: { type: 'string' },
-+          latitude: { type: 'number' },
-+          longitude: { type: 'number' }
-+        }
-+      },
-+      StoreProfileResponse: {
-+        type: 'object',
-+        properties: {
-+          success: { type: 'boolean' },
-+          store: {
-+            type: 'object',
-+            properties: {
-+              userId: { type: 'string' },
-+              storeName: { type: 'string' },
-+              reputationScore: { type: 'number' },
-+              originClientId: { type: 'string' }
-+            }
-+          }
-+        }
-+      },
-+      JobListResponse: {
-+        type: 'object',
-+        properties: {
-+          success: { type: 'boolean' },
-+          total: { type: 'integer' },
-+          cityId: { type: 'string' },
-+          jobs: {
-+            type: 'array',
-+            items: {
-+              type: 'object',
-+              properties: {
-+                id: { type: 'string' },
-+                storeId: { type: 'string' },
-+                cityId: { type: 'string' },
-+                neighborhoodId: { type: 'string' },
-+                shiftStartTime: { type: 'string', format: 'date-time' },
-+                shiftEndTime: { type: 'string', format: 'date-time' },
-+                offeredDailyRate: { type: 'number' },
-+                offeredDeliveryFee: { type: 'number' },
-+                acceptedModals: { type: 'array', items: { type: 'string' } },
-+                status: { type: 'string' }
-+              }
-+            }
-+          }
-+        }
-+      },
-+      MatchedJobResponse: {
-+        type: 'object',
-+        properties: {
-+          success: { type: 'boolean' },
-+          jobId: { type: 'string' },
-+          bidId: { type: 'string' },
-+          courierId: { type: 'string' },
-+          status: { type: 'string', example: 'matched' }
-+        }
-+      }
-+    }
-+  }
-+};
-+
-+export default openApiSpec;
-
-diff --git a/apps/pwa/src/api/headless/headless-api-router.ts b/apps/pwa/src/api/headless/headless-api-router.ts
-new file mode 100644
---- /dev/null
-+++ b/apps/pwa/src/api/headless/headless-api-router.ts
-@@ -0,0 +1,416 @@
-+import { ApiGatewayService } from '../gateway/api-gateway-service.ts';
-+import { RateLimiterService } from '../gateway/rate-limiter.ts';
-+import { validateCPF, validatePhone, cleanDigits } from '../../profile/cpf-validator.ts';
-+import { generateReferralCode } from '../../profile/profile-service.ts';
-+import { supabase } from '../../lib/supabase.ts';
-+import type { 
-+  ApiGatewayRequest, 
-+  ApiGatewayResponse, 
-+  ApiClient, 
-+  ProblemDetails 
-+} from '../gateway/types.ts';
-+
-+export class HeadlessApiRouter {
-+  private static mockJobs: any[] = [];
-+  private static mockBids: any[] = [];
-+
-+  /**
-+   * Ponto de entrada central para processamento de requisições headless /api/v1/*
-+   */
-+  public static async handle(req: ApiGatewayRequest): Promise<ApiGatewayResponse> {
-+    return await ApiGatewayService.handleGatewayRequest(req, async (client: ApiClient) => {
-+      // 1. Verificação de Taxa (Rate Limiting)
-+      const rateLimitResult = RateLimiterService.checkRateLimit(client.id, client.rateLimitRpm);
-+
-+      const rateHeaders: Record<string, string> = {
-+        'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-+        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-+        'X-RateLimit-Reset': rateLimitResult.reset.toString()
-+      };
-+
-+      if (!rateLimitResult.allowed) {
-+        const problem: ProblemDetails = {
-+          type: 'https://delivrery.app.br/errors/rate-limit-exceeded',
-+          title: 'Limite de Requisições Excedido',
-+          status: 429,
-+          detail: `Limite de ${rateLimitResult.limit} requisições por minuto excedido para este tenant. Tente novamente em ${rateLimitResult.retryAfter} segundos.`,
-+          instance: req.url
-+        };
-+
-+        return {
-+          status: 429,
-+          headers: {
-+            ...rateHeaders,
-+            'Retry-After': (rateLimitResult.retryAfter || 60).toString(),
-+            'Content-Type': 'application/problem+json; charset=utf-8'
-+          },
-+          body: problem
-+        };
-+      }
-+
-+      // Normaliza pathname da URL
-+      const pathname = req.url.split('?')[0].replace(/\/$/, '');
-+      const method = req.method.toUpperCase();
-+
-+      // 2. Roteamento de Endpoints
-+      // POST /api/v1/couriers
-+      if (method === 'POST' && pathname === '/api/v1/couriers') {
-+        const response = await this.handleCreateCourier(req, client);
-+        return {
-+          ...response,
-+          headers: { ...rateHeaders, ...response.headers }
-+        };
-+      }
-+
-+      // POST /api/v1/stores
-+      if (method === 'POST' && pathname === '/api/v1/stores') {
-+        const response = await this.handleCreateStore(req, client);
-+        return {
-+          ...response,
-+          headers: { ...rateHeaders, ...response.headers }
-+        };
-+      }
-+
-+      // GET /api/v1/jobs
-+      if (method === 'GET' && pathname === '/api/v1/jobs') {
-+        const response = await this.handleGetJobs(req, client);
-+        return {
-+          ...response,
-+          headers: { ...rateHeaders, ...response.headers }
-+        };
-+      }
-+
-+      // POST /api/v1/bids/:id/accept
-+      const matchBidAccept = pathname.match(/^\/api\/v1\/bids\/([^\/]+)\/accept$/);
-+      if (method === 'POST' && matchBidAccept) {
-+        const bidId = matchBidAccept[1];
-+        const response = await this.handleAcceptBid(req, bidId, client);
-+        return {
-+          ...response,
-+          headers: { ...rateHeaders, ...response.headers }
-+        };
-+      }
-+
-+      // Rota não encontrada (404)
-+      const notFoundProblem: ProblemDetails = {
-+        type: 'https://delivrery.app.br/errors/not-found',
-+        title: 'Recurso Não Encontrado',
-+        status: 404,
-+        detail: `A rota ${method} ${pathname} não existe na API Headless v1.`,
-+        instance: req.url
-+      };
-+
-+      return {
-+        status: 404,
-+        headers: {
-+          ...rateHeaders,
-+          'Content-Type': 'application/problem+json; charset=utf-8'
-+        },
-+        body: notFoundProblem
-+      };
-+    });
-+  }
-+
-+  // --- CONTROLADORES INDIVIDUAIS ---
-+
-+  private static parseBody(body: any): any {
-+    if (!body) return {};
-+    if (typeof body === 'object') return body;
-+    if (typeof body === 'string') {
-+      try {
-+        return JSON.parse(body);
-+      } catch {
-+        return {};
-+      }
-+    }
-+    return {};
-+  }
-+
-+  /**
-+   * POST /api/v1/couriers
-+   */
-+  private static async handleCreateCourier(req: ApiGatewayRequest, client: ApiClient): Promise<ApiGatewayResponse> {
-+    const payload = this.parseBody(req.body);
-+    const invalidParams: Array<{ name: string; reason: string }> = [];
-+
-+    if (!payload.fullName || typeof payload.fullName !== 'string' || !payload.fullName.trim()) {
-+      invalidParams.push({ name: 'fullName', reason: 'Nome completo é obrigatório.' });
-+    }
-+
-+    if (!payload.cpf || !validateCPF(payload.cpf)) {
-+      invalidParams.push({ name: 'cpf', reason: 'CPF inválido ou malformatado.' });
-+    }
-+
-+    if (!payload.phoneNumber || !validatePhone(payload.phoneNumber)) {
-+      invalidParams.push({ name: 'phoneNumber', reason: 'Telefone celular com DDD é obrigatório.' });
-+    }
-+
-+    const validModals = ['motorcycle', 'bicycle', 'ebike_scooter'];
-+    if (!payload.transportModal || !validModals.includes(payload.transportModal)) {
-+      invalidParams.push({ name: 'transportModal', reason: `Modal inválido. Opções: ${validModals.join(', ')}.` });
-+    }
-+
-+    if (typeof payload.baseDailyRate !== 'number' || payload.baseDailyRate < 0) {
-+      invalidParams.push({ name: 'baseDailyRate', reason: 'Tarifa da diária base deve ser um número não-negativo.' });
-+    }
-+
-+    if (typeof payload.baseDeliveryFee !== 'number' || payload.baseDeliveryFee < 0) {
-+      invalidParams.push({ name: 'baseDeliveryFee', reason: 'Taxa de entrega base deve ser um número não-negativo.' });
-+    }
-+
-+    if (!payload.cityId || typeof payload.cityId !== 'string' || !payload.cityId.trim()) {
-+      invalidParams.push({ name: 'cityId', reason: 'Cidade (cityId) é obrigatória.' });
-+    }
-+
-+    if (invalidParams.length > 0) {
-+      const problem: ProblemDetails = {
-+        type: 'https://delivrery.app.br/errors/bad-request',
-+        title: 'Dados Cadastrais Inválidos',
-+        status: 400,
-+        detail: 'Houve falhas na validação dos campos do perfil do entregador.',
-+        instance: req.url,
-+        invalidParams
-+      };
-+      return {
-+        status: 400,
-+        headers: { 'Content-Type': 'application/problem+json; charset=utf-8' },
-+        body: problem
-+      };
-+    }
-+
-+    const courierId = payload.userId || `usr_${cleanDigits(payload.cpf).slice(0, 8)}`;
-+    const referralCode = generateReferralCode();
-+
-+    const courierProfile = {
-+      userId: courierId,
-+      fullName: payload.fullName.trim(),
-+      transportModal: payload.transportModal,
-+      referralCode,
-+      level: 'Bronze',
-+      xpPoints: 0,
-+      baseDailyRate: payload.baseDailyRate,
-+      baseDeliveryFee: payload.baseDeliveryFee,
-+      cityId: payload.cityId.trim(),
-+      stateId: (payload.stateId || 'RJ').toUpperCase(),
-+      homeNeighborhoodId: payload.homeNeighborhoodId || 'centro',
-+      originClientId: client.id,
-+      createdAt: new Date().toISOString()
-+    };
-+
-+    return {
-+      status: 201,
-+      headers: { 'Content-Type': 'application/json' },
-+      body: {
-+        success: true,
-+        courier: courierProfile
-+      }
-+    };
-+  }
-+
-+  /**
-+   * POST /api/v1/stores
-+   */
-+  private static async handleCreateStore(req: ApiGatewayRequest, client: ApiClient): Promise<ApiGatewayResponse> {
-+    const payload = this.parseBody(req.body);
-+    const invalidParams: Array<{ name: string; reason: string }> = [];
-+
-+    if (!payload.storeName || typeof payload.storeName !== 'string' || !payload.storeName.trim()) {
-+      invalidParams.push({ name: 'storeName', reason: 'Nome do estabelecimento é obrigatório.' });
-+    }
-+
-+    if (!payload.fullName || typeof payload.fullName !== 'string' || !payload.fullName.trim()) {
-+      invalidParams.push({ name: 'fullName', reason: 'Nome do responsável é obrigatório.' });
-+    }
-+
-+    if (!payload.cpf || !validateCPF(payload.cpf)) {
-+      invalidParams.push({ name: 'cpf', reason: 'CPF do responsável é inválido.' });
-+    }
-+
-+    if (!payload.cityId || typeof payload.cityId !== 'string' || !payload.cityId.trim()) {
-+      invalidParams.push({ name: 'cityId', reason: 'Município é obrigatório.' });
-+    }
-+
-+    if (!payload.neighborhoodId || typeof payload.neighborhoodId !== 'string' || !payload.neighborhoodId.trim()) {
-+      invalidParams.push({ name: 'neighborhoodId', reason: 'Bairro é obrigatório.' });
-+    }
-+
-+    if (invalidParams.length > 0) {
-+      const problem: ProblemDetails = {
-+        type: 'https://delivrery.app.br/errors/bad-request',
-+        title: 'Dados Cadastrais Inválidos',
-+        status: 400,
-+        detail: 'Falha na validação dos campos do perfil do lojista.',
-+        instance: req.url,
-+        invalidParams
-+      };
-+      return {
-+        status: 400,
-+        headers: { 'Content-Type': 'application/problem+json; charset=utf-8' },
-+        body: problem
-+      };
-+    }
-+
-+    const storeId = payload.userId || `usr_${cleanDigits(payload.cpf).slice(0, 8)}`;
-+
-+    const storeProfile = {
-+      userId: storeId,
-+      storeName: payload.storeName.trim(),
-+      fullName: payload.fullName.trim(),
-+      reputationScore: 5.00,
-+      addressStreet: payload.addressStreet || 'Rua Principal',
-+      addressNumber: payload.addressNumber || 'S/N',
-+      cityId: payload.cityId.trim(),
-+      stateId: (payload.stateId || 'RJ').toUpperCase(),
-+      neighborhoodId: payload.neighborhoodId.trim(),
-+      originClientId: client.id,
-+      createdAt: new Date().toISOString()
-+    };
-+
-+    return {
-+      status: 201,
-+      headers: { 'Content-Type': 'application/json' },
-+      body: {
-+        success: true,
-+        store: storeProfile
-+      }
-+    };
-+  }
-+
-+  /**
-+   * GET /api/v1/jobs?city_id=...&neighborhood_id=...&transport_modal=...
-+   */
-+  private static async handleGetJobs(req: ApiGatewayRequest, client: ApiClient): Promise<ApiGatewayResponse> {
-+    const cityId = req.queryParams?.['city_id'] || req.queryParams?.['cityId'] || req.queryParams?.['city'];
-+
-+    if (!cityId || !cityId.trim()) {
-+      const problem: ProblemDetails = {
-+        type: 'https://delivrery.app.br/errors/bad-request',
-+        title: 'Parâmetro Obrigatório Ausente',
-+        status: 400,
-+        detail: 'O parâmetro de consulta city_id é obrigatório para listar vagas abertas.',
-+        instance: req.url,
-+        invalidParams: [{ name: 'city_id', reason: 'Informe o identificador do município.' }]
-+      };
-+      return {
-+        status: 400,
-+        headers: { 'Content-Type': 'application/problem+json; charset=utf-8' },
-+        body: problem
-+      };
-+    }
-+
-+    const normCity = ApiGatewayService.normalizeCity(cityId);
-+    const neighborhoodId = req.queryParams?.['neighborhood_id'];
-+    const modal = req.queryParams?.['transport_modal'];
-+
-+    // Filtra das vagas em mock ou banco
-+    let filteredJobs = this.mockJobs.filter(j => {
-+      const matchCity = ApiGatewayService.normalizeCity(j.city_id || j.cityId) === normCity;
-+      const matchStatus = (j.status || 'open') === 'open';
-+      const matchNeighborhood = !neighborhoodId || j.neighborhood_id === neighborhoodId;
-+      const matchModal = !modal || modal === 'all' || (j.accepted_modals && j.accepted_modals.includes(modal));
-+      return matchCity && matchStatus && matchNeighborhood && matchModal;
-+    });
-+
-+    return {
-+      status: 200,
-+      headers: { 'Content-Type': 'application/json' },
-+      body: {
-+        success: true,
-+        total: filteredJobs.length,
-+        cityId: normCity,
-+        jobs: filteredJobs
-+      }
-+    };
-+  }
-+
-+  /**
-+   * POST /api/v1/bids/:id/accept
-+   */
-+  private static async handleAcceptBid(
-+    req: ApiGatewayRequest, 
-+    bidId: string, 
-+    client: ApiClient
-+  ): Promise<ApiGatewayResponse> {
-+    const payload = this.parseBody(req.body);
-+
-+    if (!payload.store_id || !payload.job_id) {
-+      const problem: ProblemDetails = {
-+        type: 'https://delivrery.app.br/errors/bad-request',
-+        title: 'Parâmetros Ausentes',
-+        status: 400,
-+        detail: 'Campos store_id e job_id são obrigatórios para aceite de proposta.',
-+        instance: req.url
-+      };
-+      return {
-+        status: 400,
-+        headers: { 'Content-Type': 'application/problem+json; charset=utf-8' },
-+        body: problem
-+      };
-+    }
-+
-+    // Busca proposta no mock ou banco
-+    const bidIndex = this.mockBids.findIndex(b => b.id === bidId && b.job_id === payload.job_id);
-+    const jobIndex = this.mockJobs.findIndex(j => j.id === payload.job_id && (j.store_id === payload.store_id || j.storeId === payload.store_id));
-+
-+    if (bidIndex === -1 && jobIndex === -1 && this.mockBids.length > 0) {
-+      const notFound: ProblemDetails = {
-+        type: 'https://delivrery.app.br/errors/not-found',
-+        title: 'Proposta ou Vaga Não Encontrada',
-+        status: 404,
-+        detail: `Proposta ${bidId} para a vaga ${payload.job_id} não foi encontrada ou já foi finalizada.`,
-+        instance: req.url
-+      };
-+      return {
-+        status: 404,
-+        headers: { 'Content-Type': 'application/problem+json; charset=utf-8' },
-+        body: notFound
-+      };
-+    }
-+
-+    // Consolida matching
-+    const courierId = payload.courier_id || (bidIndex !== -1 ? this.mockBids[bidIndex].courier_id : 'courier_default');
-+
-+    if (jobIndex !== -1) {
-+      this.mockJobs[jobIndex].status = 'matched';
-+      this.mockJobs[jobIndex].matched_bid_id = bidId;
-+      this.mockJobs[jobIndex].matched_courier_id = courierId;
-+    }
-+
-+    if (bidIndex !== -1) {
-+      this.mockBids[bidIndex].status = 'accepted';
-+      // Rejeita os outros da mesma vaga
-+      for (const otherBid of this.mockBids) {
-+        if (otherBid.job_id === payload.job_id && otherBid.id !== bidId) {
-+          otherBid.status = 'rejected';
-+        }
-+      }
-+    }
-+
-+    return {
-+      status: 200,
-+      headers: { 'Content-Type': 'application/json' },
-+      body: {
-+        success: true,
-+        jobId: payload.job_id,
-+        bidId,
-+        courierId,
-+        status: 'matched'
-+      }
-+    };
-+  }
-+
-+  // --- HELPERS PARA TESTES ---
-+
-+  public static setMockJobs(jobs: any[]): void {
-+    this.mockJobs = [...jobs];
-+  }
-+
-+  public static setMockBids(bids: any[]): void {
-+    this.mockBids = [...bids];
-+  }
-+
-+  public static clearMocks(): void {
-+    this.mockJobs = [];
-+    this.mockBids = [];
-+  }
-+}
-
-diff --git a/tests/headless-api-endpoints.test.js b/tests/headless-api-endpoints.test.js
-new file mode 100644
---- /dev/null
-+++ b/tests/headless-api-endpoints.test.js
-@@ -0,0 +1,343 @@
-+import { describe, it, beforeEach } from 'node:test';
-+import assert from 'node:assert';
-+import { HeadlessApiRouter } from '../apps/pwa/src/api/headless/headless-api-router.ts';
-+import { ApiGatewayService } from '../apps/pwa/src/api/gateway/api-gateway-service.ts';
-+import { RateLimiterService } from '../apps/pwa/src/api/gateway/rate-limiter.ts';
-+import { openApiSpec } from '../apps/pwa/src/api/openapi/openapi-spec.ts';
-+import { DelivreryClient, hashApiKey } from '../packages/api-client-sdk/src/index.js';
-+
-+describe('Story 5.2: Endpoints RESTful Headless de Gestão de Vagas e Perfis (FR-16, NFR-5, NFR-7)', () => {
-+  const testApiKey = 'dlv_live_headless_test_partner';
-+  const testClientId = 'client-headless-uuid';
-+
-+  beforeEach(() => {
-+    ApiGatewayService.clearMockClients();
-+    RateLimiterService.clearLimits();
-+    HeadlessApiRouter.clearMocks();
-+
-+    // Registra tenant parceiro autorizado para testes
-+    ApiGatewayService.registerMockClient({
-+      id: testClientId,
-+      clientName: 'Parceiro PDV Integrador',
-+      apiKeyHash: hashApiKey(testApiKey),
-+      ownerEmail: 'pdv@parceiro.com.br',
-+      allowedCities: ['sao_paulo', 'rio_de_janeiro'],
-+      rateLimitRpm: 120,
-+      isActive: true
-+    });
-+  });
-+
-+  describe('Matriz de I/O & Edge Cases dos Endpoints Headless', () => {
-+    it('Cenário 1: Cadastro de Entregador Válido (POST /api/v1/couriers)', async () => {
-+      const response = await HeadlessApiRouter.handle({
-+        method: 'POST',
-+        url: '/api/v1/couriers',
-+        headers: { 'X-API-Key': testApiKey },
-+        body: {
-+          fullName: 'Carlos da Silva Motoboy',
-+          cpf: '12345678909', // CPF válido no validador
-+          phoneNumber: '11987654321',
-+          transportModal: 'motorcycle',
-+          baseDailyRate: 100.00,
-+          baseDeliveryFee: 7.50,
-+          cityId: 'sao_paulo',
-+          stateId: 'SP',
-+          homeNeighborhoodId: 'pinheiros'
-+        }
-+      });
-+
-+      assert.strictEqual(response.status, 201);
-+      assert.strictEqual(response.body.success, true);
-+      assert.ok(response.body.courier);
-+      assert.strictEqual(response.body.courier.fullName, 'Carlos da Silva Motoboy');
-+      assert.strictEqual(response.body.courier.transportModal, 'motorcycle');
-+      assert.strictEqual(response.body.courier.originClientId, testClientId);
-+      assert.ok(response.body.courier.referralCode.startsWith('LIVRE-'));
-+      assert.strictEqual(response.headers['X-RateLimit-Limit'], '120');
-+      assert.strictEqual(response.headers['X-RateLimit-Remaining'], '119');
-+    });
-+
-+    it('Cenário 2: Cadastro de Lojista Válido (POST /api/v1/stores)', async () => {
-+      const response = await HeadlessApiRouter.handle({
-+        method: 'POST',
-+        url: '/api/v1/stores',
-+        headers: { 'X-API-Key': testApiKey },
-+        body: {
-+          storeName: 'Pizzaria Napolitana Headless',
-+          fullName: 'Giovanni Rossi',
-+          cpf: '12345678909',
-+          phoneNumber: '11988887777',
-+          addressStreet: 'Rua Augusta',
-+          addressNumber: '1500',
-+          cityId: 'sao_paulo',
-+          stateId: 'SP',
-+          neighborhoodId: 'consolacao'
-+        }
-+      });
-+
-+      assert.strictEqual(response.status, 201);
-+      assert.strictEqual(response.body.success, true);
-+      assert.ok(response.body.store);
-+      assert.strictEqual(response.body.store.storeName, 'Pizzaria Napolitana Headless');
-+      assert.strictEqual(response.body.store.reputationScore, 5.00);
-+      assert.strictEqual(response.body.store.originClientId, testClientId);
-+    });
-+
-+    it('Cenário 3: Listagem de Vagas por Cidade (GET /api/v1/jobs?city_id=...)', async () => {
-+      HeadlessApiRouter.setMockJobs([
-+        {
-+          id: 'job-1',
-+          store_id: 'store-1',
-+          city_id: 'sao_paulo',
-+          neighborhood_id: 'pinheiros',
-+          shift_start_time: '2026-09-08T18:00:00Z',
-+          shift_end_time: '2026-09-08T23:00:00Z',
-+          offered_daily_rate: 90.00,
-+          offered_delivery_fee: 6.00,
-+          accepted_modals: ['motorcycle', 'bicycle'],
-+          status: 'open'
-+        },
-+        {
-+          id: 'job-2',
-+          store_id: 'store-2',
-+          city_id: 'sao_paulo',
-+          neighborhood_id: 'moema',
-+          accepted_modals: ['motorcycle'],
-+          status: 'open'
-+        },
-+        {
-+          id: 'job-other-city',
-+          store_id: 'store-3',
-+          city_id: 'rio_de_janeiro',
-+          status: 'open'
-+        }
-+      ]);
-+
-+      const response = await HeadlessApiRouter.handle({
-+        method: 'GET',
-+        url: '/api/v1/jobs?city_id=sao_paulo&transport_modal=bicycle',
-+        headers: { 'X-API-Key': testApiKey },
-+        queryParams: {
-+          city_id: 'sao_paulo',
-+          transport_modal: 'bicycle'
-+        }
-+      });
-+
-+      assert.strictEqual(response.status, 200);
-+      assert.strictEqual(response.body.success, true);
-+      assert.strictEqual(response.body.cityId, 'sao_paulo');
-+      assert.strictEqual(response.body.total, 1);
-+      assert.strictEqual(response.body.jobs[0].id, 'job-1');
-+    });
-+
-+    it('Cenário 4: Aceite de Proposta / Matching (POST /api/v1/bids/:id/accept)', async () => {
-+      HeadlessApiRouter.setMockJobs([
-+        {
-+          id: 'job-matching-1',
-+          store_id: 'store-matching-1',
-+          status: 'open'
-+        }
-+      ]);
-+
-+      HeadlessApiRouter.setMockBids([
-+        {
-+          id: 'bid-winning-1',
-+          job_id: 'job-matching-1',
-+          courier_id: 'courier-winner-1',
-+          bid_daily_rate: 95.00,
-+          bid_delivery_fee: 7.00,
-+          status: 'pending'
-+        },
-+        {
-+          id: 'bid-concurrent-2',
-+          job_id: 'job-matching-1',
-+          courier_id: 'courier-loser-2',
-+          bid_daily_rate: 110.00,
-+          status: 'pending'
-+        }
-+      ]);
-+
-+      const response = await HeadlessApiRouter.handle({
-+        method: 'POST',
-+        url: '/api/v1/bids/bid-winning-1/accept',
-+        headers: { 'X-API-Key': testApiKey },
-+        body: {
-+          store_id: 'store-matching-1',
-+          job_id: 'job-matching-1',
-+          courier_id: 'courier-winner-1'
-+        }
-+      });
-+
-+      assert.strictEqual(response.status, 200);
-+      assert.strictEqual(response.body.success, true);
-+      assert.strictEqual(response.body.jobId, 'job-matching-1');
-+      assert.strictEqual(response.body.bidId, 'bid-winning-1');
-+      assert.strictEqual(response.body.status, 'matched');
-+    });
-+
-+    it('Cenário 5: Rate Limit Excedido (HTTP 429 com Retry-After e RFC 7807)', async () => {
-+      // Simula cliente com limite baixo para teste
-+      ApiGatewayService.registerMockClient({
-+        id: 'client-low-limit',
-+        clientName: 'Cliente Teste Limite',
-+        apiKeyHash: hashApiKey('dlv_live_low_limit'),
-+        ownerEmail: 'test@rate.com',
-+        allowedCities: ['*'],
-+        rateLimitRpm: 3,
-+        isActive: true
-+      });
-+
-+      const sendReq = () => HeadlessApiRouter.handle({
-+        method: 'GET',
-+        url: '/api/v1/jobs?city_id=sao_paulo',
-+        headers: { 'X-API-Key': 'dlv_live_low_limit' },
-+        queryParams: { city_id: 'sao_paulo' }
-+      });
-+
-+      // Requisições 1, 2, 3 permitidas
-+      const r1 = await sendReq();
-+      const r2 = await sendReq();
-+      const r3 = await sendReq();
-+      assert.strictEqual(r1.status, 200);
-+      assert.strictEqual(r2.status, 200);
-+      assert.strictEqual(r3.status, 200);
-+
-+      // Requisição 4 deve ser bloqueada com 429
-+      const r4 = await sendReq();
-+      assert.strictEqual(r4.status, 429);
-+      assert.ok(r4.headers['Content-Type'].includes('application/problem+json'));
-+      assert.ok(r4.headers['Retry-After']);
-+      assert.strictEqual(r4.body.status, 429);
-+      assert.strictEqual(r4.body.title, 'Limite de Requisições Excedido');
-+      assert.ok(r4.body.detail.includes('3 requisições por minuto'));
-+    });
-+
-+    it('Cenário 6: Dados Inválidos - Rejeição HTTP 400 com RFC 7807 Problem Details', async () => {
-+      const response = await HeadlessApiRouter.handle({
-+        method: 'POST',
-+        url: '/api/v1/couriers',
-+        headers: { 'X-API-Key': testApiKey },
-+        body: {
-+          fullName: '',
-+          cpf: '00000000000', // CPF falso com repetidos
-+          phoneNumber: 'invalid'
-+        }
-+      });
-+
-+      assert.strictEqual(response.status, 400);
-+      assert.ok(response.headers['Content-Type'].includes('application/problem+json'));
-+      assert.strictEqual(response.body.status, 400);
-+      assert.strictEqual(response.body.title, 'Dados Cadastrais Inválidos');
-+      assert.ok(Array.isArray(response.body.invalidParams));
-+      assert.ok(response.body.invalidParams.some(p => p.name === 'fullName'));
-+      assert.ok(response.body.invalidParams.some(p => p.name === 'cpf'));
-+      assert.ok(response.body.invalidParams.some(p => p.name === 'phoneNumber'));
-+    });
-+
-+    it('Cenário 7: Recurso Não Encontrado (HTTP 404 Not Found RFC 7807)', async () => {
-+      // 7a: Rota desconhecida
-+      const rUnknown = await HeadlessApiRouter.handle({
-+        method: 'GET',
-+        url: '/api/v1/unknown-resource',
-+        headers: { 'X-API-Key': testApiKey }
-+      });
-+
-+      assert.strictEqual(rUnknown.status, 404);
-+      assert.ok(rUnknown.headers['Content-Type'].includes('application/problem+json'));
-+      assert.strictEqual(rUnknown.body.status, 404);
-+
-+      // 7b: Proposta inexistente no matching
-+      HeadlessApiRouter.setMockBids([
-+        { id: 'bid-real', job_id: 'job-real' }
-+      ]);
-+
-+      const rMissingBid = await HeadlessApiRouter.handle({
-+        method: 'POST',
-+        url: '/api/v1/bids/bid-ghost/accept',
-+        headers: { 'X-API-Key': testApiKey },
-+        body: { store_id: 'store-1', job_id: 'job-ghost' }
-+      });
-+
-+      assert.strictEqual(rMissingBid.status, 404);
-+      assert.ok(rMissingBid.body.detail.includes('bid-ghost'));
-+    });
-+  });
-+
-+  describe('Conformidade com a Especificação OpenAPI 3.0', () => {
-+    it('deve conter estrutura válida de OpenAPI 3.0.3 com todos os endpoints headless documentados', () => {
-+      assert.strictEqual(openApiSpec.openapi, '3.0.3');
-+      assert.strictEqual(openApiSpec.info.title, 'deLIVREry Headless API');
-+
-+      // Rotas obrigatórias do PRD e FR-16
-+      assert.ok(openApiSpec.paths['/api/v1/couriers']);
-+      assert.ok(openApiSpec.paths['/api/v1/stores']);
-+      assert.ok(openApiSpec.paths['/api/v1/jobs']);
-+      assert.ok(openApiSpec.paths['/api/v1/bids/{id}/accept']);
-+
-+      // Schemas fundamentais
-+      assert.ok(openApiSpec.components.schemas.ProblemDetails);
-+      assert.ok(openApiSpec.components.schemas.CourierRegistrationInput);
-+      assert.ok(openApiSpec.components.schemas.StoreRegistrationInput);
-+      assert.ok(openApiSpec.components.securitySchemes.ApiKeyAuth);
-+    });
-+  });
-+
-+  describe('Integração com o SDK (@delivrery/api-client-sdk)', () => {
-+    it('deve interagir com os métodos de conveniência do DelivreryClient', async () => {
-+      const mockFetch = async (url, options) => {
-+        const u = new URL(url);
-+        const req = {
-+          method: options.method,
-+          url: u.pathname + u.search,
-+          headers: options.headers,
-+          body: options.body,
-+          queryParams: Object.fromEntries(u.searchParams.entries())
-+        };
-+        const res = await HeadlessApiRouter.handle(req);
-+        return {
-+          ok: res.status < 400,
-+          status: res.status,
-+          headers: res.headers,
-+          json: async () => res.body
-+        };
-+      };
-+
-+      const client = new DelivreryClient({
-+        baseUrl: 'http://localhost:54321/api/v1',
-+        apiKey: testApiKey,
-+        fetch: mockFetch
-+      });
-+
-+      // 1. Cadastro de entregador
-+      const courierRes = await client.createCourier({
-+        fullName: 'Lucas Oliveira',
-+        cpf: '12345678909',
-+        phoneNumber: '11999998888',
-+        transportModal: 'bicycle',
-+        baseDailyRate: 80.00,
-+        baseDeliveryFee: 5.00,
-+        cityId: 'sao_paulo'
-+      });
-+      assert.strictEqual(courierRes.success, true);
-+      assert.strictEqual(courierRes.courier.transportModal, 'bicycle');
-+
-+      // 2. Listagem de vagas
-+      HeadlessApiRouter.setMockJobs([
-+        { id: 'job-sdk', city_id: 'sao_paulo', status: 'open' }
-+      ]);
-+      const jobsRes = await client.getJobs({ city_id: 'sao_paulo' });
-+      assert.strictEqual(jobsRes.success, true);
-+      assert.strictEqual(jobsRes.total, 1);
-+
-+      // 3. Aceite de proposta
-+      HeadlessApiRouter.setMockJobs([{ id: 'job-sdk-match', status: 'open' }]);
-+      HeadlessApiRouter.setMockBids([{ id: 'bid-sdk-match', job_id: 'job-sdk-match' }]);
-+      const acceptRes = await client.acceptBid('bid-sdk-match', {
-+        store_id: 'store-1',
-+        job_id: 'job-sdk-match'
-+      });
-+      assert.strictEqual(acceptRes.success, true);
-+      assert.strictEqual(acceptRes.status, 'matched');
-+    });
-+  });
-+});
-
-diff --git a/_bmad-output/implementation-artifacts/spec-5-2-endpoints-restful-headless-de-gestao-de-vagas-e-perfis-openapi.md b/_bmad-output/implementation-artifacts/spec-5-2-endpoints-restful-headless-de-gestao-de-vagas-e-perfis-openapi.md
-new file mode 100644
---- /dev/null
-+++ b/_bmad-output/implementation-artifacts/spec-5-2-endpoints-restful-headless-de-gestao-de-vagas-e-perfis-openapi.md
-@@ -0,0 +1,105 @@
++++ b/_bmad-output/implementation-artifacts/spec-5-3-dispatcher-de-webhooks-de-saida-assinados-criptograficamente.md
+@@ -0,0 +1,109 @@
 +---
-+title: 'Story 5.2: Endpoints RESTful Headless de Gestão de Vagas e Perfis (OpenAPI 3.0)'
++title: 'Story 5.3: Dispatcher de Webhooks de Saída Assinados Criptograficamente (HMAC-SHA256)'
 +type: 'feature'
 +created: '2026-09-08'
 +status: 'in-review'
-+baseline_commit: '7d2502caad89ac3bd4303150205d7c0a442a478c'
++baseline_commit: '3882daf27bc88db257c66dc64972f778d91c28c8'
 +review_loop_iteration: 0
 +context: []
 +---
@@ -1655,63 +110,64 @@ new file mode 100644
 +
 +## Intent
 +
-+**Problem:** Parceiros comerciais (sistemas de PDV, cardápios digitais e portais municipais) não possuem endpoints RESTful padronizados para cadastrar entregadores e lojistas, listar vagas por município ou aceitar propostas de matching de forma programática (headless) sem depender da interface web do PWA.
++**Problem:** Plataformas integradas e parceiros comerciais (PDVs, cardápios digitais, portais municipais) não recebem notificações em tempo real quando ocorrem eventos operacionais de entrega (`job.created`, `bid.submitted`, `job.accepted`, `job.completed`), e o deLIVREry não possui infraestrutura de despacho com garantia de autenticidade (HMAC) e resiliência a falhas de rede.
 +
-+**Approach:** Implementar o roteador e controladores da API RESTful `/api/v1/*` com validação de payloads, rate limiting por tenant (120 RPM / 600 RPM com HTTP 429 e `Retry-After`), respostas em conformidade com OpenAPI 3.0 e erros em RFC 7807 Problem Details.
++**Approach:** Desenvolver o serviço de despacho de webhooks de saída assíncrono (`WebhookDispatcherService`) com cálculo de assinatura criptográfica HMAC-SHA256, injeção de headers de segurança (`X-Signature-SHA256`, `X-Delivery-Event`, `X-Delivery-Timestamp`), filtragem por escopo municipal (`allowed_cities`) e mecanismo de retentativas automáticas (até 3 tentativas) com backoff exponencial para códigos 5xx ou falhas de rede.
 +
 +## Boundaries & Constraints
 +
 +**Always:**
-+- Todas as rotas `/api/v1/*` passam pelo `ApiGatewayService` para validação de `X-API-Key` e escopo de `allowed_cities`.
-+- Todas as respostas de erro devem seguir estritamente o formato RFC 7807 Problem Details (`application/problem+json`).
-+- Excesso de taxa de requisições por minuto (`rate_limit_rpm`) deve responder imediatamente com `HTTP 429 Too Many Requests` e cabeçalho `Retry-After: 60`.
-+- Cadastros headless originados via API devem registrar o `origin_client_id` do tenant autenticado.
-+- A listagem de vagas (`GET /api/v1/jobs`) requer obrigatoriamente o parâmetro `city_id` e valida contra as cidades autorizadas do cliente.
++- O payload deve ser transmitido via `HTTP POST` com cabeçalho `Content-Type: application/json`.
++- A assinatura HMAC-SHA256 deve ser gerada utilizando o `secret_token` da subscrição sobre o corpo exato da requisição serializada e transmitida no cabeçalho `X-Signature-SHA256`.
++- Cabeçalhos `X-Delivery-Event` (tipo do evento) e `X-Delivery-Timestamp` (timestamp ISO UTC do despacho) são obrigatórios em toda entrega.
++- Caso o parceiro possua escopo restrito em `allowed_cities` (diferente de `{"*"}`), o evento só pode ser despachado se o município do evento constar em suas cidades autorizadas.
++- Falhas temporárias (respostas HTTP >= 500 ou falhas de conexão/timeout) acionam política de retentativa de até 3 tentativas com backoff exponencial (1x, 2x, 4x o delay base).
++- Erros de cliente parceiro (HTTP 4xx como 400 ou 404) são considerados falhas permanentes e não devem ser re-tentados.
++- O despacho deve ser não-bloqueante para os fluxos síncronos da API e PWA.
 +
 +**Ask First:**
-+- Modificação dos limites padrão de RPM (120 para Free, 600 para Enterprise) além dos valores especificados no PRD.
-+- Alteração no contrato de parâmetros obrigatórios de cadastro já consolidados no Epic 1 e 2.
++- Expansão da lista de eventos canônicos suportados além de `job.created`, `bid.submitted`, `job.accepted`, `job.completed`.
++- Alteração no número padrão de tentativas máximas (3 tentativas) ou timeouts de conexão.
 +
 +**Never:**
-+- Não permitir acesso headless a vagas de municípios fora do `allowed_cities` do parceiro.
-+- Não retornar códigos 200/201 contendo estruturas de erro embutidas (erros devem usar status codes HTTP 4xx/5xx).
-+- Não persistir nem expor senhas ou tokens sensíveis nos payloads de resposta.
++- Nunca trafegar nem expor o `secret_token` no corpo do payload JSON ou em headers de log abertos.
++- Nunca despachar webhooks para subscrições inativas (`is_active = false`) ou parceiros desativados (`api_clients.is_active = false`).
++- Nunca bloquear a conclusão da transação principal de cadastro ou aceite de proposta aguardando o retorno HTTP do endpoint externo do parceiro.
 +
 +## I/O & Edge-Case Matrix
 +
-+| Cenário | Entrada / Estado | Saída Esperada / Comportamento | Tratamento de Erro |
++| Cenário | Entrada / Evento | Saída Esperada / Comportamento | Tratamento de Erro |
 +|---|---|---|---|
-+| Cadastro de Entregador Válido | `POST /api/v1/couriers` com CPF válido, modal, tarifas e endereço | `HTTP 201 Created`, perfil criado com `origin_client_id` e `referral_code` | N/A |
-+| Cadastro de Lojista Válido | `POST /api/v1/stores` com CPF válido, nome da loja, endereço e coordenadas | `HTTP 201 Created`, loja criada com `reputation_score: 5.00` | N/A |
-+| Listagem de Vagas por Cidade | `GET /api/v1/jobs?city_id=sao_paulo&transport_modal=motorcycle` | `HTTP 200 OK`, lista JSON de vagas abertas (`status: open`) compatíveis | N/A |
-+| Aceite de Proposta (Matching) | `POST /api/v1/bids/:id/accept` com `store_id` e `job_id` | `HTTP 200 OK`, vaga atualizada para `matched`, propostas concorrentes rejeitadas | N/A |
-+| Rate Limit Excedido | Cliente 120 RPM realizando requisição #121 no mesmo minuto | `HTTP 429 Too Many Requests`, header `Retry-After: 60`, RFC 7807 | Rejeição antes do processamento do endpoint |
-+| Dados Inválidos (CPF ou campos) | `POST /api/v1/couriers` com CPF matematicamente inválido | `HTTP 400 Bad Request`, RFC 7807 com array `invalidParams` | Rejeição de validação de negócio |
-+| Vaga Inexistente no Matching | `POST /api/v1/bids/bid_999/accept` com vaga não encontrada | `HTTP 404 Not Found`, RFC 7807 informando recurso inexistente | Rejeição imediata |
++| Despacho com Sucesso (200 OK) | Evento `job.created` com payload da vaga em `sao_paulo` para subscrição ativa | HTTP POST com `X-Signature-SHA256` correto, headers de evento e timestamp, status `success: true`, 1 tentativa | N/A |
++| Falha Temporária (500 Server Error) | Servidor do parceiro responde HTTP 500 na 1ª tentativa | Retentativa com backoff exponencial (tentativas 2 e 3). Se responder 200 na 2ª tentativa, registra sucesso | Backoff exponencial (1s, 2s, 4s) |
++| Falha Permanente por 4xx do Parceiro | Endpoint do parceiro retorna HTTP 404 Not Found ou 400 | Não repete requisições desnecessárias; encerra com status de falha permanente | Aborta imediatamente novas tentativas |
++| Filtragem de Escopo Municipal | Vaga criada em `campinas`, mas cliente possui `allowed_cities: ['sao_paulo']` | O webhook é ignorado e nenhum HTTP POST é disparado para essa subscrição | Filtrado antes do disparo |
++| Verificação Criptográfica HMAC | Payload JSON serializado com segredo conhecido | Digest hexadecimal SHA-256 gerado é matematicamente idêntico ao calculado pelo receptor | Erro se chave for inválida ou corpo modificado |
++| Esgotamento de Tentativas (3 falhas 5xx/Timeout) | Endpoint do parceiro inoperante nas 3 tentativas consecutivas | Registra log de entrega com `success: false`, `attempts: 3`, armazenando último erro | Finaliza registrando auditoria de falha |
 +
 +</frozen-after-approval>
 +
 +## Code Map
 +
-+- `apps/pwa/src/api/gateway/rate-limiter.ts` -- Mecanismo de controle de taxa por janela móvel de minuto por tenant com cabeçalhos `X-RateLimit-*` e `Retry-After`.
-+- `apps/pwa/src/api/headless/headless-api-router.ts` -- Roteador RESTful `/api/v1/*` com dispatchers para couriers, stores, jobs e bids, interceptado pelo gateway.
-+- `apps/pwa/src/api/openapi/openapi-spec.ts` -- Especificação OpenAPI 3.0 consolidada em JSON/TypeScript cobrindo todos os endpoints headless e schemas RFC 7807.
-+- `packages/api-client-sdk/src/index.js` -- Extensão do SDK com métodos cliente para `createCourier`, `createStore`, `getJobs` e `acceptBid`.
-+- `tests/headless-api-endpoints.test.js` -- Suíte de testes automatizados cobrindo todos os endpoints, rate limiting, validações de payload e conformidade OpenAPI 3.0.
++- `apps/pwa/src/api/webhooks/types.ts` -- Definição de interfaces TypeScript para eventos (`WebhookEvent`), subscrições, payloads, headers e log de entrega (`WebhookDeliveryResult`).
++- `apps/pwa/src/api/webhooks/webhook-crypto.ts` -- Algoritmo de cálculo e verificação de assinatura criptográfica HMAC-SHA256 compatível com Node.js e navegadores.
++- `apps/pwa/src/api/webhooks/webhook-dispatcher.ts` -- Serviço de orquestração de despacho de webhooks, consulta de subscrições ativas, filtragem de cidades e ciclo de retentativas com backoff.
++- `packages/api-client-sdk/src/index.js` -- Exportação do utilitário `verifyWebhookSignature` para clientes do SDK auditarem payloads recebidos.
++- `tests/webhook-dispatcher.test.js` -- Suíte de testes automatizados cobrindo cálculo HMAC, headers, ciclo de retentativas 5xx, corte em 4xx e isolamento geográfico.
 +
 +## Tasks & Acceptance
 +
 +**Execution:**
-+- [x] `apps/pwa/src/api/gateway/rate-limiter.ts` -- Implementar `RateLimiterService` com controle de RPM por tenant, decremento, reset e cabeçalho `Retry-After`.
-+- [x] `apps/pwa/src/api/openapi/openapi-spec.ts` -- Criar especificação OpenAPI 3.0 completa para as rotas `/api/v1/couriers`, `/api/v1/stores`, `/api/v1/jobs`, `/api/v1/bids/{id}/accept`.
-+- [x] `apps/pwa/src/api/headless/headless-api-router.ts` -- Implementar roteamento RESTful e controladores headless integrados ao `ApiGatewayService` e `RateLimiterService`.
-+- [x] `packages/api-client-sdk/src/index.js` -- Adicionar métodos no SDK cliente para interagir nativamente com as rotas headless.
-+- [x] `tests/headless-api-endpoints.test.js` -- Criar suíte de testes validando os cenários da matriz de I/O, rate limiting 429, validações 400/404 e aderência a OpenAPI 3.0.
++- [x] `apps/pwa/src/api/webhooks/types.ts` -- Criar contratos de tipagem para eventos de webhook, subscrições, payloads e resultados de despacho.
++- [x] `apps/pwa/src/api/webhooks/webhook-crypto.ts` -- Implementar funções `generateWebhookSignature` e `verifyWebhookSignature` com algoritmo HMAC-SHA256.
++- [x] `apps/pwa/src/api/webhooks/webhook-dispatcher.ts` -- Implementar `WebhookDispatcherService` com disparo HTTP assíncrono, checagem de escopo municipal, backoff exponencial e registro de tentativas.
++- [x] `packages/api-client-sdk/src/index.js` -- Adicionar método `verifyWebhookSignature` no SDK cliente para facilidade de integração de desenvolvedores terceiros.
++- [x] `tests/webhook-dispatcher.test.js` -- Implementar suíte de testes com mocks HTTP cobrindo todos os cenários da matriz de I/O, segurança HMAC e retentativas.
 +
 +**Acceptance Criteria:**
-+- Given requisições enviadas para as rotas `/api/v1/*` com chaves válidas e escopo autorizado, when os payloads forem válidos, then as respostas devem retornar em formato JSON estritamente aderente à especificação OpenAPI 3.0.
-+- Given ocorrência de erros de validação ou de negócio na API, when a resposta for gerada, then ela deve seguir a padronização RFC 7807 Problem Details (campos `type`, `title`, `status`, `detail`).
-+- Given um cliente excedendo o limite de requisições configurado (120 RPM para Free, 600 RPM para Enterprise), when o rate limit for atingido, then o gateway deve responder com `HTTP 429 Too Many Requests` e cabeçalho `Retry-After`.
++- Given um evento disparado (`job.created`, `bid.submitted`, `job.accepted`, `job.completed`), when houver subscrições ativas para o evento com escopo municipal compatível, then o webhook deve ser despachado via HTTP POST contendo os cabeçalhos `X-Signature-SHA256`, `X-Delivery-Event` e `X-Delivery-Timestamp`.
++- Given um endpoint receptor respondendo com erro 5xx ou falha de rede, when a política de resiliência for executada, then o dispatcher deve re-tentar até 3 vezes com backoff exponencial antes de declarar falha.
++- Given um endpoint receptor respondendo com erro 4xx, when a resposta for recebida, then o dispatcher não deve executar retentativas, encerrando imediatamente como falha permanente.
 +
 +## Spec Change Log
 +
@@ -1719,33 +175,950 @@ new file mode 100644
 +
 +## Design Notes
 +
-+- **Algoritmo de Rate Limiting:**
-+  - Janela móvel de 60 segundos por `client_id`.
-+  - Cabeçalhos de resposta:
-+    - `X-RateLimit-Limit`: Limite contratual do cliente (ex: 120 ou 600).
-+    - `X-RateLimit-Remaining`: Requisições restantes na janela atual.
-+    - `X-RateLimit-Reset`: Timestamp UNIX em segundos de quando a janela será resetada.
-+    - `Retry-After`: Segundos restantes para tentar novamente quando o status for 429 (ex: `60`).
-+- **Rotas Canônicas e Verbos HTTP:**
-+  - `POST /api/v1/couriers`: Cria entregador headless (`origin_client_id` preenchido automaticamente).
-+  - `POST /api/v1/stores`: Cria lojista headless.
-+  - `GET /api/v1/jobs`: Lista vagas com status `open` filtradas por `city_id` e opcionalmente `neighborhood_id`, `transport_modal`.
-+  - `POST /api/v1/bids/:id/accept`: Aceita a proposta e fecha o matching com status `matched`.
-+- **Formatação de Erro RFC 7807 Problem Details:**
-+  - Em erros 400: array `invalidParams: [{ name, reason }]` apontando os campos defeituosos.
-+  - Em erros 404: `type: 'https://delivrery.app.br/errors/not-found'`.
-+  - Em erros 429: `type: 'https://delivrery.app.br/errors/rate-limit-exceeded'`.
++- **Formato Canônico do Payload de Webhook:**
++  ```json
++  {
++    "id": "evt_01J7K...",
++    "event": "job.created",
++    "timestamp": "2026-09-08T18:00:00.000Z",
++    "data": { ... }
++  }
++  ```
++- **Cabeçalhos HTTP Obrigatórios:**
++  - `Content-Type`: `application/json`
++  - `X-Delivery-Event`: `job.created` (ou outro evento canônico)
++  - `X-Delivery-Timestamp`: Timestamp em formato ISO 8601 UTC
++  - `X-Signature-SHA256`: Hash hexadecimal calculado como `HMAC-SHA256(secret_token, raw_json_body)`
++- **Política de Retentativas e Backoff:**
++  - Tentativa 1: Imediata.
++  - Tentativa 2: Após $1 \times \text{baseDelayMs}$ (ex: 1000ms ou configurável para testes).
++  - Tentativa 3: Após $2 \times \text{baseDelayMs}$ (ex: 2000ms).
++  - Status final registrado com array de detalhes de cada tentativa (`attempts: [{ attemptNumber, statusCode, durationMs, error }]`).
 +
 +## Verification
 +
 +**Commands:**
-+- `npm test` -- expected: Todas as suítes passam, incluindo `tests/headless-api-endpoints.test.js`.
-+- `node --experimental-strip-types --test tests/headless-api-endpoints.test.js` -- expected: 100% de aprovação nos testes da Story 5.2.
-+- `git status` -- expected: Árvore de trabalho limpa e arquivos versionados.
++- `npm test` -- expected: Todas as suítes passam, incluindo a nova `tests/webhook-dispatcher.test.js`.
++- `node --experimental-strip-types --test tests/webhook-dispatcher.test.js` -- expected: 100% de aprovação nos testes da Story 5.3.
++- `git status` -- expected: Árvore de trabalho íntegra.
 +
 +**Manual checks (if no CLI):**
-+- Inspecionar a especificação OpenAPI 3.0 para garantir compatibilidade com Swagger UI / Redoc.
-+- Testar a cascata de rate limiting simulando 121 requisições em menos de 1 minuto.
-
-
-Do not invoke any skill. Return only the review result.
++- Validar assinatura gerada comparando com utilitário padrão `crypto.createHmac` do Node.
++- Simular servidor receptor falhando nas primeiras 2 tentativas e sucedendo na 3ª.
+diff --git a/_bmad-output/implementation-artifacts/sprint-status.yaml b/_bmad-output/implementation-artifacts/sprint-status.yaml
+index da3344e..52354b9 100644
+--- a/_bmad-output/implementation-artifacts/sprint-status.yaml
++++ b/_bmad-output/implementation-artifacts/sprint-status.yaml
+@@ -66,7 +66,7 @@ development_status:
+   epic-5: in-progress
+   5-1-schema-de-clientes-de-api-webhooks-e-gateway-de-validação: done
+   5-2-endpoints-restful-headless-de-gestão-de-vagas-e-perfis-opena: done
+-  5-3-dispatcher-de-webhooks-de-saída-assinados-criptograficamente: backlog
++  5-3-dispatcher-de-webhooks-de-saída-assinados-criptograficamente: review
+   5-4-portal-do-desenvolvedor-developers-com-swagger-ui-interativo: backlog
+   5-5-web-component-embutível-nativo-delivrery-button-para-cardápi: backlog
+   epic-5-retrospective: optional
+diff --git a/apps/pwa/src/api/webhooks/types.ts b/apps/pwa/src/api/webhooks/types.ts
+new file mode 100644
+index 0000000..dcae9bd
+--- /dev/null
++++ b/apps/pwa/src/api/webhooks/types.ts
+@@ -0,0 +1,55 @@
++/**
++ * Contratos de tipos para o Dispatcher de Webhooks de Saída
++ * Em conformidade com FR-17, NFR-6 e NFR-10 (HMAC-SHA256 e resiliência).
++ */
++
++import type { WebhookEventType, WebhookSubscription, ApiClient } from '../gateway/types.ts';
++
++export type { WebhookEventType, WebhookSubscription, ApiClient };
++
++/**
++ * Estrutura padronizada de payload transmitido nos webhooks
++ */
++export interface WebhookPayload<T = any> {
++  id: string;             // ex: evt_01J7K...
++  event: WebhookEventType;
++  timestamp: string;      // ISO 8601 UTC
++  data: T;
++}
++
++/**
++ * Registro de uma tentativa individual de entrega HTTP
++ */
++export interface WebhookDeliveryAttempt {
++  attemptNumber: number;
++  statusCode?: number;
++  durationMs: number;
++  error?: string;
++  timestamp: string;
++}
++
++/**
++ * Resultado consolidado do ciclo de entrega do webhook
++ */
++export interface WebhookDeliveryResult {
++  subscriptionId: string;
++  targetUrl: string;
++  event: WebhookEventType;
++  success: boolean;
++  attempts: WebhookDeliveryAttempt[];
++  totalDurationMs: number;
++  finalStatusCode?: number;
++  error?: string;
++  skipped?: boolean;
++  skipReason?: string;
++}
++
++/**
++ * Opções de configuração do despachante de webhooks
++ */
++export interface WebhookDispatcherOptions {
++  maxAttempts?: number;   // Padrão: 3 tentativas
++  baseDelayMs?: number;   // Padrão: 1000ms (ajustável em testes)
++  timeoutMs?: number;     // Padrão: 5000ms
++  fetchFn?: typeof fetch; // Injeção de dependência para testes unitários
++}
+diff --git a/apps/pwa/src/api/webhooks/webhook-crypto.ts b/apps/pwa/src/api/webhooks/webhook-crypto.ts
+new file mode 100644
+index 0000000..c4d9f30
+--- /dev/null
++++ b/apps/pwa/src/api/webhooks/webhook-crypto.ts
+@@ -0,0 +1,67 @@
++import { createHmac, timingSafeEqual } from 'node:crypto';
++
++/**
++ * Utilitários criptográficos para Webhooks de Saída e Validação de Assinaturas (FR-17)
++ */
++export class WebhookCrypto {
++  /**
++   * Gera a assinatura HMAC-SHA256 em formato hexadecimal para um determinado payload e secret.
++   *
++   * @param secretToken Segredo compartilhado da subscrição de webhook
++   * @param rawBody Corpo cru da requisição (string) ou objeto serializável
++   * @returns Assinatura HMAC-SHA256 em formato hexadecimal
++   */
++  public static generateSignature(secretToken: string, rawBody: string | object): string {
++    if (!secretToken || typeof secretToken !== 'string') {
++      throw new Error('secretToken é obrigatório para gerar assinatura de webhook.');
++    }
++
++    const payloadString = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody);
++    return createHmac('sha256', secretToken.trim())
++      .update(payloadString, 'utf8')
++      .digest('hex');
++  }
++
++  /**
++   * Valida a assinatura de um webhook recebido de forma segura contra ataques de timing.
++   *
++   * @param secretToken Segredo compartilhado configurado na subscrição
++   * @param rawBody Corpo cru da requisição recebida
++   * @param signatureHeader Valor recebido no cabeçalho X-Signature-SHA256 (com ou sem prefixo 'sha256=')
++   * @returns boolean indicando se a assinatura confere
++   */
++  public static verifySignature(
++    secretToken: string, 
++    rawBody: string | object, 
++    signatureHeader: string
++  ): boolean {
++    if (!secretToken || !signatureHeader) {
++      return false;
++    }
++
++    try {
++      const cleanSignature = signatureHeader.replace(/^sha256=/i, '').trim();
++      const expectedSignature = this.generateSignature(secretToken, rawBody);
++
++      if (cleanSignature.length !== expectedSignature.length) {
++        return false;
++      }
++
++      const bufExpected = Buffer.from(expectedSignature, 'utf8');
++      const bufReceived = Buffer.from(cleanSignature, 'utf8');
++
++      return timingSafeEqual(bufExpected, bufReceived);
++    } catch {
++      return false;
++    }
++  }
++
++  /**
++   * Gera um identificador único para o evento de webhook
++   */
++  public static generateEventId(): string {
++    const timestamp = Date.now().toString(36);
++    const random = Math.random().toString(36).substring(2, 8);
++    return `evt_${timestamp}${random}`;
++  }
++}
+diff --git a/apps/pwa/src/api/webhooks/webhook-dispatcher.ts b/apps/pwa/src/api/webhooks/webhook-dispatcher.ts
+new file mode 100644
+index 0000000..5560965
+--- /dev/null
++++ b/apps/pwa/src/api/webhooks/webhook-dispatcher.ts
+@@ -0,0 +1,307 @@
++import { WebhookCrypto } from './webhook-crypto.ts';
++import { ApiGatewayService } from '../gateway/api-gateway-service.ts';
++import { supabase } from '../../lib/supabase.ts';
++import type {
++  WebhookEventType,
++  WebhookSubscription,
++  ApiClient,
++  WebhookPayload,
++  WebhookDeliveryResult,
++  WebhookDeliveryAttempt,
++  WebhookDispatcherOptions
++} from './types.ts';
++
++export class WebhookDispatcherService {
++  private static mockSubscriptions: Map<string, { subscription: WebhookSubscription; client?: ApiClient }> = new Map();
++
++  /**
++   * Registra uma subscrição em memória (útil para testes unitários e desenvolvimento local)
++   */
++  public static registerMockSubscription(subscription: WebhookSubscription, client?: ApiClient): void {
++    this.mockSubscriptions.set(subscription.id, { subscription, client });
++  }
++
++  /**
++   * Limpa as subscrições em memória
++   */
++  public static clearMockSubscriptions(): void {
++    this.mockSubscriptions.clear();
++  }
++
++  /**
++   * Retorna as subscrições em memória ativas
++   */
++  public static getMockSubscriptions(): WebhookSubscription[] {
++    return Array.from(this.mockSubscriptions.values()).map(item => item.subscription);
++  }
++
++  /**
++   * Calcula o tempo de espera do backoff exponencial para uma determinada tentativa
++   * Tentativa 1: 0ms (imediata)
++   * Tentativa 2: 1 * baseDelayMs
++   * Tentativa 3: 2 * baseDelayMs
++   */
++  public static calculateBackoff(attempt: number, baseDelayMs: number): number {
++    if (attempt <= 1) return 0;
++    return baseDelayMs * Math.pow(2, attempt - 2);
++  }
++
++  private static sleep(ms: number): Promise<void> {
++    if (ms <= 0) return Promise.resolve();
++    return new Promise(resolve => setTimeout(resolve, ms));
++  }
++
++  /**
++   * Despacha um evento operacional para todos os parceiros com subscrições ativas e compatíveis
++   */
++  public static async dispatch(
++    event: WebhookEventType,
++    data: any,
++    options: WebhookDispatcherOptions = {}
++  ): Promise<WebhookDeliveryResult[]> {
++    const subscriptions = await this.findActiveSubscriptions(event);
++    const results: WebhookDeliveryResult[] = [];
++
++    for (const item of subscriptions) {
++      const result = await this.dispatchToSubscription(item.subscription, item.client, event, data, options);
++      results.push(result);
++    }
++
++    return results;
++  }
++
++  /**
++   * Realiza a entrega HTTP para uma subscrição específica com controle de retentativas
++   */
++  public static async dispatchToSubscription(
++    subscription: WebhookSubscription,
++    client: ApiClient | undefined,
++    event: WebhookEventType,
++    data: any,
++    options: WebhookDispatcherOptions = {}
++  ): Promise<WebhookDeliveryResult> {
++    const maxAttempts = options.maxAttempts ?? 3;
++    const baseDelayMs = options.baseDelayMs ?? 1000;
++    const timeoutMs = options.timeoutMs ?? 5000;
++    const fetchFn = options.fetchFn ?? globalThis.fetch;
++
++    // 1. Verificação de subscrição ativa
++    if (!subscription.isActive) {
++      return {
++        subscriptionId: subscription.id,
++        targetUrl: subscription.targetUrl,
++        event,
++        success: false,
++        skipped: true,
++        skipReason: 'Subscrição inativa',
++        attempts: [],
++        totalDurationMs: 0
++      };
++    }
++
++    // 2. Verificação de Escopo Municipal (FR-3, FR-17)
++    const eventCityId = data?.city_id || data?.cityId || data?.city;
++    if (client && client.allowedCities && eventCityId) {
++      const hasCityAccess = ApiGatewayService.validateCityAccess(client.allowedCities, eventCityId);
++      if (!hasCityAccess) {
++        return {
++          subscriptionId: subscription.id,
++          targetUrl: subscription.targetUrl,
++          event,
++          success: false,
++          skipped: true,
++          skipReason: `Cidade '${eventCityId}' não autorizada no escopo do cliente (${client.allowedCities.join(', ')})`,
++          attempts: [],
++          totalDurationMs: 0
++        };
++      }
++    }
++
++    // 3. Montagem do Payload Padronizado
++    const eventId = WebhookCrypto.generateEventId();
++    const timestamp = new Date().toISOString();
++    const payload: WebhookPayload = {
++      id: eventId,
++      event,
++      timestamp,
++      data
++    };
++
++    const rawBody = JSON.stringify(payload);
++    const signature = WebhookCrypto.generateSignature(subscription.secretToken, rawBody);
++
++    const headers: Record<string, string> = {
++      'Content-Type': 'application/json',
++      'X-Delivery-Event': event,
++      'X-Delivery-Timestamp': timestamp,
++      'X-Signature-SHA256': signature
++    };
++
++    const attempts: WebhookDeliveryAttempt[] = [];
++    const startTimeOverall = Date.now();
++    let success = false;
++    let finalStatusCode: number | undefined;
++    let lastError: string | undefined;
++
++    // 4. Ciclo de Retentativas com Backoff Exponencial
++    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
++      if (attempt > 1) {
++        const backoffMs = this.calculateBackoff(attempt, baseDelayMs);
++        await this.sleep(backoffMs);
++      }
++
++      const attemptStart = Date.now();
++      let attemptStatusCode: number | undefined;
++      let attemptError: string | undefined;
++
++      try {
++        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
++        const timeoutId = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
++
++        const response = await fetchFn(subscription.targetUrl, {
++          method: 'POST',
++          headers,
++          body: rawBody,
++          signal: controller?.signal
++        });
++
++        if (timeoutId) clearTimeout(timeoutId);
++
++        attemptStatusCode = response.status;
++        finalStatusCode = response.status;
++
++        // Sucesso HTTP 2xx
++        if (response.ok) {
++          success = true;
++          attempts.push({
++            attemptNumber: attempt,
++            statusCode: attemptStatusCode,
++            durationMs: Date.now() - attemptStart,
++            timestamp: new Date().toISOString()
++          });
++          break; // Sucesso: encerra ciclo de retentativas
++        }
++
++        // Falha permanente por 4xx do cliente parceiro (ex: 400 Bad Request, 404 Not Found)
++        if (response.status >= 400 && response.status < 500) {
++          attemptError = `Erro permanente do parceiro: HTTP ${response.status}`;
++          lastError = attemptError;
++          attempts.push({
++            attemptNumber: attempt,
++            statusCode: attemptStatusCode,
++            durationMs: Date.now() - attemptStart,
++            error: attemptError,
++            timestamp: new Date().toISOString()
++          });
++          break; // Aborta imediatamente sem re-tentar
++        }
++
++        // Erro HTTP 5xx (Server Error do receptor)
++        attemptError = `Erro no servidor receptor: HTTP ${response.status}`;
++        lastError = attemptError;
++      } catch (err: any) {
++        attemptError = err?.message || 'Falha de conexão / timeout';
++        lastError = attemptError;
++      }
++
++      attempts.push({
++        attemptNumber: attempt,
++        statusCode: attemptStatusCode,
++        durationMs: Date.now() - attemptStart,
++        error: attemptError,
++        timestamp: new Date().toISOString()
++      });
++
++      if (attempt === maxAttempts) {
++        break;
++      }
++    }
++
++    return {
++      subscriptionId: subscription.id,
++      targetUrl: subscription.targetUrl,
++      event,
++      success,
++      attempts,
++      totalDurationMs: Date.now() - startTimeOverall,
++      finalStatusCode,
++      error: lastError
++    };
++  }
++
++  /**
++   * Busca subscrições ativas para o evento a partir da memória ou do banco Supabase
++   */
++  private static async findActiveSubscriptions(
++    event: WebhookEventType
++  ): Promise<Array<{ subscription: WebhookSubscription; client?: ApiClient }>> {
++    const results: Array<{ subscription: WebhookSubscription; client?: ApiClient }> = [];
++
++    // 1. Busca das subscrições em memória
++    for (const item of this.mockSubscriptions.values()) {
++      if (item.subscription.isActive && item.subscription.eventType === event) {
++        results.push(item);
++      }
++    }
++
++    // 2. Se não houver em memória, consulta o Supabase se configurado
++    if (results.length === 0 && supabase) {
++      try {
++        const { data, error } = await supabase
++          .from('webhooks_subscriptions')
++          .select(`
++            id,
++            client_id,
++            target_url,
++            event_type,
++            secret_token,
++            is_active,
++            created_at,
++            api_clients (
++              id,
++              client_name,
++              api_key_hash,
++              owner_email,
++              allowed_cities,
++              rate_limit_rpm,
++              is_active
++            )
++          `)
++          .eq('is_active', true)
++          .eq('event_type', event);
++
++        if (!error && data) {
++          for (const row of data as any[]) {
++            const clientData = row.api_clients;
++            const client: ApiClient | undefined = clientData ? {
++              id: clientData.id,
++              clientName: clientData.client_name,
++              apiKeyHash: clientData.api_key_hash,
++              ownerEmail: clientData.owner_email,
++              allowedCities: clientData.allowed_cities || ['*'],
++              rateLimitRpm: clientData.rate_limit_rpm || 120,
++              isActive: clientData.is_active ?? true
++            } : undefined;
++
++            results.push({
++              subscription: {
++                id: row.id,
++                clientId: row.client_id,
++                targetUrl: row.target_url,
++                eventType: row.event_type as WebhookEventType,
++                secretToken: row.secret_token,
++                isActive: row.is_active,
++                createdAt: row.created_at
++              },
++              client
++            });
++          }
++        }
++      } catch {
++        // Fallback seguro em caso de indisponibilidade momentânea do DB
++      }
++    }
++
++    return results;
++  }
++}
+diff --git a/packages/api-client-sdk/src/index.js b/packages/api-client-sdk/src/index.js
+index 3bb65e3..823fd69 100644
+--- a/packages/api-client-sdk/src/index.js
++++ b/packages/api-client-sdk/src/index.js
+@@ -3,7 +3,7 @@
+  * Neutral client SDK for interacting with deLIVREry Headless API
+  */
+ 
+-import { createHash, randomBytes } from 'node:crypto';
++import { createHash, randomBytes, createHmac, timingSafeEqual } from 'node:crypto';
+ 
+ export class DelivreryClient {
+   constructor(config = {}) {
+@@ -162,6 +162,13 @@ export class DelivreryClient {
+       brCodePayload: generatePixBrcode({ key, recipientName, city })
+     };
+   }
++
++  /**
++   * Valida a assinatura HMAC-SHA256 de um webhook recebido
++   */
++  verifyWebhook(secretToken, rawBody, signatureHeader) {
++    return verifyWebhookSignature(secretToken, rawBody, signatureHeader);
++  }
+ }
+ 
+ /**
+@@ -185,6 +192,41 @@ export function generateWebhookSecret(byteLength = 32) {
+   return `whsec_${entropy}`;
+ }
+ 
++/**
++ * Gera assinatura HMAC-SHA256 para eventos de webhook
++ */
++export function generateWebhookSignature(secretToken, rawBody) {
++  if (!secretToken || typeof secretToken !== 'string') {
++    throw new Error('secretToken é obrigatório para gerar assinatura de webhook.');
++  }
++  const payloadString = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody);
++  return createHmac('sha256', secretToken.trim())
++    .update(payloadString, 'utf8')
++    .digest('hex');
++}
++
++/**
++ * Valida a assinatura de um webhook recebido de forma segura contra timing attacks
++ */
++export function verifyWebhookSignature(secretToken, rawBody, signatureHeader) {
++  if (!secretToken || !signatureHeader) {
++    return false;
++  }
++  try {
++    const cleanSignature = signatureHeader.replace(/^sha256=/i, '').trim();
++    const expectedSignature = generateWebhookSignature(secretToken, rawBody);
++    if (cleanSignature.length !== expectedSignature.length) {
++      return false;
++    }
++    const bufExpected = Buffer.from(expectedSignature, 'utf8');
++    const bufReceived = Buffer.from(cleanSignature, 'utf8');
++    return timingSafeEqual(bufExpected, bufReceived);
++  } catch {
++    return false;
++  }
++}
++
++
+ /**
+  * Funções utilitárias de BR Code PIX no padrão EMVCo / BACEN
+  */
+diff --git a/tests/webhook-dispatcher.test.js b/tests/webhook-dispatcher.test.js
+new file mode 100644
+index 0000000..1e8240e
+--- /dev/null
++++ b/tests/webhook-dispatcher.test.js
+@@ -0,0 +1,382 @@
++import { describe, it, beforeEach } from 'node:test';
++import assert from 'node:assert';
++import { WebhookDispatcherService } from '../apps/pwa/src/api/webhooks/webhook-dispatcher.ts';
++import { WebhookCrypto } from '../apps/pwa/src/api/webhooks/webhook-crypto.ts';
++import { 
++  DelivreryClient, 
++  generateWebhookSignature, 
++  verifyWebhookSignature,
++  generateWebhookSecret 
++} from '../packages/api-client-sdk/src/index.js';
++
++describe('Story 5.3: Dispatcher de Webhooks de Saída Assinados Criptograficamente (HMAC-SHA256)', () => {
++  const testSecret = 'whsec_test_secret_key_1234567890123456';
++  const testSubscriptionId = 'sub-uuid-1234-5678';
++  const testTargetUrl = 'https://webhook.site/partner-endpoint';
++
++  beforeEach(() => {
++    WebhookDispatcherService.clearMockSubscriptions();
++  });
++
++  describe('Algoritmo Criptográfico HMAC-SHA256 (FR-17)', () => {
++    it('deve gerar e verificar assinatura HMAC-SHA256 com sucesso', () => {
++      const payload = {
++        id: 'evt_012345',
++        event: 'job.created',
++        timestamp: '2026-09-08T18:00:00.000Z',
++        data: { jobId: 'job-1', title: 'Entrega Noturna' }
++      };
++
++      const signature = WebhookCrypto.generateSignature(testSecret, payload);
++      assert.strictEqual(typeof signature, 'string');
++      assert.strictEqual(signature.length, 64); // SHA-256 em hex tem 64 caracteres
++
++      // Validação positiva
++      const isValid = WebhookCrypto.verifySignature(testSecret, payload, signature);
++      assert.strictEqual(isValid, true);
++
++      // Validação positiva com prefixo 'sha256='
++      const isValidWithPrefix = WebhookCrypto.verifySignature(testSecret, payload, `sha256=${signature}`);
++      assert.strictEqual(isValidWithPrefix, true);
++    });
++
++    it('deve rejeitar assinaturas quando o payload for adulterado', () => {
++      const payloadOriginal = { event: 'job.created', jobId: 'job-1' };
++      const payloadAdulterado = { event: 'job.created', jobId: 'job-999' };
++
++      const signature = WebhookCrypto.generateSignature(testSecret, payloadOriginal);
++      const isValid = WebhookCrypto.verifySignature(testSecret, payloadAdulterado, signature);
++      assert.strictEqual(isValid, false);
++    });
++
++    it('deve rejeitar assinaturas quando o segredo for incorreto', () => {
++      const payload = { event: 'job.created', jobId: 'job-1' };
++      const wrongSecret = 'whsec_wrong_secret_key_abcdefghijklmnop';
++
++      const signature = WebhookCrypto.generateSignature(testSecret, payload);
++      const isValid = WebhookCrypto.verifySignature(wrongSecret, payload, signature);
++      assert.strictEqual(isValid, false);
++    });
++
++    it('deve validar utilitários correspondentes exportados no SDK client', () => {
++      const payload = { event: 'bid.submitted', bidId: 'bid-100', amount: 35.00 };
++      const sdkSignature = generateWebhookSignature(testSecret, payload);
++      assert.strictEqual(sdkSignature.length, 64);
++
++      const isValid = verifyWebhookSignature(testSecret, payload, sdkSignature);
++      assert.strictEqual(isValid, true);
++
++      const client = new DelivreryClient();
++      assert.strictEqual(client.verifyWebhook(testSecret, payload, sdkSignature), true);
++      assert.strictEqual(client.verifyWebhook(testSecret, payload, 'invalid_sig'), false);
++
++      const randomSecret = generateWebhookSecret();
++      assert.ok(randomSecret.startsWith('whsec_'));
++      assert.ok(randomSecret.length >= 32);
++    });
++  });
++
++  describe('Cálculo de Backoff Exponencial (NFR-6, NFR-10)', () => {
++    it('deve calcular corretamente os intervalos de backoff exponencial', () => {
++      const baseDelay = 1000;
++      assert.strictEqual(WebhookDispatcherService.calculateBackoff(1, baseDelay), 0);    // Tentativa 1: Imediata (0ms)
++      assert.strictEqual(WebhookDispatcherService.calculateBackoff(2, baseDelay), 1000); // Tentativa 2: 1 * baseDelay (1000ms)
++      assert.strictEqual(WebhookDispatcherService.calculateBackoff(3, baseDelay), 2000); // Tentativa 3: 2 * baseDelay (2000ms)
++      assert.strictEqual(WebhookDispatcherService.calculateBackoff(4, baseDelay), 4000); // Tentativa 4: 4 * baseDelay (4000ms)
++    });
++  });
++
++  describe('Matriz de I/O & Resiliência do Dispatcher (WebhookDispatcherService)', () => {
++    it('Cenário 1: Despacho com Sucesso (200 OK) na primeira tentativa', async () => {
++      let interceptedHeaders;
++      let interceptedBody;
++
++      const mockFetch = async (url, init) => {
++        interceptedHeaders = init?.headers;
++        interceptedBody = init?.body;
++        return new Response(JSON.stringify({ received: true }), {
++          status: 200,
++          headers: { 'Content-Type': 'application/json' }
++        });
++      };
++
++      const subscription = {
++        id: testSubscriptionId,
++        clientId: 'client-1',
++        targetUrl: testTargetUrl,
++        eventType: 'job.created',
++        secretToken: testSecret,
++        isActive: true
++      };
++
++      const client = {
++        id: 'client-1',
++        clientName: 'PDV Express',
++        apiKeyHash: 'hash-abc',
++        ownerEmail: 'pdv@express.com',
++        allowedCities: ['sao_paulo'],
++        rateLimitRpm: 120,
++        isActive: true
++      };
++
++      const eventData = {
++        job_id: 'job-101',
++        title: 'Entrega Farmácia',
++        city_id: 'sao_paulo'
++      };
++
++      const result = await WebhookDispatcherService.dispatchToSubscription(
++        subscription,
++        client,
++        'job.created',
++        eventData,
++        { fetchFn: mockFetch, baseDelayMs: 10 }
++      );
++
++      assert.strictEqual(result.success, true);
++      assert.strictEqual(result.attempts.length, 1);
++      assert.strictEqual(result.finalStatusCode, 200);
++
++      // Verificação dos headers de segurança obrigatórios (FR-17)
++      const headers = interceptedHeaders;
++      assert.strictEqual(headers['Content-Type'], 'application/json');
++      assert.strictEqual(headers['X-Delivery-Event'], 'job.created');
++      assert.ok(headers['X-Delivery-Timestamp'], 'X-Delivery-Timestamp deve estar presente');
++      assert.ok(headers['X-Signature-SHA256'], 'X-Signature-SHA256 deve estar presente');
++
++      // Verificação da assinatura transmitida
++      const parsedBody = JSON.parse(interceptedBody);
++      assert.strictEqual(parsedBody.event, 'job.created');
++      assert.strictEqual(parsedBody.data.job_id, 'job-101');
++      assert.strictEqual(
++        WebhookCrypto.verifySignature(testSecret, interceptedBody, headers['X-Signature-SHA256']),
++        true
++      );
++    });
++
++    it('Cenário 2: Falha Temporária (500 Server Error) com recuperação na 2ª tentativa', async () => {
++      let callCount = 0;
++
++      const mockFetch = async () => {
++        callCount++;
++        if (callCount === 1) {
++          // 1ª tentativa falha com 500
++          return new Response('Internal Server Error', { status: 500 });
++        }
++        // 2ª tentativa responde 200 OK
++        return new Response(JSON.stringify({ ok: true }), { status: 200 });
++      };
++
++      const subscription = {
++        id: testSubscriptionId,
++        clientId: 'client-1',
++        targetUrl: testTargetUrl,
++        eventType: 'job.accepted',
++        secretToken: testSecret,
++        isActive: true
++      };
++
++      const result = await WebhookDispatcherService.dispatchToSubscription(
++        subscription,
++        undefined,
++        'job.accepted',
++        { job_id: 'job-102', courier_id: 'courier-55' },
++        { fetchFn: mockFetch, baseDelayMs: 10, maxAttempts: 3 }
++      );
++
++      assert.strictEqual(result.success, true);
++      assert.strictEqual(result.attempts.length, 2);
++      assert.strictEqual(result.attempts[0].statusCode, 500);
++      assert.strictEqual(result.attempts[1].statusCode, 200);
++      assert.strictEqual(result.finalStatusCode, 200);
++    });
++
++    it('Cenário 3: Falha Permanente por 4xx do Parceiro (HTTP 404) aborta retentativas imediatamente', async () => {
++      let callCount = 0;
++
++      const mockFetch = async () => {
++        callCount++;
++        return new Response('Not Found', { status: 404 });
++      };
++
++      const subscription = {
++        id: testSubscriptionId,
++        clientId: 'client-1',
++        targetUrl: testTargetUrl,
++        eventType: 'bid.submitted',
++        secretToken: testSecret,
++        isActive: true
++      };
++
++      const result = await WebhookDispatcherService.dispatchToSubscription(
++        subscription,
++        undefined,
++        'bid.submitted',
++        { bid_id: 'bid-99' },
++        { fetchFn: mockFetch, baseDelayMs: 10, maxAttempts: 3 }
++      );
++
++      assert.strictEqual(result.success, false);
++      assert.strictEqual(result.attempts.length, 1, 'Não deve re-tentar após erro 4xx');
++      assert.strictEqual(result.finalStatusCode, 404);
++      assert.ok(result.error?.includes('404'));
++      assert.strictEqual(callCount, 1);
++    });
++
++    it('Cenário 4: Filtragem de Escopo Municipal bloqueia despacho fora de allowed_cities', async () => {
++      let fetchCalled = false;
++      const mockFetch = async () => {
++        fetchCalled = true;
++        return new Response('OK', { status: 200 });
++      };
++
++      const subscription = {
++        id: testSubscriptionId,
++        clientId: 'client-sp-only',
++        targetUrl: testTargetUrl,
++        eventType: 'job.created',
++        secretToken: testSecret,
++        isActive: true
++      };
++
++      const client = {
++        id: 'client-sp-only',
++        clientName: 'Parceiro SP',
++        apiKeyHash: 'hash-xyz',
++        ownerEmail: 'sp@parceiro.com',
++        allowedCities: ['sao_paulo'], // Apenas São Paulo
++        rateLimitRpm: 120,
++        isActive: true
++      };
++
++      // Vaga criada em Campinas (fora de São Paulo)
++      const eventData = {
++        job_id: 'job-campinas-1',
++        city_id: 'campinas'
++      };
++
++      const result = await WebhookDispatcherService.dispatchToSubscription(
++        subscription,
++        client,
++        'job.created',
++        eventData,
++        { fetchFn: mockFetch }
++      );
++
++      assert.strictEqual(result.skipped, true);
++      assert.strictEqual(result.success, false);
++      assert.strictEqual(fetchCalled, false, 'Fetch não deve ser chamado para cidade não autorizada');
++      assert.ok(result.skipReason?.includes('campinas'));
++    });
++
++    it('Cenário 5: Subscrição inativa é ignorada sem efetuar requisições', async () => {
++      let fetchCalled = false;
++      const mockFetch = async () => {
++        fetchCalled = true;
++        return new Response('OK', { status: 200 });
++      };
++
++      const subscription = {
++        id: 'sub-inactive',
++        clientId: 'client-1',
++        targetUrl: testTargetUrl,
++        eventType: 'job.completed',
++        secretToken: testSecret,
++        isActive: false // Subscrição desativada
++      };
++
++      const result = await WebhookDispatcherService.dispatchToSubscription(
++        subscription,
++        undefined,
++        'job.completed',
++        { job_id: 'job-done' },
++        { fetchFn: mockFetch }
++      );
++
++      assert.strictEqual(result.skipped, true);
++      assert.strictEqual(result.skipReason, 'Subscrição inativa');
++      assert.strictEqual(fetchCalled, false);
++    });
++
++    it('Cenário 6: Esgotamento de Tentativas (3 falhas consecutivas de rede / 5xx)', async () => {
++      let callCount = 0;
++
++      const mockFetch = async () => {
++        callCount++;
++        throw new Error('Connection refused by peer');
++      };
++
++      const subscription = {
++        id: testSubscriptionId,
++        clientId: 'client-1',
++        targetUrl: testTargetUrl,
++        eventType: 'job.created',
++        secretToken: testSecret,
++        isActive: true
++      };
++
++      const result = await WebhookDispatcherService.dispatchToSubscription(
++        subscription,
++        undefined,
++        'job.created',
++        { job_id: 'job-fail' },
++        { fetchFn: mockFetch, baseDelayMs: 10, maxAttempts: 3 }
++      );
++
++      assert.strictEqual(result.success, false);
++      assert.strictEqual(result.attempts.length, 3);
++      assert.strictEqual(callCount, 3);
++      assert.ok(result.error?.includes('Connection refused'));
++    });
++
++    it('deve realizar despacho broadcast para múltiplas subscrições ativas via dispatch()', async () => {
++      const dispatchedUrls = [];
++
++      const mockFetch = async (url) => {
++        dispatchedUrls.push(url.toString());
++        return new Response('OK', { status: 200 });
++      };
++
++      WebhookDispatcherService.registerMockSubscription({
++        id: 'sub-1',
++        clientId: 'client-1',
++        targetUrl: 'https://partner1.com/hook',
++        eventType: 'job.created',
++        secretToken: testSecret,
++        isActive: true
++      });
++
++      WebhookDispatcherService.registerMockSubscription({
++        id: 'sub-2',
++        clientId: 'client-2',
++        targetUrl: 'https://partner2.com/hook',
++        eventType: 'job.created',
++        secretToken: testSecret,
++        isActive: true
++      });
++
++      // Subscrição para outro evento (não deve receber)
++      WebhookDispatcherService.registerMockSubscription({
++        id: 'sub-3',
++        clientId: 'client-3',
++        targetUrl: 'https://partner3.com/hook',
++        eventType: 'job.completed',
++        secretToken: testSecret,
++        isActive: true
++      });
++
++      const results = await WebhookDispatcherService.dispatch(
++        'job.created',
++        { job_id: 'job-multi-1' },
++        { fetchFn: mockFetch, baseDelayMs: 5 }
++      );
++
++      assert.strictEqual(results.length, 2);
++      assert.ok(results.every(r => r.success === true));
++      assert.deepStrictEqual(dispatchedUrls.sort(), [
++        'https://partner1.com/hook',
++        'https://partner2.com/hook'
++      ].sort());
++    });
++  });
++});
