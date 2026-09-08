@@ -1,4 +1,6 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { sha256 } from '@noble/hashes/sha2.js';
+import { hmac } from '@noble/hashes/hmac.js';
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 
 /**
  * Utilitários criptográficos para Webhooks de Saída e Validação de Assinaturas (FR-17)
@@ -17,9 +19,7 @@ export class WebhookCrypto {
     }
 
     const payloadString = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody);
-    return createHmac('sha256', secretToken.trim())
-      .update(payloadString, 'utf8')
-      .digest('hex');
+    return bytesToHex(hmac(sha256, utf8ToBytes(secretToken.trim()), utf8ToBytes(payloadString)));
   }
 
   /**
@@ -47,10 +47,12 @@ export class WebhookCrypto {
         return false;
       }
 
-      const bufExpected = Buffer.from(expectedSignature, 'utf8');
-      const bufReceived = Buffer.from(cleanSignature, 'utf8');
+      let diff = 0;
+      for (let i = 0; i < cleanSignature.length; i++) {
+        diff |= cleanSignature.charCodeAt(i) ^ expectedSignature.charCodeAt(i);
+      }
 
-      return timingSafeEqual(bufExpected, bufReceived);
+      return diff === 0;
     } catch {
       return false;
     }

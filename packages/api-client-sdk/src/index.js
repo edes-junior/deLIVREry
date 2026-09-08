@@ -3,7 +3,9 @@
  * Neutral client SDK for interacting with deLIVREry Headless API
  */
 
-import { createHash, randomBytes, createHmac, timingSafeEqual } from 'node:crypto';
+import { sha256 } from '@noble/hashes/sha2.js';
+import { hmac } from '@noble/hashes/hmac.js';
+import { bytesToHex, utf8ToBytes, randomBytes } from '@noble/hashes/utils.js';
 
 export class DelivreryClient {
   constructor(config = {}) {
@@ -178,17 +180,17 @@ export function hashApiKey(apiKey) {
   if (!apiKey || typeof apiKey !== 'string') {
     return '';
   }
-  return createHash('sha256').update(apiKey.trim()).digest('hex');
+  return bytesToHex(sha256(utf8ToBytes(apiKey.trim())));
 }
 
 export function generateApiKey(prefix = 'dlv_live', byteLength = 24) {
   const cleanPrefix = prefix.replace(/[^a-zA-Z0-9_]/g, '');
-  const entropy = randomBytes(byteLength).toString('hex');
+  const entropy = bytesToHex(randomBytes(byteLength));
   return `${cleanPrefix}_${entropy}`;
 }
 
 export function generateWebhookSecret(byteLength = 32) {
-  const entropy = randomBytes(byteLength).toString('hex');
+  const entropy = bytesToHex(randomBytes(byteLength));
   return `whsec_${entropy}`;
 }
 
@@ -200,9 +202,7 @@ export function generateWebhookSignature(secretToken, rawBody) {
     throw new Error('secretToken é obrigatório para gerar assinatura de webhook.');
   }
   const payloadString = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody);
-  return createHmac('sha256', secretToken.trim())
-    .update(payloadString, 'utf8')
-    .digest('hex');
+  return bytesToHex(hmac(sha256, utf8ToBytes(secretToken.trim()), utf8ToBytes(payloadString)));
 }
 
 /**
@@ -218,9 +218,11 @@ export function verifyWebhookSignature(secretToken, rawBody, signatureHeader) {
     if (cleanSignature.length !== expectedSignature.length) {
       return false;
     }
-    const bufExpected = Buffer.from(expectedSignature, 'utf8');
-    const bufReceived = Buffer.from(cleanSignature, 'utf8');
-    return timingSafeEqual(bufExpected, bufReceived);
+    let diff = 0;
+    for (let i = 0; i < cleanSignature.length; i++) {
+      diff |= cleanSignature.charCodeAt(i) ^ expectedSignature.charCodeAt(i);
+    }
+    return diff === 0;
   } catch {
     return false;
   }
