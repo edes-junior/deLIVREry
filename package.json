@@ -9,6 +9,8 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "npm run dev --workspace=@delivrery/pwa",
+    "dev:portal": "npm run dev --workspace=@delivrery/developer-portal",
     "test": "node --experimental-strip-types --test tests/*.test.js",
     "test:schema": "node tests/schema-validation.test.js",
     "build:widget": "npm run build --workspace=@delivrery/embed-widget"
@@ -21,5 +23,11 @@
     "supabase"
   ],
   "author": "deLIVREry Community",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "vite": "^8.2.2"
+  }
 }

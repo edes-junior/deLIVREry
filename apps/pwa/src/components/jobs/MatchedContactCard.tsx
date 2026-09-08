@@ -111,6 +111,8 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
         color: '#f8fafc'
       }}
     >
+      <div style={{ marginBottom: '16px' }}>
+        <h4 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 700 }}>
           {partnerName}
         </h4>
         <p style={{ margin: 0, fontSize: '14px', color: '#38bdf8', fontWeight: 600 }}>

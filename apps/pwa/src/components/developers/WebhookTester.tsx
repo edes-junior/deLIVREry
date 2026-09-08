@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { generateWebhookSecret, verifyWebhookSignature } from '../../../../packages/api-client-sdk/src/index.js';
+import { generateWebhookSecret, verifyWebhookSignature } from '../../../../../packages/api-client-sdk/src/index.js';
 import { WebhookDispatcherService } from '../../api/webhooks/webhook-dispatcher.ts';
 import { WebhookCrypto } from '../../api/webhooks/webhook-crypto.ts';
 import type { WebhookSubscription, WebhookEventType, WebhookDeliveryResult } from '../../api/webhooks/types.ts';

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import '../../../../packages/embed-widget/src/delivrery-button.js';
+import '../../../../../packages/embed-widget/src/delivrery-button.js';
 
 declare global {
   namespace JSX {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { generateApiKey, hashApiKey } from '../../../../packages/api-client-sdk/src/index.js';
+import { generateApiKey, hashApiKey } from '../../../../../packages/api-client-sdk/src/index.js';
 import { ApiGatewayService } from '../../api/gateway/api-gateway-service.ts';
 import { supabase } from '../../lib/supabase.ts';
 import type { ApiClient } from '../../api/gateway/types.ts';

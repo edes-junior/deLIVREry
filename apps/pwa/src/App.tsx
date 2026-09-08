@@ -51,7 +51,6 @@ export const App: React.FC = () => {
       }
     }
   }, []);
-  }, []);
 
   // Verifica se está na rota de callback de autenticação (#access_token=...)
   const isAuthCallback =
