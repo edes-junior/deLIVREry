@@ -22,13 +22,109 @@ export class DelivreryClient {
   }
 
   /**
+   * Método auxiliar para despachar requisições com headers de autenticação e tratamento RFC 7807
+   */
+  async _request(path, options = {}) {
+    const url = `${this.baseUrl}${path.startsWith('/') ? path : '/' + path}`;
+
+    if (!this.fetchFn) {
+      throw new Error('Nenhum cliente fetch disponível no ambiente.');
+    }
+
+    const headers = {
+      'Accept': 'application/json',
+      ...(options.headers || {})
+    };
+
+    if (this.apiKey) {
+      headers['X-API-Key'] = this.apiKey;
+      headers['Authorization'] = `Bearer ${this.apiKey}`;
+    }
+
+    if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+      options.body = JSON.stringify(options.body);
+    }
+
+    const res = await this.fetchFn(url, { ...options, headers });
+
+    if (!res.ok) {
+      const errorBody = await res.json().catch(() => ({}));
+      const message = errorBody.detail || errorBody.title || `Erro HTTP ${res.status}`;
+      const err = new Error(message);
+      err.status = res.status;
+      err.problem = errorBody;
+      throw err;
+    }
+
+    return await res.json();
+  }
+
+  /**
+   * Cadastra um entregador via API Headless (POST /couriers)
+   */
+  async createCourier(data = {}) {
+    return await this._request('/couriers', {
+      method: 'POST',
+      body: data
+    });
+  }
+
+  /**
+   * Cadastra um estabelecimento lojista via API Headless (POST /stores)
+   */
+  async createStore(data = {}) {
+    return await this._request('/stores', {
+      method: 'POST',
+      body: data
+    });
+  }
+
+  /**
+   * Lista vagas e turnos de entrega abertos (GET /jobs)
+   */
+  async getJobs(params = {}) {
+    const cityId = params.cityId || params.city_id;
+    if (!cityId) {
+      throw new Error('city_id é obrigatório para consultar vagas.');
+    }
+
+    const query = new URLSearchParams({
+      city_id: cityId
+    });
+
+    if (params.neighborhoodId || params.neighborhood_id) {
+      query.set('neighborhood_id', params.neighborhoodId || params.neighborhood_id);
+    }
+    if (params.transportModal || params.transport_modal) {
+      query.set('transport_modal', params.transportModal || params.transport_modal);
+    }
+
+    return await this._request(`/jobs?${query.toString()}`, {
+      method: 'GET'
+    });
+  }
+
+  /**
+   * Aceita uma proposta formalizando o matching da vaga (POST /bids/:id/accept)
+   */
+  async acceptBid(bidId, params = {}) {
+    if (!bidId) {
+      throw new Error('bidId é obrigatório para aceite de proposta.');
+    }
+
+    return await this._request(`/bids/${bidId}/accept`, {
+      method: 'POST',
+      body: {
+        store_id: params.storeId || params.store_id,
+        job_id: params.jobId || params.job_id,
+        courier_id: params.courierId || params.courier_id
+      }
+    });
+  }
+
+  /**
    * Consulta as métricas analíticas de preços regionais com filtro 1.5xIQR.
-   * @param {Object} params
-   * @param {string} params.cityId ou params.city_id
-   * @param {string} params.neighborhoodId ou params.neighborhood_id
-   * @param {string} [params.stateId] ou params.state_id
-   * @param {string} [params.transportModal] ou params.transport_modal
-   * @returns {Promise<Object>} Resposta com dados analíticos e sugestão de mercado
    */
   async getPricingStats(params = {}) {
     const cityId = params.cityId || params.city_id;
@@ -47,33 +143,9 @@ export class DelivreryClient {
       transport_modal: transportModal
     });
 
-    const url = `${this.baseUrl}/pricing-stats?${query.toString()}`;
-
-    if (!this.fetchFn) {
-      throw new Error('Nenhum cliente fetch disponível no ambiente.');
-    }
-
-    const headers = {
-      'Accept': 'application/json'
-    };
-
-    if (this.apiKey) {
-      headers['X-API-Key'] = this.apiKey;
-      headers['Authorization'] = `Bearer ${this.apiKey}`;
-    }
-
-    const res = await this.fetchFn(url, { method: 'GET', headers });
-
-    if (!res.ok) {
-      const errorBody = await res.json().catch(() => ({}));
-      const message = errorBody.detail || errorBody.title || `Erro HTTP ${res.status}`;
-      const err = new Error(message);
-      err.status = res.status;
-      err.problem = errorBody;
-      throw err;
-    }
-
-    return await res.json();
+    return await this._request(`/pricing-stats?${query.toString()}`, {
+      method: 'GET'
+    });
   }
 
   /**
