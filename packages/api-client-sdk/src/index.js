@@ -3,11 +3,18 @@
  * Neutral client SDK for interacting with deLIVREry Headless API
  */
 
+import { createHash, randomBytes } from 'node:crypto';
+
 export class DelivreryClient {
   constructor(config = {}) {
     this.baseUrl = (config.baseUrl || 'http://localhost:54321/functions/v1').replace(/\/$/, '');
     this.apiKey = config.apiKey || '';
     this.fetchFn = config.fetch || (typeof fetch !== 'undefined' ? fetch : null);
+  }
+
+  setApiKey(apiKey) {
+    this.apiKey = apiKey || '';
+    return this;
   }
 
   async getHealth() {
@@ -51,6 +58,7 @@ export class DelivreryClient {
     };
 
     if (this.apiKey) {
+      headers['X-API-Key'] = this.apiKey;
       headers['Authorization'] = `Bearer ${this.apiKey}`;
     }
 
@@ -82,6 +90,27 @@ export class DelivreryClient {
       brCodePayload: generatePixBrcode({ key, recipientName, city })
     };
   }
+}
+
+/**
+ * Utilitários de credenciais para integradores B2B
+ */
+export function hashApiKey(apiKey) {
+  if (!apiKey || typeof apiKey !== 'string') {
+    return '';
+  }
+  return createHash('sha256').update(apiKey.trim()).digest('hex');
+}
+
+export function generateApiKey(prefix = 'dlv_live', byteLength = 24) {
+  const cleanPrefix = prefix.replace(/[^a-zA-Z0-9_]/g, '');
+  const entropy = randomBytes(byteLength).toString('hex');
+  return `${cleanPrefix}_${entropy}`;
+}
+
+export function generateWebhookSecret(byteLength = 32) {
+  const entropy = randomBytes(byteLength).toString('hex');
+  return `whsec_${entropy}`;
 }
 
 /**
@@ -135,4 +164,3 @@ export function generatePixBrcode(params = {}) {
 }
 
 export default DelivreryClient;
-

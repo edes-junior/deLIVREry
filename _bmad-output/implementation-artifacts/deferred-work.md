@@ -11,3 +11,19 @@
 ## Deferred from: code review of Epic 1 (2026-09-04)
 - [Review][Defer] Triggers de Quórum `sync_region_unlock_quorum` limitados a `AFTER INSERT` [`supabase/migrations/20260904160000_update_courier_profiles_geography.sql:98-109`] — expandir suporte para UPDATE (troca de bairro) e DELETE (exclusão de conta) quando a gestão administrativa de perfis e transferência territorial for modelada.
 
+- source_spec: none
+  summary: Story 5.2 - Endpoints RESTful Headless de Gestão de Vagas e Perfis (OpenAPI 3.0).
+  evidence: Escopo dividido do Epic 5 via Multi-goal check para desenvolvimento sequencial focado a partir da Story 5.1.
+
+- source_spec: none
+  summary: Story 5.3 - Dispatcher de Webhooks de Saída Assinados Criptograficamente (HMAC-SHA256).
+  evidence: Escopo dividido do Epic 5 via Multi-goal check para desenvolvimento sequencial focado a partir da Story 5.1.
+
+- source_spec: none
+  summary: Story 5.4 - Portal do Desenvolvedor (/developers) com Swagger UI Interativo.
+  evidence: Escopo dividido do Epic 5 via Multi-goal check para desenvolvimento sequencial focado a partir da Story 5.1.
+
+- source_spec: none
+  summary: Story 5.5 - Web Component Embutível Nativo (<delivrery-button />) para Cardápios e PDVs.
+  evidence: Escopo dividido do Epic 5 via Multi-goal check para desenvolvimento sequencial focado a partir da Story 5.1.
+
