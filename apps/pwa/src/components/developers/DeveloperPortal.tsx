@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SwaggerDocsViewer } from './SwaggerDocsViewer.tsx';
 import { ApiKeyGeneratorModal } from './ApiKeyGeneratorModal.tsx';
 import { WebhookTester } from './WebhookTester.tsx';
+import { EmbedWidgetPlayground } from './EmbedWidgetPlayground.tsx';
 import type { ApiClient } from '../../api/gateway/types.ts';
 
 interface DeveloperPortalProps {
@@ -9,7 +10,7 @@ interface DeveloperPortalProps {
 }
 
 export const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ onBack }) => {
-  const [activeTab, setActiveTab] = useState<'docs' | 'keys' | 'webhooks' | 'sdk'>('docs');
+  const [activeTab, setActiveTab] = useState<'docs' | 'keys' | 'webhooks' | 'sdk' | 'widget'>('docs');
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
   const [activeApiKey, setActiveApiKey] = useState('');
   const [activeClient, setActiveClient] = useState<ApiClient | null>(null);
@@ -224,6 +225,27 @@ export const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ onBack }) => {
           >
             📦 SDK & Exemplos de Código
           </button>
+
+          <button
+            onClick={() => setActiveTab('widget')}
+            style={{
+              padding: '12px 20px',
+              minHeight: '48px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              backgroundColor: activeTab === 'widget' ? '#1e293b' : 'transparent',
+              color: activeTab === 'widget' ? '#38bdf8' : '#94a3b8',
+              fontWeight: 700,
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              borderBottom: activeTab === 'widget' ? '2px solid #38bdf8' : 'none'
+            }}
+          >
+            🧩 Web Component (&lt;delivrery-button /&gt;)
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -376,6 +398,10 @@ app.post('/api/webhooks', (req, res) => {
               </pre>
             </div>
           </div>
+        )}
+
+        {activeTab === 'widget' && (
+          <EmbedWidgetPlayground />
         )}
       </main>
 

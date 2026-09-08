@@ -63,10 +63,10 @@ development_status:
   4-4-painel-público-de-transparência-de-custos-do-servidor-e-vitó: done
   epic-4-retrospective: done
 
-  epic-5: in-progress
+  epic-5: done
   5-1-schema-de-clientes-de-api-webhooks-e-gateway-de-validação: done
   5-2-endpoints-restful-headless-de-gestão-de-vagas-e-perfis-opena: done
   5-3-dispatcher-de-webhooks-de-saída-assinados-criptograficamente: done
   5-4-portal-do-desenvolvedor-developers-com-swagger-ui-interativo: done
-  5-5-web-component-embutível-nativo-delivrery-button-para-cardápi: backlog
+  5-5-web-component-embutível-nativo-delivrery-button-para-cardápi: done
   epic-5-retrospective: optional

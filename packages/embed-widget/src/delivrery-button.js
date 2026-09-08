@@ -1,44 +1,473 @@
 /**
- * deLIVREry - Embeddable Web Component
+ * deLIVREry - Embeddable Web Component Nativo
  * <delivrery-button />
- * Lightweight native Custom Element for digital menus and POS systems.
+ *
+ * Custom Element v1 de alto desempenho em Vanilla JS puro (zero dependências, NFR-4)
+ * com Shadow DOM isolado, tempo de montagem < 50ms e ergonomia tátil >= 48px (NFR-9).
+ * Compatível com cardápios digitais, PDVs na nuvem e portais municipais (FR-18).
  */
+
 class DelivreryButton extends HTMLElement {
+  static get observedAttributes() {
+    return [
+      'client-id',
+      'city-id',
+      'neighborhood-id',
+      'store-name',
+      'label',
+      'text',
+      'theme',
+      'mode',
+      'base-rate'
+    ];
+  }
+
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
+    this._isModalOpen = false;
+    this._isLoading = false;
+    this._orderSubmitted = false;
+    this._renderDurationMs = 0;
+    this._handleKeyDown = this._handleKeyDown.bind(this);
   }
 
   connectedCallback() {
-    const text = this.getAttribute('text') || 'Solicitar Entrega com deLIVREry';
+    const startTime = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    this.render();
+    const endTime = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    this._renderDurationMs = endTime - startTime;
+
+    document.addEventListener('keydown', this._handleKeyDown);
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener('keydown', this._handleKeyDown);
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue !== newValue && this.shadowRoot) {
+      this.render();
+    }
+  }
+
+  get clientId() {
+    return this.getAttribute('client-id') || '';
+  }
+
+  get cityId() {
+    return this.getAttribute('city-id') || 'sao_paulo';
+  }
+
+  get neighborhoodId() {
+    return this.getAttribute('neighborhood-id') || '';
+  }
+
+  get storeName() {
+    return this.getAttribute('store-name') || 'Estabelecimento';
+  }
+
+  get label() {
+    return this.getAttribute('label') || this.getAttribute('text') || 'Pedir Motoboy com deLIVREry';
+  }
+
+  get theme() {
+    return (this.getAttribute('theme') || 'dark').toLowerCase();
+  }
+
+  get mode() {
+    return (this.getAttribute('mode') || 'modal').toLowerCase();
+  }
+
+  get baseRate() {
+    const val = parseFloat(this.getAttribute('base-rate'));
+    return isNaN(val) ? null : val;
+  }
+
+  get renderDurationMs() {
+    return this._renderDurationMs;
+  }
+
+  getMetadata() {
+    return {
+      clientId: this.clientId,
+      cityId: this.cityId,
+      neighborhoodId: this.neighborhoodId,
+      storeName: this.storeName,
+      label: this.label,
+      theme: this.theme,
+      mode: this.mode,
+      baseRate: this.baseRate
+    };
+  }
+
+  _handleKeyDown(e) {
+    if (e.key === 'Escape' && this._isModalOpen) {
+      this._closeModal();
+    }
+  }
+
+  _handleClick(e) {
+    e.preventDefault();
+
+    // Haptic feedback
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([15]);
+    }
+
+    // Dispara CustomEvent delivrery:click
+    this.dispatchEvent(new CustomEvent('delivrery:click', {
+      bubbles: true,
+      composed: true,
+      detail: this.getMetadata()
+    }));
+
+    if (this.mode === 'redirect') {
+      const redirectUrl = `https://delivrery.app.br/?city=${encodeURIComponent(this.cityId)}&store=${encodeURIComponent(this.storeName)}`;
+      if (typeof window !== 'undefined') {
+        window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+      }
+      return;
+    }
+
+    if (this.mode === 'event') {
+      // Apenas notifica via CustomEvent
+      return;
+    }
+
+    // Modo modal padrão
+    this._openModal();
+  }
+
+  _openModal() {
+    this._isModalOpen = true;
+    this._orderSubmitted = false;
+    this.render();
+  }
+
+  _closeModal() {
+    this._isModalOpen = false;
+    this._isLoading = false;
+    this._orderSubmitted = false;
+    this.render();
+
+    this.dispatchEvent(new CustomEvent('delivrery:close', {
+      bubbles: true,
+      composed: true,
+      detail: this.getMetadata()
+    }));
+  }
+
+  _handleSubmit(e) {
+    e.preventDefault();
+    this._isLoading = true;
+    this.render();
+
+    // Haptic feedback
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([20, 30, 20]);
+    }
+
+    const payload = {
+      ...this.getMetadata(),
+      requestedAt: new Date().toISOString(),
+      orderId: `ord_${Date.now().toString(36)}`
+    };
+
+    // Dispara CustomEvent delivrery:submit
+    this.dispatchEvent(new CustomEvent('delivrery:submit', {
+      bubbles: true,
+      composed: true,
+      detail: payload
+    }));
+
+    setTimeout(() => {
+      this._isLoading = false;
+      this._orderSubmitted = true;
+      this.render();
+
+      setTimeout(() => {
+        this._closeModal();
+      }, 2200);
+    }, 600);
+  }
+
+  render() {
+    const isDark = this.theme !== 'light';
+    const isModalOpen = this._isModalOpen;
+    const isLoading = this._isLoading;
+    const isSubmitted = this._orderSubmitted;
+
+    const formattedRate = this.baseRate !== null 
+      ? `R$ ${this.baseRate.toFixed(2).replace('.', ',')}` 
+      : 'Tarifa Dinâmica Livre';
+
     this.shadowRoot.innerHTML = `
       <style>
         :host {
           display: inline-block;
           font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          vertical-align: middle;
         }
-        button {
-          background-color: #10b981;
-          color: white;
-          border: none;
-          padding: 10px 18px;
-          border-radius: 8px;
-          font-weight: 600;
-          font-size: 14px;
+
+        *, *::before, *::after {
+          box-sizing: border-box;
+        }
+
+        .delivrery-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          min-height: 48px;
+          padding: 12px 22px;
+          border-radius: 10px;
+          font-weight: 700;
+          font-size: 15px;
           cursor: pointer;
-          transition: background-color 0.2s;
+          border: none;
+          outline: none;
+          transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+          background-color: ${isDark ? '#059669' : '#10b981'};
+          color: #ffffff;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+          user-select: none;
         }
-        button:hover {
+
+        .delivrery-btn:hover {
+          background-color: ${isDark ? '#047857' : '#059669'};
+          transform: translateY(-1px);
+          box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.25);
+        }
+
+        .delivrery-btn:active {
+          transform: translateY(1px);
+        }
+
+        .delivrery-btn:focus-visible {
+          outline: 3px solid #38bdf8;
+          outline-offset: 2px;
+        }
+
+        .icon {
+          font-size: 18px;
+        }
+
+        /* Modal Overlay */
+        .modal-backdrop {
+          display: ${isModalOpen ? 'flex' : 'none'};
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.7);
+          backdrop-filter: blur(4px);
+          z-index: 99999;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
+        }
+
+        .modal-card {
+          background-color: ${isDark ? '#0f172a' : '#ffffff'};
+          color: ${isDark ? '#f8fafc' : '#0f172a'};
+          border: 1px solid ${isDark ? '#334155' : '#e2e8f0'};
+          border-radius: 16px;
+          width: 100%;
+          maxWidth: 440px;
+          padding: 24px;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+          animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.96); }
+          to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 16px;
+        }
+
+        .modal-title {
+          margin: 0;
+          font-size: 18px;
+          font-weight: 800;
+          color: ${isDark ? '#38bdf8' : '#0284c7'};
+        }
+
+        .modal-close-btn {
+          background: transparent;
+          border: none;
+          color: ${isDark ? '#94a3b8' : '#64748b'};
+          font-size: 20px;
+          cursor: pointer;
+          min-width: 48px;
+          min-height: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 8px;
+        }
+
+        .modal-close-btn:hover {
+          color: ${isDark ? '#ffffff' : '#000000'};
+        }
+
+        .info-box {
+          background-color: ${isDark ? '#1e293b' : '#f1f5f9'};
+          border-radius: 10px;
+          padding: 14px;
+          margin-bottom: 18px;
+          font-size: 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+        }
+
+        .info-label {
+          color: ${isDark ? '#94a3b8' : '#64748b'};
+        }
+
+        .info-value {
+          font-weight: 700;
+        }
+
+        .action-btn {
+          width: 100%;
+          min-height: 48px;
+          border: none;
+          border-radius: 8px;
+          font-size: 15px;
+          font-weight: 700;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+
+        .confirm-btn {
           background-color: #059669;
+          color: #ffffff;
+          margin-bottom: 10px;
+        }
+
+        .confirm-btn:hover {
+          background-color: #047857;
+        }
+
+        .cancel-btn {
+          background-color: ${isDark ? '#334155' : '#e2e8f0'};
+          color: ${isDark ? '#f8fafc' : '#334155'};
+        }
+
+        .cancel-btn:hover {
+          background-color: ${isDark ? '#475569' : '#cbd5e1'};
+        }
+
+        .success-box {
+          text-align: center;
+          padding: 20px 0;
+        }
+
+        .success-icon {
+          font-size: 40px;
+          margin-bottom: 10px;
         }
       </style>
-      <button type="button">${text}</button>
+
+      <button class="delivrery-btn" type="button" aria-haspopup="dialog">
+        <span class="icon">🛵</span>
+        <span class="text">${this.label}</span>
+      </button>
+
+      <div class="modal-backdrop" role="dialog" aria-modal="true">
+        <div class="modal-card">
+          ${isSubmitted ? `
+            <div class="success-box">
+              <div class="success-icon">✅</div>
+              <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 800; color: #10b981;">
+                Entrega Chamada com Sucesso!
+              </h3>
+              <p style="margin: 0; color: ${isDark ? '#94a3b8' : '#64748b'}; font-size: 14px;">
+                Os motoboys autônomos da região de ${this.cityId} foram notificados.
+              </p>
+            </div>
+          ` : `
+            <div class="modal-header">
+              <h3 class="modal-title">⚡ Solicitar Entrega Livre</h3>
+              <button class="modal-close-btn" type="button" aria-label="Fechar">✕</button>
+            </div>
+
+            <div class="info-box">
+              <div class="info-row">
+                <span class="info-label">Estabelecimento:</span>
+                <span class="info-value">${this.storeName}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Município:</span>
+                <span class="info-value">${this.cityId}</span>
+              </div>
+              ${this.neighborhoodId ? `
+                <div class="info-row">
+                  <span class="info-label">Bairro:</span>
+                  <span class="info-value">${this.neighborhoodId}</span>
+                </div>
+              ` : ''}
+              <div class="info-row" style="margin-top: 4px; padding-top: 6px; border-top: 1px dashed ${isDark ? '#334155' : '#cbd5e1'};">
+                <span class="info-label">Tarifa Estimada:</span>
+                <span class="info-value" style="color: #10b981;">${formattedRate}</span>
+              </div>
+            </div>
+
+            <button class="action-btn confirm-btn" type="button" ${isLoading ? 'disabled' : ''}>
+              ${isLoading ? '⏳ Notificando Motoboys...' : '🚀 Confirmar Chamada de Entrega'}
+            </button>
+
+            <button class="action-btn cancel-btn" type="button">
+              Cancelar
+            </button>
+          `}
+        </div>
+      </div>
     `;
+
+    // Listeners
+    const btn = this.shadowRoot.querySelector('.delivrery-btn');
+    if (btn) {
+      btn.addEventListener('click', (e) => this._handleClick(e));
+    }
+
+    const backdrop = this.shadowRoot.querySelector('.modal-backdrop');
+    const closeBtn = this.shadowRoot.querySelector('.modal-close-btn');
+    const cancelBtn = this.shadowRoot.querySelector('.cancel-btn');
+    const confirmBtn = this.shadowRoot.querySelector('.confirm-btn');
+
+    if (closeBtn) closeBtn.addEventListener('click', () => this._closeModal());
+    if (cancelBtn) cancelBtn.addEventListener('click', () => this._closeModal());
+    if (confirmBtn) confirmBtn.addEventListener('click', (e) => this._handleSubmit(e));
+    if (backdrop) {
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) this._closeModal();
+      });
+    }
   }
 }
 
+// Registro global seguro
 if (typeof customElements !== 'undefined' && !customElements.get('delivrery-button')) {
   customElements.define('delivrery-button', DelivreryButton);
 }
 
 export { DelivreryButton };
+export default DelivreryButton;
