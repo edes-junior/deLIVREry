@@ -64,7 +64,7 @@ development_status:
   epic-4-retrospective: done
 
   epic-5: in-progress
-  5-1-schema-de-clientes-de-api-webhooks-e-gateway-de-validação: review
+  5-1-schema-de-clientes-de-api-webhooks-e-gateway-de-validação: done
   5-2-endpoints-restful-headless-de-gestão-de-vagas-e-perfis-opena: backlog
   5-3-dispatcher-de-webhooks-de-saída-assinados-criptograficamente: backlog
   5-4-portal-do-desenvolvedor-developers-com-swagger-ui-interativo: backlog
