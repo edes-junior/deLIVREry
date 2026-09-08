@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-04-2026 14:24
-last_updated: 09-08-2026 15:50
+last_updated: 09-08-2026 16:36
 release: v1.0.0 (merged to main)
 project: deLIVREry
 project_key: NOKEY
@@ -74,15 +74,13 @@ development_status:
 action_items:
   - id: "epic-5-retro-item-1-deploy-edge-gateway"
     epic: 5
-    action: "Configurar variaveis de ambiente de producao no CI/CD para deploy dos
-      endpoints headless"
+    action: "Configurar variaveis de ambiente de producao no CI/CD para deploy dos endpoints headless"
     owner: "DevOps / Infra"
-    status: open
+    status: done
     ref: "_bmad-output/implementation-artifacts/epic-5-retro-2026-09-08.md"
   - id: "epic-5-retro-item-2-cdn-widget-distribution"
     epic: 5
-    action: "Publicar bundle do Web Component delivrery-button no CDN oficial para
-      integradores"
+    action: "Publicar bundle do Web Component delivrery-button no CDN oficial para integradores"
     owner: "Frontend / Dev"
-    status: open
+    status: done
     ref: "_bmad-output/implementation-artifacts/epic-5-retro-2026-09-08.md"

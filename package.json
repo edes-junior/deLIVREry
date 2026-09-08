@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "test": "node --experimental-strip-types --test tests/*.test.js",
-    "test:schema": "node tests/schema-validation.test.js"
+    "test:schema": "node tests/schema-validation.test.js",
+    "build:widget": "npm run build --workspace=@delivrery/embed-widget"
   },
   "keywords": [
     "delivery",
