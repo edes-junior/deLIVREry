@@ -126,9 +126,31 @@ export const JobCard: React.FC<JobCardProps> = ({
               📅 {formatShiftDate(job.shift_date)} • ⏰ {formatTime(job.start_time)} às {formatTime(job.end_time)}
             </span>
           </div>
-          <h3 style={{ fontSize: '17px', fontWeight: 700, margin: '2px 0 0 0', color: '#f1f5f9' }}>
-            {job.title}
-          </h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#f8fafc' }}>
+              {job.title}
+            </h3>
+            {((job as any).is_store_supporter || (job as any).community_supporter) && (
+              <span
+                data-testid="badge-job-supporter"
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  padding: '2px 8px',
+                  borderRadius: '9999px',
+                  backgroundColor: '#064e3b',
+                  color: '#34d399',
+                  border: '1px solid #059669',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '3px'
+                }}
+              >
+                <span>💚</span>
+                <span>Apoiador</span>
+              </span>
+            )}
+          </div>
           <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#cbd5e1' }}>
             📍 Região: <strong style={{ color: '#38bdf8' }}>{job.neighborhood_id}</strong> ({job.city_id})
           </p>

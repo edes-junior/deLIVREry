@@ -2,7 +2,7 @@
 title: 'Story 4.2: Componente Bottom Sheet de Doação PIX com Haptic Feedback nos 5 Delight Moments'
 type: 'feature'
 created: '2026-09-04'
-status: 'review'
+status: 'done'
 baseline_commit: 'd7dbc0b'
 review_loop_iteration: 0
 context:

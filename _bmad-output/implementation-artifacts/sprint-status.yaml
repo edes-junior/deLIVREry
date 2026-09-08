@@ -58,8 +58,8 @@ development_status:
 
   epic-4: in-progress
   4-1-schema-de-logs-de-microdoação-donations_log-e-configuração-d: done
-  4-2-componente-bottom-sheet-de-doação-pix-com-haptic-feedback-no: review
-  4-3-concessão-de-badge-de-apoiador-e-bonificação-de-xp: backlog
+  4-2-componente-bottom-sheet-de-doação-pix-com-haptic-feedback-no: done
+  4-3-concessão-de-badge-de-apoiador-e-bonificação-de-xp: done
   4-4-painel-público-de-transparência-de-custos-do-servidor-e-vitó: backlog
   epic-4-retrospective: optional
 

@@ -5,6 +5,8 @@ import type {
   PixConfiguration,
   MonthlyDonationStats,
   DonationLogEntry,
+  CommunitySupporterReward,
+  LogDonationResult,
 } from './types.ts';
 import { getPixConfig } from './pix-config.ts';
 
@@ -17,8 +19,18 @@ export const VALID_TRIGGER_MOMENTS: DonationTriggerMoment[] = [
   'manual_donation',
 ];
 
+export interface UserSupporterState {
+  xpPoints: number;
+  level: 'Bronze' | 'Prata' | 'Ouro';
+  communitySupporter: boolean;
+  supporterSince?: string;
+  lastDonationAt?: string;
+  monthlyDonationsCount: number;
+}
+
 // Fallback em memória para testes offline e resiliência
 const inMemoryDonationLogs: DonationLogEntry[] = [];
+const inMemorySupporterStates: Map<string, UserSupporterState> = new Map();
 
 export class DonationService {
   /**
@@ -36,11 +48,34 @@ export class DonationService {
   }
 
   /**
-   * Registra o evento de cópia do BR Code PIX na tabela donations_log
+   * Calcula o nível de gamificação com base no total de XP
    */
-  public static async logDonationCopy(
-    input: LogDonationInput
-  ): Promise<{ success: boolean; id?: string; error?: string; inMemory?: boolean }> {
+  public static calculateLevelFromXp(xp: number): 'Bronze' | 'Prata' | 'Ouro' {
+    if (xp >= 1000) return 'Ouro';
+    if (xp >= 300) return 'Prata';
+    return 'Bronze';
+  }
+
+  /**
+   * Verifica se é o primeiro apoio voluntário registrado pelo usuário no mês corrente
+   */
+  public static isUserFirstDonationOfMonth(userId: string, date: Date = new Date()): boolean {
+    const targetMonth = date.getUTCMonth();
+    const targetYear = date.getUTCFullYear();
+
+    const previousInSameMonth = inMemoryDonationLogs.filter((log) => {
+      if (log.user_id !== userId) return false;
+      const logDate = new Date(log.copied_at || log.created_at || Date.now());
+      return logDate.getUTCMonth() === targetMonth && logDate.getUTCFullYear() === targetYear;
+    });
+
+    return previousInSameMonth.length === 0;
+  }
+
+  /**
+   * Registra o evento de cópia do BR Code PIX na tabela donations_log e processa recompensas de apoiador
+   */
+  public static async logDonationCopy(input: LogDonationInput): Promise<LogDonationResult> {
     const { userId = null, triggerMoment, suggestedAmount } = input;
 
     // 1. Validação de momento disparador
@@ -56,47 +91,186 @@ export class DonationService {
       throw new Error('O valor sugerido de doação deve ser um número não-negativo.');
     }
 
+    const now = new Date();
+    let reward: CommunitySupporterReward | undefined = undefined;
+
+    // 3. Processa recompensa para usuário autenticado
+    if (userId) {
+      const isFirst = this.isUserFirstDonationOfMonth(userId, now);
+      const userState = inMemorySupporterStates.get(userId) || {
+        xpPoints: 0,
+        level: 'Bronze',
+        communitySupporter: false,
+        monthlyDonationsCount: 0,
+      };
+
+      const xpBonus = isFirst ? 25 : 0;
+      const newXp = userState.xpPoints + xpBonus;
+      const newLevel = this.calculateLevelFromXp(newXp);
+
+      userState.xpPoints = newXp;
+      userState.level = newLevel;
+      userState.communitySupporter = true;
+      userState.lastDonationAt = now.toISOString();
+      if (!userState.supporterSince) {
+        userState.supporterSince = now.toISOString();
+      }
+      userState.monthlyDonationsCount += 1;
+      inMemorySupporterStates.set(userId, userState);
+
+      reward = {
+        userId,
+        isFirstOfMonth: isFirst,
+        xpAwarded: xpBonus,
+        communitySupporter: true,
+        newLevel,
+        totalXp: newXp,
+      };
+    }
+
     const entry: DonationLogEntry = {
-      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `log-${Date.now()}-${Math.random()}`,
+      id:
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `log-${Date.now()}-${Math.random()}`,
       user_id: userId || null,
       trigger_moment: triggerMoment,
       suggested_amount: parsedAmount,
-      copied_at: new Date().toISOString(),
-      created_at: new Date().toISOString(),
+      copied_at: now.toISOString(),
+      created_at: now.toISOString(),
     };
 
     // Sempre salva no fallback em memória para integridade offline
     inMemoryDonationLogs.push(entry);
 
-    // 3. Tenta persistência no Supabase com timeout defensivo de 40ms
+    // 4. Tenta persistência no Supabase com timeout defensivo de 40ms e AbortSignal
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = setTimeout(() => {
+      try {
+        controller?.abort();
+      } catch {}
+    }, 40);
+    timer.unref?.();
+
     try {
-      const insertQuery = (async () => {
-        return await supabase
-          .from('donations_log')
-          .insert({
-            user_id: userId || null,
-            trigger_moment: triggerMoment,
-            suggested_amount: parsedAmount,
-          })
-          .select('id')
-          .single();
-      })();
+      let query: any = supabase
+        .from('donations_log')
+        .insert({
+          user_id: userId || null,
+          trigger_moment: triggerMoment,
+          suggested_amount: parsedAmount,
+        });
 
-      const timeoutPromise = new Promise<{ data: null; error: any }>((resolve) => {
-        const timer = setTimeout(() => resolve({ data: null, error: { message: 'timeout' } }), 40);
-        timer.unref?.();
-      });
+      if (controller?.signal && typeof query.abortSignal === 'function') {
+        query = query.abortSignal(controller.signal);
+      }
 
-      const { data, error } = await Promise.race([insertQuery, timeoutPromise]);
+      const { data, error } = await query.select('id').single();
+      clearTimeout(timer);
 
       if (!error && data?.id) {
-        return { success: true, id: data.id, inMemory: false };
+        return { success: true, id: data.id, inMemory: false, reward };
       }
     } catch {
       // Falha transparente sem bloquear a UX do usuário
     }
 
-    return { success: true, id: entry.id, inMemory: true };
+    return { success: true, id: entry.id, inMemory: true, reward };
+  }
+
+  /**
+   * Consulta o status de apoiador e XP de um usuário
+   */
+  public static async getUserSupporterStatus(userId: string): Promise<UserSupporterState> {
+    // 1. Se já existir estado consolidado em memória, retorna instantaneamente (NFR-3 < 100ms)
+    if (inMemorySupporterStates.has(userId)) {
+      return inMemorySupporterStates.get(userId)!;
+    }
+
+    // 2. Consulta defensiva no Supabase com AbortSignal
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = setTimeout(() => {
+      try {
+        controller?.abort();
+      } catch {}
+    }, 40);
+    timer.unref?.();
+
+    try {
+      let courierQuery: any = supabase
+        .from('courier_profiles')
+        .select(
+          'community_supporter, supporter_since, last_donation_at, xp_points, level, monthly_donations_count'
+        )
+        .eq('user_id', userId);
+
+      if (controller?.signal && typeof courierQuery.abortSignal === 'function') {
+        courierQuery = courierQuery.abortSignal(controller.signal);
+      }
+
+      const { data: courier } = await courierQuery.maybeSingle();
+
+      if (courier) {
+        clearTimeout(timer);
+        return {
+          communitySupporter: Boolean(courier.community_supporter),
+          supporterSince: courier.supporter_since,
+          lastDonationAt: courier.last_donation_at,
+          xpPoints: courier.xp_points || 0,
+          level: (courier.level as any) || 'Bronze',
+          monthlyDonationsCount: courier.monthly_donations_count || 0,
+        };
+      }
+
+      let storeQuery: any = supabase
+        .from('store_profiles')
+        .select(
+          'community_supporter, supporter_since, last_donation_at, xp_points, level, monthly_donations_count'
+        )
+        .eq('user_id', userId);
+
+      if (controller?.signal && typeof storeQuery.abortSignal === 'function') {
+        storeQuery = storeQuery.abortSignal(controller.signal);
+      }
+
+      const { data: store } = await storeQuery.maybeSingle();
+      clearTimeout(timer);
+
+      if (store) {
+        return {
+          communitySupporter: Boolean(store.community_supporter),
+          supporterSince: store.supporter_since,
+          lastDonationAt: store.last_donation_at,
+          xpPoints: store.xp_points || 0,
+          level: (store.level as any) || 'Bronze',
+          monthlyDonationsCount: store.monthly_donations_count || 0,
+        };
+      }
+    } catch {
+      // Continua para fallback in-memory
+    } finally {
+      clearTimeout(timer);
+    }
+
+    return {
+      communitySupporter: false,
+      xpPoints: 0,
+      level: 'Bronze',
+      monthlyDonationsCount: 0,
+    };
+  }
+
+  /**
+   * Permite inicializar/definir o estado de XP/apoiador em memória (útil para testes)
+   */
+  public static setInitialSupporterState(userId: string, state: Partial<UserSupporterState>): void {
+    const current = inMemorySupporterStates.get(userId) || {
+      xpPoints: 0,
+      level: 'Bronze',
+      communitySupporter: false,
+      monthlyDonationsCount: 0,
+    };
+    inMemorySupporterStates.set(userId, { ...current, ...state });
   }
 
   /**
@@ -182,9 +356,10 @@ export class DonationService {
   }
 
   /**
-   * Limpa registros em memória (utilitário para isolamento em testes)
+   * Limpa registros e estados em memória (utilitário para isolamento em testes)
    */
   public static clearInMemoryLogs(): void {
     inMemoryDonationLogs.length = 0;
+    inMemorySupporterStates.clear();
   }
 }

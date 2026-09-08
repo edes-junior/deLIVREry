@@ -258,6 +258,26 @@ export const StoreJobManagementCard: React.FC<StoreJobManagementCardProps> = ({
                         >
                           {isCounter ? '💬 Contraproposta' : '⚡ Valor Integral'}
                         </span>
+                        {((bid as any).is_supporter || (bid as any).community_supporter) && (
+                          <span
+                            data-testid="badge-bid-supporter"
+                            style={{
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              backgroundColor: '#064e3b',
+                              color: '#34d399',
+                              border: '1px solid #059669',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3px'
+                            }}
+                          >
+                            <span>💚</span>
+                            <span>Apoiador</span>
+                          </span>
+                        )}
                         <span style={{ fontSize: '13px', fontWeight: 700, color: '#f1f5f9' }}>
                           Diária: R$ {Number(bid.bid_daily_rate).toFixed(2)} | Taxa: R$ {Number(bid.bid_delivery_fee).toFixed(2)}
                         </span>

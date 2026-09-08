@@ -215,22 +215,65 @@ export const App: React.FC = () => {
           }}
         >
           <div>
-            <span
-              style={{
-                fontSize: '11px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                padding: '4px 8px',
-                borderRadius: '6px',
-                backgroundColor:
-                  profileData.user.userType === 'courier' ? '#0369a1' : '#047857',
-                color: '#fff'
-              }}
-            >
-              {profileData.user.userType === 'courier'
-                ? '🛵 Entregador Ativo'
-                : '🏪 Lojista Ativo'}
-            </span>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  backgroundColor:
+                    profileData.user.userType === 'courier' ? '#0369a1' : '#047857',
+                  color: '#fff'
+                }}
+              >
+                {profileData.user.userType === 'courier'
+                  ? '🛵 Entregador Ativo'
+                  : '🏪 Lojista Ativo'}
+              </span>
+
+              {/* Selo de Apoiador da Comunidade (Story 4.3) */}
+              {Boolean(profileData.profile?.community_supporter) && (
+                <span
+                  data-testid="badge-community-supporter"
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    backgroundColor: '#064e3b',
+                    color: '#34d399',
+                    border: '1px solid #059669',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <span>💚</span>
+                  <span>Apoiador da Comunidade</span>
+                </span>
+              )}
+
+              {/* Badge de Nível e XP */}
+              {profileData.profile?.level && (
+                <span
+                  data-testid="badge-user-level"
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    backgroundColor: '#3b0764',
+                    color: '#d8b4fe',
+                    border: '1px solid #7e22ce'
+                  }}
+                >
+                  ⭐ Nível {profileData.profile.level} ({profileData.profile.xp_points || 0} XP)
+                </span>
+              )}
+            </div>
             <h1 style={{ fontSize: '20px', margin: '8px 0 2px 0' }}>
               Olá, {profileData.user.fullName}!
             </h1>
@@ -513,7 +556,17 @@ export const App: React.FC = () => {
           onClose={() => setDonationModalState((prev) => ({ ...prev, isOpen: false }))}
           triggerMoment={donationModalState.triggerMoment}
           currentUserId={user?.id}
-          onDonated={({ amount }) => {
+          onDonated={async ({ amount }) => {
+            if (user?.id) {
+              try {
+                const refreshed = await ProfileService.getUserProfile(user.id);
+                if (refreshed) {
+                  setProfileData(refreshed);
+                }
+              } catch {
+                // Fallback silencioso
+              }
+            }
             setSuccessToast(`💚 Muito obrigado pelo apoio comunitário de R$ ${amount.toFixed(2).replace('.', ',')}!`);
             setTimeout(() => setSuccessToast(null), 4500);
           }}

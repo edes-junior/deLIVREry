@@ -40,3 +40,21 @@ export interface MonthlyDonationStats {
   uniqueDonorsCount: number;
   breakdownByMoment: Record<DonationTriggerMoment, number>;
 }
+
+export interface CommunitySupporterReward {
+  userId: string;
+  isFirstOfMonth: boolean;
+  xpAwarded: number;
+  communitySupporter: boolean;
+  newLevel?: string;
+  totalXp?: number;
+}
+
+export interface LogDonationResult {
+  success: boolean;
+  id?: string;
+  error?: string;
+  inMemory?: boolean;
+  reward?: CommunitySupporterReward;
+}
+

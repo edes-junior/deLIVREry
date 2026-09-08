@@ -87,6 +87,7 @@ export const DonationBottomSheet: React.FC<DonationBottomSheetProps> = ({
   const [customAmountInput, setCustomAmountInput] = useState<string>('');
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<boolean>(false);
+  const [toastText, setToastText] = useState<string>('Código PIX copiado! Cole no seu app de banco.');
   const [showQrCode, setShowQrCode] = useState<boolean>(false);
   const [pixConfig, setPixConfig] = useState<PixConfiguration>(() => DonationService.getPixConfig());
 
@@ -159,13 +160,21 @@ export const DonationBottomSheet: React.FC<DonationBottomSheetProps> = ({
 
     // Registra intenção de doação de forma assíncrona no backend
     try {
-      await DonationService.logDonationCopy({
+      const res = await DonationService.logDonationCopy({
         userId: currentUserId || null,
         triggerMoment,
         suggestedAmount: selectedAmount,
       });
+
+      if (res.reward?.isFirstOfMonth && res.reward.xpAwarded > 0) {
+        setToastText('🎉 +25 XP e Selo de Apoiador da Comunidade Ativado!');
+      } else if (res.reward?.communitySupporter) {
+        setToastText('💚 Código PIX copiado! Obrigado pelo apoio contínuo à comunidade!');
+      } else {
+        setToastText('Código PIX copiado! Cole no seu app de banco.');
+      }
     } catch {
-      // Falha não-bloqueante
+      setToastText('Código PIX copiado! Cole no seu app de banco.');
     }
 
     if (onDonated) {
@@ -230,7 +239,7 @@ export const DonationBottomSheet: React.FC<DonationBottomSheetProps> = ({
           }}
         >
           <span>✓</span>
-          <span>Código PIX copiado! Cole no seu app de banco.</span>
+          <span>{toastText}</span>
         </div>
       )}
 
