@@ -29,9 +29,28 @@ export const openApiSpec = {
       ApiKeyAuth: []
     }
   ],
+  tags: [
+    {
+      name: 'Entregadores (Couriers)',
+      description: 'Endpoints para cadastro e gestão descentralizada de profissionais de entrega.'
+    },
+    {
+      name: 'Lojistas (Stores)',
+      description: 'Endpoints para registro de estabelecimentos comerciais, endereços e coordenadas.'
+    },
+    {
+      name: 'Vagas e Turnos (Jobs)',
+      description: 'Consulta georreferenciada de oportunidades e turnos de entrega com balizador regional.'
+    },
+    {
+      name: 'Matching e Propostas (Bids)',
+      description: 'Operações de proposta tarifária bid-ask e fechamento de acordos operacionais.'
+    }
+  ],
   paths: {
     '/api/v1/couriers': {
       post: {
+        tags: ['Entregadores (Couriers)'],
         summary: 'Cadastra um entregador (motoboy, ciclista ou e-bike) via API Headless',
         description: 'Permite que parceiros cadastrem profissionais de entrega vinculando-os ao tenant de origem (origin_client_id).',
         operationId: 'createCourier',
@@ -101,6 +120,7 @@ export const openApiSpec = {
     },
     '/api/v1/stores': {
       post: {
+        tags: ['Lojistas (Stores)'],
         summary: 'Cadastra um estabelecimento lojista parceiro via API Headless',
         description: 'Permite que sistemas de PDV registrem lojas com coordenadas e localização para posterior publicação de turnos.',
         operationId: 'createStore',
@@ -170,6 +190,7 @@ export const openApiSpec = {
     },
     '/api/v1/jobs': {
       get: {
+        tags: ['Vagas e Turnos (Jobs)'],
         summary: 'Lista vagas e turnos de entrega abertos por município',
         description: 'Retorna vagas com status open para o par city_id indicado, com suporte a filtros de bairro e modal de transporte.',
         operationId: 'getOpenJobs',
@@ -259,6 +280,7 @@ export const openApiSpec = {
     },
     '/api/v1/bids/{id}/accept': {
       post: {
+        tags: ['Matching e Propostas (Bids)'],
         summary: 'Aceita uma proposta de entregador e fecha o matching (Bid/Ask)',
         description: 'Atualiza o status da vaga para matched, vincula o entregador e rejeita propostas concorrentes.',
         operationId: 'acceptBid',

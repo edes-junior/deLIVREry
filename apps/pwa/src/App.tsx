@@ -21,6 +21,7 @@ import { StoreJobsList } from './components/jobs/StoreJobsList.tsx';
 import { RegionalPricingWidget } from './components/pricing/RegionalPricingWidget.tsx';
 import { DonationBottomSheet } from './components/donations/DonationBottomSheet.tsx';
 import { TransparencyPanel } from './components/donations/TransparencyPanel.tsx';
+import { DeveloperPortal } from './components/developers/DeveloperPortal.tsx';
 import type { DonationTriggerMoment } from './donations/types.ts';
 
 export const App: React.FC = () => {
@@ -32,17 +33,24 @@ export const App: React.FC = () => {
   const [jobsRefreshTrigger, setJobsRefreshTrigger] = useState(0);
   const [transparencyRefreshTrigger, setTransparencyRefreshTrigger] = useState(0);
   const [successToast, setSuccessToast] = useState<string | null>(null);
+  const [currentView, setCurrentView] = useState<'app' | 'developers'>('app');
   const [donationModalState, setDonationModalState] = useState<{
     isOpen: boolean;
     triggerMoment: DonationTriggerMoment;
   }>({ isOpen: false, triggerMoment: 'manual_donation' });
 
-  // Rastreia código de indicação vindo pela URL (?ref=...)
+  // Rastreia código de indicação ou rota /developers vindo pela URL
   useEffect(() => {
     const urlRef = ReferralService.extractReferralCodeFromUrl();
     if (urlRef) {
       ReferralService.saveReferralCodeToStorage(urlRef);
     }
+    if (typeof window !== 'undefined') {
+      if (window.location.pathname === '/developers' || window.location.hash.includes('developers')) {
+        setCurrentView('developers');
+      }
+    }
+  }, []);
   }, []);
 
   // Verifica se está na rota de callback de autenticação (#access_token=...)
@@ -133,6 +141,11 @@ export const App: React.FC = () => {
     );
   }
 
+  // Se a visão ativa for o Portal do Desenvolvedor (Story 5.4)
+  if (currentView === 'developers') {
+    return <DeveloperPortal onBack={() => setCurrentView('app')} />;
+  }
+
   // Usuário não autenticado -> Tela de Magic Link (Story 1.2) + Painel Público de Transparência (Story 4.4 - FR-12)
   if (!user) {
     return (
@@ -149,6 +162,31 @@ export const App: React.FC = () => {
       >
         <div style={{ maxWidth: '460px', width: '100%' }}>
           <MagicLinkForm />
+
+          {/* Acesso ao Portal do Desenvolvedor para Visitantes e Integradores */}
+          <div style={{ textAlign: 'center', marginTop: '16px' }}>
+            <button
+              onClick={() => setCurrentView('developers')}
+              data-testid="visitor-btn-developers"
+              style={{
+                backgroundColor: 'transparent',
+                border: '1px solid #334155',
+                borderRadius: '8px',
+                color: '#38bdf8',
+                padding: '10px 16px',
+                minHeight: '48px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <span>⚡</span>
+              <span>Integrador ou Desenvolvedor? Acesse a API e Webhooks</span>
+            </button>
+          </div>
 
           {/* Painel Público de Transparência de Custos (Story 4.4) */}
           <TransparencyPanel
@@ -349,6 +387,28 @@ export const App: React.FC = () => {
             >
               <span>💚</span>
               <span>Apoiar</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentView('developers')}
+              data-testid="header-btn-developers"
+              style={{
+                minHeight: '48px',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                backgroundColor: '#1e293b',
+                border: '1px solid #334155',
+                color: '#38bdf8',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <span>⚡</span>
+              <span>API / Devs</span>
             </button>
 
             <button
