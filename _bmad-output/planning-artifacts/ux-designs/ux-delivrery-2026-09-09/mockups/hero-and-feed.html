@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>deLIVREry — Design System & Experiência Natural</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* PALETA DE DESIGN SYSTEM: Neon Tactical + High-Vis Ergonomics */
+      --bg-base: #06090e;
+      --bg-surface: #0d121c;
+      --bg-surface-raised: #141b29;
+      --border-subtle: #1e293b;
+      --border-focus: #00f59b;
+      
+      --neon-emerald: #00f59b;
+      --neon-emerald-glow: rgba(0, 245, 155, 0.25);
+      --highvis-yellow: #ffe600;
+      --highvis-yellow-dim: rgba(255, 230, 0, 0.12);
+      --alert-warning: #f59e0b;
+      --alert-warning-dim: rgba(245, 158, 11, 0.15);
+      
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      
+      --touch-target-min: 48px;
+      --touch-target-primary: 52px;
+    }
+
+    /* PREVENÇÃO ABSOLUTA DE OVERFLOW HORIZONTAL MOBILE */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      padding: 16px 14px 84px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* CONTAINER RESPONSIVO COM MIN-WIDTH: 0 */
+    .app-layout {
+      width: 100%;
+      max-width: 1040px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER & BRAND */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      width: 100%;
+    }
+    .brand {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .brand span {
+      color: var(--neon-emerald);
+      text-shadow: 0 0 12px var(--neon-emerald-glow);
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .location-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-surface-raised);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--neon-emerald);
+      box-shadow: 0 0 8px var(--neon-emerald);
+      flex-shrink: 0;
+    }
+
+    /* GRID RESPONSIVO: MOBILE (1 COLUNA) / DESKTOP (2 COLUNAS) */
+    .grid-container {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 18px;
+      width: 100%;
+      min-width: 0;
+    }
+
+    @media (min-width: 900px) {
+      .grid-container {
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+        align-items: start;
+        gap: 24px;
+      }
+    }
+
+    .col-feed, .col-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-width: 0;
+      width: 100%;
+    }
+
+    /* CARD TURNO FECHADO (MATCH CONCLUÍDO) */
+    .matched-card {
+      background: #081a13;
+      border: 2px solid var(--neon-emerald);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: 0 0 28px rgba(0, 245, 155, 0.15);
+      min-width: 0;
+      width: 100%;
+    }
+    .matched-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .matched-tag {
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--neon-emerald);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-whatsapp {
+      min-height: var(--touch-target-primary);
+      background: #25d366;
+      color: #052410;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px 14px;
+      box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+      text-align: center;
+      word-break: break-word;
+    }
+    .btn-whatsapp:active {
+      transform: scale(0.98);
+    }
+
+    /* FILTRO DE VEÍCULO */
+    .filter-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      min-width: 0;
+    }
+    .filter-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .filter-pills {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      width: 100%;
+    }
+    .pill-btn {
+      height: var(--touch-target-min);
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-weight: 800;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      min-width: 0;
+      padding: 0 4px;
+    }
+    .pill-btn.active {
+      background: var(--bg-surface-raised);
+      border-color: var(--neon-emerald);
+      color: var(--text-primary);
+      box-shadow: 0 0 12px rgba(0, 245, 155, 0.2);
+    }
+
+    /* FEED DE VAGAS */
+    .section-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .count-badge {
+      background: var(--bg-surface-raised);
+      color: var(--neon-emerald);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* CARD DE VAGA */
+    .job-card {
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      min-width: 0;
+    }
+    .job-card.highlight {
+      border-color: rgba(0, 245, 155, 0.4);
+    }
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .store-name {
+      font-size: 16px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+    .job-time {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+    .modal-tag {
+      background: #172338;
+      border: 1px solid #233857;
+      color: #38bdf8;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 6px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    /* CAIXA DE VALOR DO TURNO */
+    .price-box {
+      background: var(--bg-surface-raised);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+      width: 100%;
+      min-width: 0;
+    }
+    .price-main {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--neon-emerald);
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -0.03em;
+    }
+    .price-sub {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--highvis-yellow);
+      text-align: right;
+    }
+
+    /* AVISO VISUAL DE TARIFA */
+    .warning-price-pill {
+      background: var(--alert-warning-dim);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+      line-height: 1.35;
+    }
+
+    /* BOTÕES DE AÇÃO */
+    .action-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+    .btn-cta {
+      min-height: var(--touch-target-primary);
+      background: var(--neon-emerald);
+      color: #032314;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px var(--neon-emerald-glow);
+      transition: all 0.15s ease;
+      width: 100%;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .btn-cta:active {
+      transform: scale(0.98);
+    }
+    .btn-secondary {
+      min-height: var(--touch-target-min);
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      width: 100%;
+      padding: 8px 12px;
+      text-align: center;
+    }
+    .btn-secondary:hover {
+      border-color: #475569;
+      color: var(--text-primary);
+    }
+
+    /* PAINEL REGIONAL */
+    .regional-card {
+      background: linear-gradient(180deg, #111827 0%, var(--bg-surface) 100%);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      min-width: 0;
+    }
+    .regional-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--neon-emerald), var(--highvis-yellow));
+    }
+    .regional-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .regional-tag {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--neon-emerald);
+      background: rgba(0, 245, 155, 0.1);
+      border: 1px solid rgba(0, 245, 155, 0.3);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .regional-title {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 700;
+    }
+    .regional-metric {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .regional-value {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -0.02em;
+    }
+    .regional-sub {
+      font-size: 12px;
+      color: var(--highvis-yellow);
+      font-weight: 700;
+    }
+    .quorum-box {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .quorum-progress-container {
+      background: #1e293b;
+      height: 8px;
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    .quorum-progress-bar {
+      height: 100%;
+      width: 92%;
+      background: linear-gradient(90deg, #10b981, var(--neon-emerald));
+      border-radius: var(--radius-full);
+      box-shadow: 0 0 8px var(--neon-emerald-glow);
+    }
+    .quorum-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    /* CARD DE APOIO PIX */
+    .pix-card {
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      width: 100%;
+      min-width: 0;
+    }
+    .pix-btn {
+      width: 100%;
+      min-height: var(--touch-target-min);
+      background: transparent;
+      border: 1.5px dashed var(--neon-emerald);
+      color: var(--neon-emerald);
+      border-radius: var(--radius-md);
+      font-weight: 800;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      padding: 8px 12px;
+      text-align: center;
+      word-break: break-word;
+    }
+
+    /* NAVEGAÇÃO INFERIOR FIXA (MOBILE ONLY) */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 60px;
+      background: rgba(13, 18, 28, 0.96);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 8px;
+      z-index: 100;
+    }
+    @media (min-width: 900px) {
+      .bottom-nav {
+        display: none;
+      }
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px 8px;
+    }
+    .nav-item.active {
+      color: var(--neon-emerald);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-layout">
+
+    <!-- HEADER & IDENTIDADE -->
+    <header class="app-header">
+      <div class="brand">de<span>LIVRE</span>ry</div>
+      <div class="header-actions">
+        <div class="location-badge">
+          <span class="pulse-dot"></span>
+          <span>Pinheiros, SP</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- GRID PRINCIPAL -->
+    <div class="grid-container">
+
+      <!-- COLUNA 1: TURNO ATIVO & FEED DE VAGAS -->
+      <main class="col-feed">
+
+        <!-- TURNO FECHADO (QUANDO HOUVE MATCH) -->
+        <div class="matched-card">
+          <div class="matched-header">
+            <span class="matched-tag">⚡ TURNO FECHADO HOJE</span>
+            <span style="font-size: 12px; color: var(--text-secondary);">Hoje, 19:00</span>
+          </div>
+          <div style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 4px; line-height: 1.25;">
+            Hamburgueria Smash Central
+          </div>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.35;">
+            Rua dos Pinheiros, 450 • 19h às 23h30 • R$ 150,00 combinado
+          </div>
+          <button class="btn-whatsapp" onclick="triggerHaptic(); alert('Abrindo WhatsApp da Hamburgueria Smash Central...')">
+            <span>💬</span>
+            <span>Falar com o Restaurante no WhatsApp</span>
+          </button>
+        </div>
+
+        <!-- FILTRO DE VEÍCULO -->
+        <div class="filter-box">
+          <span class="filter-title">Como você entrega?</span>
+          <div class="filter-pills">
+            <button class="pill-btn active" onclick="triggerHaptic()">🏍️ Moto</button>
+            <button class="pill-btn" onclick="triggerHaptic()">🚲 Bike</button>
+            <button class="pill-btn" onclick="triggerHaptic()">🚗 Carro</button>
+          </div>
+        </div>
+
+        <!-- FEED DE TURNOS -->
+        <div class="section-title">
+          <span>Turnos com Vagas Abertas</span>
+          <span class="count-badge">2 lojas</span>
+        </div>
+
+        <!-- VAGA 1 -->
+        <div class="job-card highlight">
+          <div class="job-header">
+            <div>
+              <div class="store-name">Pizzaria Bella Napoli</div>
+              <div class="job-time">Hoje • 19:00 às 23:30 (4.5h) • Média de 12 entregas</div>
+            </div>
+            <span class="modal-tag">MOTO</span>
+          </div>
+
+          <div class="price-box">
+            <div>
+              <div style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Valor do Turno</div>
+              <div class="price-main">R$ 140,00</div>
+            </div>
+            <div>
+              <div class="price-sub">+ R$ 6,50 / entrega</div>
+              <div style="font-size: 10px; color: var(--text-muted); text-align: right;">pago direto pela loja</div>
+            </div>
+          </div>
+
+          <!-- AVISO DE PREÇO QUANDO HOUVER PROPOSTA FORA DO PADRÃO -->
+          <div class="warning-price-pill" style="display: none;" id="warningPill">
+            <span>⚠️</span>
+            <span>Aviso: Proposta R$ 25 acima do preço médio do bairro. Pode demorar mais para a loja aceitar.</span>
+          </div>
+
+          <div class="action-group">
+            <button class="btn-cta" onclick="triggerHaptic(); alert('Proposta enviada direto ao lojista!')">
+              ⚡ Aceitar pelo Valor Ofertado
+            </button>
+            <button class="btn-secondary" onclick="triggerHaptic(); toggleWarning()">
+              🤝 Propor Outro Valor (Negociar)
+            </button>
+          </div>
+        </div>
+
+        <!-- VAGA 2 -->
+        <div class="job-card">
+          <div class="job-header">
+            <div>
+              <div class="store-name">Sushiya Pinheiros</div>
+              <div class="job-time">Hoje • 20:00 às 00:00 (4.0h) • Bag Térmica</div>
+            </div>
+            <span class="modal-tag">MOTO</span>
+          </div>
+
+          <div class="price-box">
+            <div>
+              <div style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Valor do Turno</div>
+              <div class="price-main">R$ 135,00</div>
+            </div>
+            <div>
+              <div class="price-sub">+ R$ 7,00 / entrega</div>
+              <div style="font-size: 10px; color: var(--text-muted); text-align: right;">jantar da equipe incluso</div>
+            </div>
+          </div>
+
+          <div class="action-group">
+            <button class="btn-cta" onclick="triggerHaptic(); alert('Proposta enviada!')">
+              ⚡ Aceitar pelo Valor Ofertado
+            </button>
+            <button class="btn-secondary" onclick="triggerHaptic()">
+              🤝 Propor Outro Valor
+            </button>
+          </div>
+        </div>
+
+      </main>
+
+      <!-- COLUNA 2: PREÇO MÉDIO DO BAIRRO & META REGIONAL -->
+      <aside class="col-stats">
+
+        <div class="regional-card">
+          <div class="regional-head">
+            <span class="regional-title">Preço Médio na Região</span>
+            <span class="regional-tag">100% Livre</span>
+          </div>
+          <div class="regional-metric">
+            <span class="regional-value">R$ 130,00</span>
+            <span class="regional-sub">média por turno</span>
+          </div>
+          <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">
+            Calculado com base em 18 turnos reais fechados em Pinheiros nesta semana. Sem comissão de aplicativo.
+          </p>
+
+          <div class="quorum-box">
+            <div class="quorum-labels">
+              <span>Meta no bairro</span>
+              <span style="color: var(--neon-emerald);">92% concluído</span>
+            </div>
+            <div class="quorum-progress-container">
+              <div class="quorum-progress-bar"></div>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+              Faltam apenas 3 entregadores para o bairro bater 100%. Convide um parceiro!
+            </div>
+          </div>
+        </div>
+
+        <div class="pix-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 13px; font-weight: 800; color: #fff;">Apoiar com PIX</div>
+            <span style="font-size: 11px; color: var(--neon-emerald); font-weight: 700;">Zero Taxas</span>
+          </div>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 6px; line-height: 1.35;">
+            O deLIVREry não cobra 27% de taxa nem mensalidade. Mantemos o servidor com o apoio de quem usa.
+          </p>
+          <button class="pix-btn" onclick="triggerHaptic(); alert('Chave PIX copiada: pix@delivrery.org')">
+            <span>💚</span>
+            <span>Copiar Chave PIX</span>
+          </button>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </div>
+
+  <!-- NAVEGAÇÃO INFERIOR FIXA (MOBILE ONLY) -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="triggerHaptic()">
+      <span>⚡</span>
+      <span>Turnos</span>
+    </button>
+    <button class="nav-item" onclick="triggerHaptic()">
+      <span>📊</span>
+      <span>Preços</span>
+    </button>
+    <button class="nav-item" onclick="triggerHaptic()">
+      <span>📍</span>
+      <span>Meta Bairro</span>
+    </button>
+    <button class="nav-item" onclick="triggerHaptic()">
+      <span>💚</span>
+      <span>Apoiar</span>
+    </button>
+  </nav>
+
+  <script>
+    function triggerHaptic() {
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(40);
+      }
+    }
+    function toggleWarning() {
+      const el = document.getElementById('warningPill');
+      if (el) {
+        el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+      }
+    }
+  </script>
+
+</body>
+</html>

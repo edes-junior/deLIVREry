@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import type { JobPost, JobBid } from '../../jobs/types.ts';
 import { submitBid } from '../../jobs/job-service.ts';
+import { Card, Button, Badge, triggerHaptic } from '../ui/index.ts';
 
 interface JobCardProps {
   job: JobPost;
@@ -51,10 +52,7 @@ export const JobCard: React.FC<JobCardProps> = ({
   const handleDirectAccept = async () => {
     setErrorMessage(null);
 
-    // Haptic feedback tátil em dispositivos móveis
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate([20, 40, 20]);
-    }
+    triggerHaptic([20, 40, 20]);
 
     setIsSubmittingDirect(true);
 
@@ -83,20 +81,9 @@ export const JobCard: React.FC<JobCardProps> = ({
   const isClosed = isMatched || isCancelled;
 
   return (
-    <div
-      style={{
-        backgroundColor: '#131822',
-        border: hasExistingBid ? '1px solid #059669' : '1px solid #1e293b',
-        borderRadius: '16px',
-        padding: '18px',
-        marginBottom: '16px',
-        boxShadow: hasExistingBid
-          ? '0 4px 16px rgba(16, 185, 129, 0.15)'
-          : '0 4px 12px rgba(0, 0, 0, 0.25)',
-        transition: 'all 0.2s ease',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        color: '#f8fafc'
-      }}
+    <Card
+      variant={hasExistingBid ? 'matched' : isClosed ? 'flat' : 'default'}
+      style={{ marginBottom: '14px', width: '100%', minWidth: 0 }}
     >
       {/* Cabeçalho do Card */}
       <div
@@ -104,30 +91,22 @@ export const JobCard: React.FC<JobCardProps> = ({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
-          marginBottom: '12px'
+          gap: '8px',
+          marginBottom: '12px',
+          flexWrap: 'wrap'
         }}
       >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <span
-              style={{
-                fontSize: '11px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                padding: '3px 8px',
-                borderRadius: '6px',
-                backgroundColor: isClosed ? '#475569' : '#0369a1',
-                color: '#fff'
-              }}
-            >
+        <div style={{ flex: 1, minWidth: '180px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+            <Badge variant={isClosed ? 'neutral' : 'emerald'}>
               {isMatched ? 'Encerrada' : isCancelled ? 'Cancelada' : 'Turno Aberto'}
-            </span>
-            <span style={{ fontSize: '13px', color: '#94a3b8' }}>
+            </Badge>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
               📅 {formatShiftDate(job.shift_date)} • ⏰ {formatTime(job.start_time)} às {formatTime(job.end_time)}
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#f8fafc' }}>
+            <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800, color: '#ffffff' }}>
               {job.title}
             </h3>
             {((job as any).is_store_supporter || (job as any).community_supporter) && (
@@ -138,9 +117,9 @@ export const JobCard: React.FC<JobCardProps> = ({
                   fontWeight: 700,
                   padding: '2px 8px',
                   borderRadius: '9999px',
-                  backgroundColor: '#064e3b',
-                  color: '#34d399',
-                  border: '1px solid #059669',
+                  backgroundColor: 'rgba(0, 245, 155, 0.1)',
+                  color: 'var(--neon-emerald)',
+                  border: '1px solid rgba(0, 245, 155, 0.3)',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '3px'
@@ -151,24 +130,24 @@ export const JobCard: React.FC<JobCardProps> = ({
               </span>
             )}
           </div>
-          <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#cbd5e1' }}>
-            📍 Região: <strong style={{ color: '#38bdf8' }}>{job.neighborhood_id}</strong> ({job.city_id})
+          <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
+            📍 Região: <strong style={{ color: 'var(--neon-emerald)' }}>{job.neighborhood_id}</strong> ({job.city_id})
           </p>
         </div>
 
         {/* Badge de Raio de Entrega */}
         <div
           style={{
-            backgroundColor: '#1e293b',
-            border: '1px solid #334155',
-            borderRadius: '10px',
+            backgroundColor: 'var(--bg-surface-raised)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-md)',
             padding: '6px 10px',
             textAlign: 'center',
-            minWidth: '70px'
+            flexShrink: 0
           }}
         >
-          <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase' }}>Raio Máx.</div>
-          <div style={{ fontSize: '14px', fontWeight: 700, color: '#38bdf8' }}>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Raio Máx.</div>
+          <div style={{ fontSize: '13px', fontWeight: 800, color: '#38bdf8' }}>
             🎯 {job.delivery_radius_km ?? 3.0} km
           </div>
         </div>
@@ -178,51 +157,41 @@ export const JobCard: React.FC<JobCardProps> = ({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '10px',
-          backgroundColor: '#0a0f1d',
-          padding: '12px',
-          borderRadius: '12px',
-          marginBottom: '14px',
-          border: '1px solid #1e293b'
+          gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+          gap: '8px',
+          backgroundColor: 'var(--bg-surface-raised)',
+          padding: '12px 14px',
+          borderRadius: 'var(--radius-md)',
+          marginBottom: '12px',
+          border: '1px solid var(--border-subtle)'
         }}
       >
         <div>
-          <div style={{ fontSize: '11px', color: '#94a3b8' }}>Diária Oferecida</div>
-          <div style={{ fontSize: '18px', fontWeight: 700, color: '#10b981' }}>
-            R$ {Number(job.offered_daily_rate).toFixed(2)}
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Valor do Turno</div>
+          <div className="tabular-price" style={{ fontSize: '20px', color: 'var(--neon-emerald)' }}>
+            R$ {Number(job.offered_daily_rate).toFixed(2).replace('.', ',')}
           </div>
         </div>
         <div>
-          <div style={{ fontSize: '11px', color: '#94a3b8' }}>Taxa por Entrega</div>
-          <div style={{ fontSize: '18px', fontWeight: 700, color: '#10b981' }}>
-            R$ {Number(job.offered_delivery_fee).toFixed(2)}
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Taxa por Entrega</div>
+          <div className="tabular-price" style={{ fontSize: '20px', color: 'var(--highvis-yellow)' }}>
+            + R$ {Number(job.offered_delivery_fee).toFixed(2).replace('.', ',')}
           </div>
         </div>
       </div>
 
       {/* Modais Permitidos & Descrição */}
-      <div style={{ marginBottom: '14px', fontSize: '12px', color: '#94a3b8' }}>
+      <div style={{ marginBottom: '12px', fontSize: '12px', color: 'var(--text-secondary)' }}>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
           <span>Modais aceitos:</span>
           {job.accepted_modals.map((m) => (
-            <span
-              key={m}
-              style={{
-                backgroundColor: '#1e293b',
-                color: '#e2e8f0',
-                padding: '2px 8px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: 600
-              }}
-            >
-              {m === 'motorcycle' ? '🏍️ Moto' : m === 'bicycle' ? '🚲 Bicicleta' : '⚡ E-Bike'}
-            </span>
+            <Badge key={m} variant="modal">
+              {m === 'motorcycle' ? '🏍️ Moto' : m === 'bicycle' ? '🚲 Bike' : '⚡ E-Bike'}
+            </Badge>
           ))}
         </div>
         {job.description && (
-          <p style={{ margin: '8px 0 0 0', color: '#cbd5e1', fontSize: '13px', lineHeight: '1.4' }}>
+          <p style={{ margin: '6px 0 0 0', color: 'var(--text-secondary)', fontSize: '12px', lineHeight: '1.4' }}>
             {job.description}
           </p>
         )}
@@ -232,13 +201,13 @@ export const JobCard: React.FC<JobCardProps> = ({
       {errorMessage && (
         <div
           style={{
-            backgroundColor: '#450a0a',
-            border: '1px solid #dc2626',
-            borderRadius: '8px',
-            padding: '10px 12px',
-            marginBottom: '12px',
-            fontSize: '13px',
-            color: '#fca5a5'
+            backgroundColor: 'var(--alert-warning-dim)',
+            border: '1px solid rgba(245, 158, 11, 0.4)',
+            borderRadius: 'var(--radius-md)',
+            padding: '8px 12px',
+            marginBottom: '10px',
+            fontSize: '12px',
+            color: '#fde68a'
           }}
         >
           ⚠️ {errorMessage}
@@ -249,22 +218,24 @@ export const JobCard: React.FC<JobCardProps> = ({
       {hasExistingBid ? (
         <div
           style={{
-            backgroundColor: '#064e3b',
-            border: '1px solid #059669',
-            borderRadius: '12px',
+            backgroundColor: 'rgba(0, 245, 155, 0.1)',
+            border: '1px solid rgba(0, 245, 155, 0.3)',
+            borderRadius: 'var(--radius-md)',
             padding: '12px 14px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '8px'
           }}
         >
           <div>
-            <div style={{ fontSize: '13px', fontWeight: 700, color: '#34d399' }}>
-              ✓ Proposta Registrada ({existingBid?.status === 'accepted' ? 'Aceita' : 'Pendente'})
+            <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--neon-emerald)' }}>
+              ✓ Proposta Enviada ({existingBid?.status === 'accepted' ? 'Aceita pelo Lojista!' : 'Aguardando Lojista'})
             </div>
-            <div style={{ fontSize: '12px', color: '#a7f3d0' }}>
-              Diária: R$ {Number(existingBid?.bid_daily_rate || job.offered_daily_rate).toFixed(2)} |
-              Taxa: R$ {Number(existingBid?.bid_delivery_fee || job.offered_delivery_fee).toFixed(2)}
+            <div style={{ fontSize: '12px', color: 'var(--text-primary)', marginTop: '2px' }}>
+              Diária: R$ {Number(existingBid?.bid_daily_rate || job.offered_daily_rate).toFixed(2).replace('.', ',')} |
+              Taxa: R$ {Number(existingBid?.bid_delivery_fee || job.offered_delivery_fee).toFixed(2).replace('.', ',')}
             </div>
           </div>
           <span style={{ fontSize: '20px' }}>⏳</span>
@@ -272,77 +243,47 @@ export const JobCard: React.FC<JobCardProps> = ({
       ) : isClosed ? (
         <div
           style={{
-            backgroundColor: '#1e293b',
-            padding: '12px',
-            borderRadius: '10px',
+            backgroundColor: 'var(--bg-surface-raised)',
+            padding: '10px',
+            borderRadius: 'var(--radius-md)',
             textAlign: 'center',
-            color: '#94a3b8',
-            fontSize: '13px',
-            fontWeight: 600
+            color: 'var(--text-muted)',
+            fontSize: '12px',
+            fontWeight: 700
           }}
         >
-          {isMatched ? 'Esta vaga já foi preenchida.' : 'Esta vaga foi cancelada pelo lojista.'}
+          {isMatched ? 'Este turno já foi preenchido.' : 'Este turno foi cancelado pelo lojista.'}
         </div>
       ) : (
         /* Botões de Ação com Dimensões Touch-Friendly (>= 48px) */
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '12px'
+            gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+            gap: '8px'
           }}
         >
-          {/* Botão de Aceite Direto em 1 Toque */}
-          <button
+          <Button
             type="button"
+            variant="cta"
             disabled={isSubmittingDirect}
             onClick={handleDirectAccept}
-            style={{
-              minHeight: '48px',
-              padding: '12px',
-              borderRadius: '12px',
-              backgroundColor: isSubmittingDirect ? '#065f46' : '#10b981',
-              border: 'none',
-              color: '#0f172a',
-              fontWeight: 700,
-              fontSize: '14px',
-              cursor: isSubmittingDirect ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-              transition: 'background-color 0.2s'
-            }}
+            isLoading={isSubmittingDirect}
           >
-            {isSubmittingDirect ? 'Enviando...' : '⚡ Aceitar Valor'}
-          </button>
+            ⚡ Aceitar Valor
+          </Button>
 
-          {/* Botão para Contraproposta */}
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => onOpenCounterProposal(job)}
-            style={{
-              minHeight: '48px',
-              padding: '12px',
-              borderRadius: '12px',
-              backgroundColor: '#1e293b',
-              border: '1px solid #475569',
-              color: '#f8fafc',
-              fontWeight: 600,
-              fontSize: '14px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              transition: 'background-color 0.2s'
-            }}
           >
-            💬 Contrapropor
-          </button>
+            🤝 Negociar Valor
+          </Button>
         </div>
       )}
-    </div>
+    </Card>
   );
 };
+
+export default JobCard;

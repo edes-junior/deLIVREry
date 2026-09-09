@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { sendMagicLink, validateEmail } from '../../auth/auth-service.ts';
+import { Button, Card } from '../ui/index.ts';
 
 interface MagicLinkFormProps {
   onSuccess?: (email: string) => void;
@@ -27,11 +28,9 @@ export const MagicLinkForm: React.FC<MagicLinkFormProps> = ({
     }
 
     setLoading(true);
-    const startTime = performance.now();
 
     try {
       const response = await sendMagicLink(email, redirectTo);
-      const elapsed = performance.now() - startTime;
 
       if (response.success) {
         setSuccessMessage(response.message);
@@ -49,39 +48,50 @@ export const MagicLinkForm: React.FC<MagicLinkFormProps> = ({
   };
 
   return (
-    <div className="delivrery-auth-card" style={containerStyle}>
+    <Card className="delivrery-auth-card" style={{ maxWidth: '420px', margin: '0 auto', padding: '28px 20px' }}>
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#111827', margin: 0 }}>
-          Acesso Passwordless
+        <div style={{ fontSize: '28px', marginBottom: '8px' }}>⚡</div>
+        <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#ffffff', margin: 0, letterSpacing: '-0.02em' }}>
+          Entrar sem senha
         </h2>
-        <p style={{ color: '#4b5563', fontSize: '14px', marginTop: '8px' }}>
-          Informe seu e-mail para receber um link de acesso instantâneo. Sem senhas.
+        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '8px', lineHeight: 1.4 }}>
+          Informe seu e-mail para receber um link de acesso instantâneo. Seguro e sem senhas.
         </p>
       </div>
 
       {successMessage ? (
-        <div style={successBoxStyle} role="alert">
-          <div style={{ fontWeight: 600, fontSize: '15px' }}>✓ Link enviado!</div>
-          <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>{successMessage}</p>
-          <button
-            type="button"
+        <div
+          style={{
+            backgroundColor: 'rgba(0, 245, 155, 0.1)',
+            border: '1px solid rgba(0, 245, 155, 0.3)',
+            color: 'var(--neon-emerald)',
+            padding: '16px',
+            borderRadius: 'var(--radius-md)',
+            textAlign: 'center',
+          }}
+          role="alert"
+        >
+          <div style={{ fontWeight: 800, fontSize: '15px' }}>✓ Link enviado com sucesso!</div>
+          <p style={{ margin: '8px 0 14px 0', fontSize: '13px', color: 'var(--text-primary)' }}>{successMessage}</p>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => {
               setSuccessMessage(null);
               setEmail('');
             }}
-            style={secondaryButtonStyle}
           >
             Usar outro e-mail
-          </button>
+          </Button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} noValidate>
           <div style={{ marginBottom: '16px' }}>
             <label
               htmlFor="delivrery-auth-email"
-              style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}
+              style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
             >
-              Endereço de E-mail
+              Seu melhor e-mail
             </label>
             <input
               id="delivrery-auth-email"
@@ -91,100 +101,58 @@ export const MagicLinkForm: React.FC<MagicLinkFormProps> = ({
                 setEmail(e.target.value);
                 if (errorMessage) setErrorMessage(null);
               }}
-              placeholder="exemplo@delivrery.com.br"
+              placeholder="exemplo@seuemail.com.br"
               disabled={loading}
               autoComplete="email"
               required
-              style={inputStyle}
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                fontSize: '15px',
+                backgroundColor: 'var(--bg-surface-raised)',
+                border: '1.5px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--text-primary)',
+                outline: 'none',
+                boxSizing: 'border-box',
+                fontFamily: 'var(--font-sans)',
+                transition: 'border-color 0.15s ease',
+              }}
+              onFocus={(e) => (e.target.style.borderColor = 'var(--neon-emerald)')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--border-subtle)')}
             />
           </div>
 
           {errorMessage && (
-            <div style={errorBoxStyle} role="alert">
+            <div
+              style={{
+                backgroundColor: 'var(--alert-warning-dim)',
+                border: '1px solid rgba(245, 158, 11, 0.4)',
+                color: '#fde68a',
+                padding: '10px 12px',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '13px',
+                marginBottom: '16px',
+              }}
+              role="alert"
+            >
               {errorMessage}
             </div>
           )}
 
-          <button
+          <Button
             type="submit"
-            disabled={loading}
-            style={{
-              ...primaryButtonStyle,
-              opacity: loading ? 0.7 : 1,
-              cursor: loading ? 'not-allowed' : 'pointer',
-            }}
+            variant="cta"
+            size="lg"
+            fullWidth
+            isLoading={loading}
           >
-            {loading ? 'Disparando Magic Link...' : 'Enviar Link de Acesso'}
-          </button>
+            Enviar Link de Acesso
+          </Button>
         </form>
       )}
-    </div>
+    </Card>
   );
-};
-
-const containerStyle: React.CSSProperties = {
-  maxWidth: '420px',
-  width: '100%',
-  margin: '0 auto',
-  padding: '32px',
-  backgroundColor: '#ffffff',
-  borderRadius: '16px',
-  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04)',
-  border: '1px solid #e5e7eb',
-  fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-};
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '12px 16px',
-  fontSize: '15px',
-  border: '1.5px solid #d1d5db',
-  borderRadius: '8px',
-  outline: 'none',
-  boxSizing: 'border-box',
-  transition: 'border-color 0.2s, box-shadow 0.2s',
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '12px 20px',
-  fontSize: '15px',
-  fontWeight: 600,
-  color: '#ffffff',
-  backgroundColor: '#10b981',
-  border: 'none',
-  borderRadius: '8px',
-  transition: 'background-color 0.2s',
-};
-
-const secondaryButtonStyle: React.CSSProperties = {
-  marginTop: '12px',
-  background: 'transparent',
-  border: 'none',
-  color: '#065f46',
-  fontSize: '13px',
-  fontWeight: 600,
-  textDecoration: 'underline',
-  cursor: 'pointer',
-};
-
-const successBoxStyle: React.CSSProperties = {
-  backgroundColor: '#ecfdf5',
-  border: '1px solid #a7f3d0',
-  color: '#065f46',
-  padding: '16px',
-  borderRadius: '8px',
-  textAlign: 'center',
-};
-
-const errorBoxStyle: React.CSSProperties = {
-  backgroundColor: '#fef2f2',
-  border: '1px solid #fecaca',
-  color: '#991b1b',
-  padding: '10px 14px',
-  borderRadius: '8px',
-  fontSize: '13px',
-  marginBottom: '16px',
 };
 
 export default MagicLinkForm;

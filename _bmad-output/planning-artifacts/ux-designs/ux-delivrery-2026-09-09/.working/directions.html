@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>deLIVREry — Direções de Design (Sally UX)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-canvas: #07090e;
+      --text-canvas: #f1f5f9;
+      --text-dim: #94a3b8;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--bg-canvas);
+      color: var(--text-canvas);
+      padding: 32px 20px;
+      line-height: 1.5;
+    }
+    header {
+      max-width: 1400px;
+      margin: 0 auto 40px auto;
+      text-align: center;
+    }
+    .badge-workflow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    p.subtitle {
+      font-size: 16px;
+      color: var(--text-dim);
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .grid-directions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .card-direction {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+    .dir-header {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 16px;
+    }
+    .dir-pill {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    .dir-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .dir-desc {
+      font-size: 13px;
+      color: #94a3b8;
+      min-height: 52px;
+    }
+    .palette-swatches {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+      position: relative;
+      cursor: pointer;
+    }
+    .swatch::after {
+      content: attr(data-label);
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px;
+      font-family: monospace;
+      color: #64748b;
+      white-space: nowrap;
+      display: none;
+    }
+    .swatch:hover::after {
+      display: block;
+    }
+
+    /* MOCKUP FRAME */
+    .mockup-frame {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+      border-radius: 36px;
+      border: 8px solid #1e293b;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .mockup-notch {
+      height: 24px;
+      background: #000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 18px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #64748b;
+    }
+    .mockup-body {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* DIRECTION 1 STYLES: Neon Dispatch */
+    /* Hexes: Canvas: #070B11, Card: #0E1420, Border: #1B2538, Primary: #00F59B, Accent: #38BDF8 */
+    .dir-neon {
+      background: #070B11;
+      color: #ECFDF5;
+      font-family: 'Inter', sans-serif;
+    }
+    .dir-neon .app-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #1B2538;
+    }
+    .dir-neon .brand-logo {
+      font-weight: 800;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+      color: #F8FAFC;
+    }
+    .dir-neon .brand-logo span {
+      color: #00F59B;
+    }
+    .dir-neon .status-pill {
+      background: rgba(0, 245, 155, 0.12);
+      border: 1px solid rgba(0, 245, 155, 0.3);
+      color: #00F59B;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dir-neon .status-pill::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #00F59B;
+      box-shadow: 0 0 8px #00F59B;
+    }
+    .dir-neon .benchmark-card {
+      background: linear-gradient(135deg, rgba(0, 245, 155, 0.08) 0%, rgba(14, 20, 32, 0.8) 100%);
+      border: 1px solid rgba(0, 245, 155, 0.25);
+      border-radius: 14px;
+      padding: 12px 14px;
+    }
+    .dir-neon .benchmark-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94A3B8;
+      font-weight: 700;
+    }
+    .dir-neon .benchmark-val {
+      font-size: 22px;
+      font-weight: 800;
+      color: #00F59B;
+      font-family: 'JetBrains Mono', monospace;
+      margin: 2px 0;
+    }
+    .dir-neon .job-item {
+      background: #0E1420;
+      border: 1px solid #1B2538;
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+    .dir-neon .job-item:hover {
+      border-color: #00F59B;
+    }
+    .dir-neon .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .dir-neon .store-name {
+      font-weight: 700;
+      font-size: 14px;
+      color: #F8FAFC;
+    }
+    .dir-neon .job-modal-tag {
+      background: #1B2538;
+      color: #38BDF8;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+    .dir-neon .job-price {
+      font-size: 18px;
+      font-weight: 800;
+      color: #F8FAFC;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .dir-neon .btn-primary {
+      background: #00F59B;
+      color: #052E16;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: center;
+      box-shadow: 0 4px 14px rgba(0, 245, 155, 0.25);
+    }
+
+    /* DIRECTION 2 STYLES: Solidarity Amber */
+    /* Hexes: Canvas: #12141A, Card: #1A1D26, Border: #2A303F, Primary: #F59E0B, Accent: #FB923C */
+    .dir-amber {
+      background: #12141A;
+      color: #F3F4F6;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .dir-amber .app-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #2A303F;
+    }
+    .dir-amber .brand-logo {
+      font-weight: 800;
+      font-size: 17px;
+      letter-spacing: -0.01em;
+      color: #FFFFFF;
+    }
+    .dir-amber .brand-logo span {
+      color: #F59E0B;
+    }
+    .dir-amber .status-pill {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #FBBF24;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .dir-amber .benchmark-card {
+      background: #1A1D26;
+      border: 1px solid #2A303F;
+      border-left: 4px solid #F59E0B;
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .dir-amber .benchmark-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #9CA3AF;
+      font-weight: 700;
+    }
+    .dir-amber .benchmark-val {
+      font-size: 22px;
+      font-weight: 800;
+      color: #FBBF24;
+      margin: 2px 0;
+    }
+    .dir-amber .job-item {
+      background: #1A1D26;
+      border: 1px solid #2A303F;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .dir-amber .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .dir-amber .store-name {
+      font-weight: 700;
+      font-size: 14px;
+      color: #FFFFFF;
+    }
+    .dir-amber .job-modal-tag {
+      background: #252B3B;
+      color: #F59E0B;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .dir-amber .job-price {
+      font-size: 18px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+    .dir-amber .btn-primary {
+      background: #F59E0B;
+      color: #111827;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    /* DIRECTION 3 STYLES: Nordic High-Vis */
+    /* Hexes: Canvas: #090A0C, Card: #14161A, Border: #2C3038, Primary: #FFE600, Accent: #FFFFFF */
+    .dir-vis {
+      background: #090A0C;
+      color: #FFFFFF;
+      font-family: 'Inter', sans-serif;
+    }
+    .dir-vis .app-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #2C3038;
+    }
+    .dir-vis .brand-logo {
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: -0.04em;
+      color: #FFFFFF;
+      text-transform: uppercase;
+    }
+    .dir-vis .brand-logo span {
+      background: #FFE600;
+      color: #000;
+      padding: 0 4px;
+      border-radius: 2px;
+      margin-left: 2px;
+    }
+    .dir-vis .status-pill {
+      background: #1E222A;
+      border: 1px solid #FFE600;
+      color: #FFE600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .dir-vis .benchmark-card {
+      background: #14161A;
+      border: 2px solid #2C3038;
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .dir-vis .benchmark-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #9EABB8;
+      font-weight: 800;
+    }
+    .dir-vis .benchmark-val {
+      font-size: 24px;
+      font-weight: 900;
+      color: #FFE600;
+      margin: 2px 0;
+    }
+    .dir-vis .job-item {
+      background: #14161A;
+      border: 2px solid #2C3038;
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .dir-vis .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .dir-vis .store-name {
+      font-weight: 800;
+      font-size: 15px;
+      color: #FFFFFF;
+    }
+    .dir-vis .job-modal-tag {
+      background: #FFE600;
+      color: #000;
+      padding: 3px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .dir-vis .job-price {
+      font-size: 20px;
+      font-weight: 900;
+      color: #FFFFFF;
+    }
+    .dir-vis .btn-primary {
+      background: #FFE600;
+      color: #000000;
+      border: none;
+      padding: 14px;
+      border-radius: 6px;
+      font-weight: 900;
+      font-size: 14px;
+      cursor: pointer;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .footer-action {
+      max-width: 800px;
+      margin: 40px auto 0 auto;
+      text-align: center;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      padding: 24px;
+      border-radius: 16px;
+    }
+    .footer-action h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .footer-action p {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="badge-workflow">BMad UX Discovery • Sally's Workshop</div>
+    <h1>deLIVREry — Direções de Design Visual</h1>
+    <p class="subtitle">
+      Explore abaixo 3 personalidades visuais completas aplicadas à tela central do deLIVREry (Hero Screen: Feed de Turnos & Balizador de Preços).
+    </p>
+  </header>
+
+  <main class="grid-directions">
+
+    <!-- DIREÇÃO 1 -->
+    <div class="card-direction">
+      <div class="dir-header">
+        <span class="dir-pill" style="background: rgba(0, 245, 155, 0.15); color: #00F59B;">Direção 1</span>
+        <h2 class="dir-title">Neon Dispatch</h2>
+        <p class="dir-desc">
+          <strong>Dark Tactical & High-Tech:</strong> Verde esmeralda neon elétrico sobre tons profundos de azul-petróleo. Sensação de terminal de logística ágil, moderno e empoderador.
+        </p>
+        <div class="palette-swatches">
+          <div class="swatch" style="background: #070B11;" data-label="#070B11"></div>
+          <div class="swatch" style="background: #0E1420;" data-label="#0E1420"></div>
+          <div class="swatch" style="background: #00F59B;" data-label="#00F59B"></div>
+          <div class="swatch" style="background: #38BDF8;" data-label="#38BDF8"></div>
+        </div>
+      </div>
+
+      <div class="mockup-frame dir-neon">
+        <div class="mockup-notch">
+          <span>9:41</span>
+          <span>⚡ 100%</span>
+        </div>
+        <div class="mockup-body">
+          <div class="app-topbar">
+            <div class="brand-logo">de<span>LIVRE</span>ry</div>
+            <div class="status-pill">Pinheiros • 92% Quórum</div>
+          </div>
+
+          <div class="benchmark-card">
+            <div class="benchmark-title">Balizador Regional Justo</div>
+            <div class="benchmark-val">R$ 130,00 <span style="font-size: 12px; color: #94A3B8; font-weight: 500;">/turno mediano</span></div>
+            <div style="font-size: 11px; color: #38BDF8;">✨ Sem taxas de app • 18 vagas ativas</div>
+          </div>
+
+          <div class="job-item">
+            <div class="job-header">
+              <div>
+                <div class="store-name">Pizzaria Bella Napoli</div>
+                <div style="font-size: 11px; color: #94A3B8; margin-top: 2px;">Hoje • 19:00 às 23:30 (4.5h)</div>
+              </div>
+              <span class="job-modal-tag">🏍️ MOTO</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <div>
+                <div style="font-size: 10px; color: #64748B; text-transform: uppercase;">Valor Ofertado</div>
+                <div class="job-price">R$ 140,00</div>
+              </div>
+              <div style="font-size: 11px; color: #00F59B; font-weight: 600;">+ R$ 6,00/entrega</div>
+            </div>
+            <button class="btn-primary">⚡ Candidatar-se ao Turno</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIREÇÃO 2 -->
+    <div class="card-direction">
+      <div class="dir-header">
+        <span class="dir-pill" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B;">Direção 2</span>
+        <h2 class="dir-title">Solidarity Copper</h2>
+        <p class="dir-desc">
+          <strong>Urbano Comunitário & Craft:</strong> Tons quentes de cobre e âmbar sobre ardósia. Inspira confiança, cooperativismo, trabalho digno e economia circular local.
+        </p>
+        <div class="palette-swatches">
+          <div class="swatch" style="background: #12141A;" data-label="#12141A"></div>
+          <div class="swatch" style="background: #1A1D26;" data-label="#1A1D26"></div>
+          <div class="swatch" style="background: #F59E0B;" data-label="#F59E0B"></div>
+          <div class="swatch" style="background: #F97316;" data-label="#F97316"></div>
+        </div>
+      </div>
+
+      <div class="mockup-frame dir-amber">
+        <div class="mockup-notch">
+          <span>9:41</span>
+          <span>●● 5G</span>
+        </div>
+        <div class="mockup-body">
+          <div class="app-topbar">
+            <div class="brand-logo">de<span>LIVRE</span>ry</div>
+            <div class="status-pill">Pinheiros Ativo</div>
+          </div>
+
+          <div class="benchmark-card">
+            <div class="benchmark-title">Tarifa Balizadora do Bairro</div>
+            <div class="benchmark-val">R$ 130,00 <span style="font-size: 12px; color: #9CA3AF; font-weight: normal;">/base</span></div>
+            <div style="font-size: 11px; color: #FBBF24;">🤝 100% livre para quem entrega e vende</div>
+          </div>
+
+          <div class="job-item">
+            <div class="job-header">
+              <div>
+                <div class="store-name">Pizzaria Bella Napoli</div>
+                <div style="font-size: 11px; color: #9CA3AF; margin-top: 2px;">Turno Noturno • 19h às 23h30</div>
+              </div>
+              <span class="job-modal-tag">MOTOBOY</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <div>
+                <div style="font-size: 10px; color: #9CA3AF;">VALOR PROPOSTO</div>
+                <div class="job-price">R$ 140,00</div>
+              </div>
+              <div style="font-size: 11px; color: #F59E0B; font-weight: 700;">+ R$ 6,00 taxa</div>
+            </div>
+            <button class="btn-primary">Quero Este Turno</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIREÇÃO 3 -->
+    <div class="card-direction">
+      <div class="dir-header">
+        <span class="dir-pill" style="background: rgba(255, 230, 0, 0.15); color: #FFE600;">Direção 3</span>
+        <h2 class="dir-title">High-Vis Nordic</h2>
+        <p class="dir-desc">
+          <strong>Visibilidade Extrema & Ergonomia Viária:</strong> Amarelo viário de segurança (#FFE600) sobre cinza chumbo com linhas sólidas. Perfeito para uso ao ar livre e sob sol forte.
+        </p>
+        <div class="palette-swatches">
+          <div class="swatch" style="background: #090A0C;" data-label="#090A0C"></div>
+          <div class="swatch" style="background: #14161A;" data-label="#14161A"></div>
+          <div class="swatch" style="background: #FFE600;" data-label="#FFE600"></div>
+          <div class="swatch" style="background: #FFFFFF;" data-label="#FFFFFF"></div>
+        </div>
+      </div>
+
+      <div class="mockup-frame dir-vis">
+        <div class="mockup-notch">
+          <span>09:41</span>
+          <span>100%</span>
+        </div>
+        <div class="mockup-body">
+          <div class="app-topbar">
+            <div class="brand-logo">DELIVRE<span>RY</span></div>
+            <div class="status-pill">PINHEIROS</div>
+          </div>
+
+          <div class="benchmark-card">
+            <div class="benchmark-title">MEDIANA REGIONAL</div>
+            <div class="benchmark-val">R$ 130,00</div>
+            <div style="font-size: 11px; color: #FFF; font-weight: 700;">18 VAGAS DISPONÍVEIS HOJE</div>
+          </div>
+
+          <div class="job-item">
+            <div class="job-header">
+              <div>
+                <div class="store-name">PIZZARIA BELLA NAPOLI</div>
+                <div style="font-size: 11px; color: #9EABB8; margin-top: 2px;">19:00 - 23:30 (4.5 HORAS)</div>
+              </div>
+              <span class="job-modal-tag">MOTO</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <div>
+                <div style="font-size: 10px; color: #9EABB8; font-weight: 800;">DIÁRIA OFERTADA</div>
+                <div class="job-price">R$ 140,00</div>
+              </div>
+              <div style="font-size: 12px; color: #FFE600; font-weight: 800;">+ R$ 6,00/ENTREGA</div>
+            </div>
+            <button class="btn-primary">DISPUTAR TURNO</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <div class="footer-action">
+    <h3>Qual dessas três direções mais conversa com a alma do deLIVREry?</h3>
+    <p>
+      Diga qual direção você mais gostou ou se quer combinar elementos (por exemplo: a paleta da Direção 1 com os botões de toque largo da Direção 3).
+    </p>
+  </div>
+
+</body>
+</html>

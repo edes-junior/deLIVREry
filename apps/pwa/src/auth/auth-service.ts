@@ -63,9 +63,15 @@ export async function sendMagicLink(
     });
 
     if (error) {
+      let friendlyMessage = error.message || 'Erro ao disparar link de acesso.';
+      const lower = friendlyMessage.toLowerCase();
+      if (lower.includes('rate limit') || (error as any).status === 429) {
+        friendlyMessage = 'Limite de envio de e-mails atingido no Supabase (máx. 3-4 e-mails/hora no provedor padrão gratuito). Aguarde alguns minutos ou configure um provedor SMTP próprio no painel do Supabase.';
+      }
+
       return {
         success: false,
-        message: error.message || 'Erro ao disparar link de acesso.',
+        message: friendlyMessage,
         error: error.message,
       };
     }

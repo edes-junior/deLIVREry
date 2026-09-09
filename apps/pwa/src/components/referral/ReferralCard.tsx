@@ -6,6 +6,8 @@
 
 import React, { useState } from 'react';
 import { ReferralService } from '../../referral/referral-service.ts';
+import { Card } from '../ui/Card.tsx';
+import { Button } from '../ui/Button.tsx';
 
 interface ReferralCardProps {
   referralCode: string;
@@ -36,7 +38,7 @@ export const ReferralCard: React.FC<ReferralCardProps> = ({
       if (result.message) {
         showToast(result.message);
       }
-    } catch (err: any) {
+    } catch {
       showToast('Não foi possível compartilhar automaticamente.');
     } finally {
       setIsSharing(false);
@@ -44,128 +46,87 @@ export const ReferralCard: React.FC<ReferralCardProps> = ({
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: '#131822',
-        borderRadius: '16px',
-        padding: '20px',
-        border: '1px solid #1e293b',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-        marginBottom: '20px',
-        position: 'relative',
-        fontFamily: 'system-ui, -apple-system, sans-serif'
-      }}
-    >
+    <Card variant="raised" style={{ position: 'relative' }}>
       <div style={{ marginBottom: '14px' }}>
-        <span
-          style={{
-            fontSize: '11px',
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            color: '#10b981',
-            letterSpacing: '0.5px'
-          }}
-        >
-          🚀 INDICAÇÃO & EXPANSÃO COMUNITÁRIA
-        </span>
-        <h3 style={{ margin: '4px 0 6px 0', fontSize: '18px', fontWeight: 700, color: '#f8fafc' }}>
-          Seu Link de Indicação Exclusivo
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', color: 'var(--neon-emerald)', letterSpacing: '0.05em' }}>
+            🚀 Expansão Comunitária
+          </span>
+        </div>
+        <h3 style={{ margin: '0 0 6px 0', fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)' }}>
+          Convide Amigos e Desbloqueie o Bairro
         </h3>
-        <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8', lineHeight: 1.4 }}>
-          Compartilhe com amigos lojistas e motoboys. Cada novo cadastro ajuda a atingir o quórum e desbloquear a operação no seu bairro!
+        <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+          Cada novo colega entregador ou comerciante cadastrado acelera a meta coletiva de {neighborhoodName || 'seu bairro'}.
         </p>
       </div>
 
-      {/* Caixa de Código e Link */}
+      {/* Caixa de Código e Link com Fonte Tabular */}
       <div
         style={{
-          backgroundColor: '#0f172a',
-          borderRadius: '12px',
-          padding: '14px',
+          backgroundColor: 'var(--bg-base)',
+          borderRadius: 'var(--radius-md)',
+          padding: '12px 14px',
           marginBottom: '16px',
-          border: '1px solid #334155',
+          border: '1px solid var(--border-subtle)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '10px'
+          gap: '8px'
         }}
       >
         <div>
-          <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', textTransform: 'uppercase' }}>
-            Código do Indicador
+          <span style={{ fontSize: '10px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', fontWeight: 700 }}>
+            Seu Código de Indicação
           </span>
           <strong
+            className="tabular-price"
             style={{
-              fontSize: '20px',
-              fontWeight: 800,
-              color: '#38bdf8',
-              letterSpacing: '1px'
+              fontSize: '18px',
+              color: 'var(--highvis-yellow)',
+              letterSpacing: '0.05em'
             }}
           >
             {referralCode}
           </strong>
         </div>
 
-        <div style={{ fontSize: '12px', color: '#64748b', wordBreak: 'break-all', maxWidth: '100%' }}>
+        <div style={{ fontSize: '11px', color: 'var(--text-muted)', wordBreak: 'break-all', maxWidth: '100%', fontFamily: 'var(--font-mono)' }}>
           {referralUrl}
         </div>
       </div>
 
-      {/* Botões de Ação Rápida (Alvos >= 48px) */}
+      {/* Botões de Ação Rápida */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '12px'
+          gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+          gap: '10px',
+          width: '100%'
         }}
       >
-        <button
-          type="button"
+        <Button
+          variant="secondary"
           disabled={isSharing}
           onClick={handleShareClick}
-          style={{
-            minHeight: '48px',
-            padding: '10px 14px',
-            borderRadius: '10px',
-            backgroundColor: '#0284c7',
-            color: '#ffffff',
-            border: 'none',
-            fontSize: '14px',
-            fontWeight: 700,
-            cursor: isSharing ? 'not-allowed' : 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            transition: 'background-color 0.2s ease'
-          }}
+          style={{ width: '100%', fontSize: '13px' }}
         >
-          📋 Copiar / Compartilhar
-        </button>
+          📋 Copiar Link
+        </Button>
 
         <a
           href={whatsAppUrl}
           target="_blank"
           rel="noopener noreferrer"
-          style={{
-            minHeight: '48px',
-            padding: '10px 14px',
-            borderRadius: '10px',
-            backgroundColor: '#16a34a',
-            color: '#ffffff',
-            border: 'none',
-            fontSize: '14px',
-            fontWeight: 700,
-            textDecoration: 'none',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            transition: 'background-color 0.2s ease'
-          }}
+          style={{ textDecoration: 'none', width: '100%' }}
         >
-          💬 WhatsApp
+          <Button
+            variant="whatsapp"
+            style={{ width: '100%', fontSize: '13px' }}
+          >
+            💬 WhatsApp
+          </Button>
         </a>
       </div>
 
@@ -177,13 +138,13 @@ export const ReferralCard: React.FC<ReferralCardProps> = ({
             bottom: '-12px',
             left: '50%',
             transform: 'translateX(-50%)',
-            backgroundColor: '#10b981',
-            color: '#0f172a',
-            padding: '8px 16px',
-            borderRadius: '9999px',
+            backgroundColor: 'var(--neon-emerald)',
+            color: 'var(--bg-base)',
+            padding: '6px 14px',
+            borderRadius: 'var(--radius-full)',
             fontSize: '12px',
-            fontWeight: 700,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+            fontWeight: 800,
+            boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
             whiteSpace: 'nowrap',
             zIndex: 10
           }}
@@ -191,6 +152,6 @@ export const ReferralCard: React.FC<ReferralCardProps> = ({
           ✅ {toastMessage}
         </div>
       )}
-    </div>
+    </Card>
   );
 };

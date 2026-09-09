@@ -9,6 +9,9 @@ import { validateCPF, formatCPF, validatePhone, formatPhone } from '../../profil
 import { GeographyService, StateItem, CityItem, NeighborhoodItem } from '../../geography/geography-service.ts';
 import { ProfileService, TransportModal } from '../../profile/profile-service.ts';
 import { ReferralService } from '../../referral/referral-service.ts';
+import { Card } from '../ui/Card.tsx';
+import { Button } from '../ui/Button.tsx';
+import { Badge } from '../ui/Badge.tsx';
 
 interface ProfileCompletionFormProps {
   userId: string;
@@ -208,38 +211,25 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
   };
 
   return (
-    <div
+    <Card
+      variant="raised"
       style={{
         maxWidth: '520px',
+        width: '100%',
         margin: '0 auto',
-        padding: '24px 20px',
-        backgroundColor: '#131822',
-        color: '#f3f4f6',
-        borderRadius: '16px',
-        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
-        fontFamily: 'system-ui, -apple-system, sans-serif'
+        padding: '24px 18px',
+        boxSizing: 'border-box'
       }}
     >
-      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <span
-          style={{
-            display: 'inline-block',
-            padding: '4px 12px',
-            borderRadius: '9999px',
-            backgroundColor: '#1e293b',
-            color: '#38bdf8',
-            fontSize: '12px',
-            fontWeight: 600,
-            marginBottom: '8px'
-          }}
-        >
-          ONBOARDING UNIVERSAL
-        </span>
-        <h2 style={{ margin: '0 0 8px 0', fontSize: '24px', fontWeight: 700 }}>
-          Complete seu Perfil
+      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <Badge variant="quorum" style={{ marginBottom: '8px' }}>
+          ATIVAR CONTA NO BAIRRO
+        </Badge>
+        <h2 style={{ margin: '0 0 6px 0', fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)' }}>
+          Complete seu Cadastro
         </h2>
-        <p style={{ margin: 0, fontSize: '14px', color: '#94a3b8' }}>
-          Conectado como: <strong>{userEmail}</strong>
+        <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>
+          Conectado como: <strong style={{ color: 'var(--text-primary)' }}>{userEmail}</strong>
         </p>
       </div>
 
@@ -247,25 +237,29 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '12px',
-          marginBottom: '24px'
+          gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+          gap: '10px',
+          marginBottom: '20px'
         }}
       >
         <button
           type="button"
           onClick={() => setUserType('courier')}
           style={{
-            minHeight: '48px',
-            padding: '12px',
-            borderRadius: '12px',
-            border: userType === 'courier' ? '2px solid #38bdf8' : '1px solid #334155',
-            backgroundColor: userType === 'courier' ? 'rgba(56, 189, 248, 0.15)' : '#1e293b',
-            color: userType === 'courier' ? '#38bdf8' : '#cbd5e1',
-            fontWeight: 600,
+            minHeight: '52px',
+            padding: '10px',
+            borderRadius: 'var(--radius-md)',
+            border: userType === 'courier' ? '2px solid var(--neon-emerald)' : '1px solid var(--border-subtle)',
+            backgroundColor: userType === 'courier' ? 'rgba(0, 245, 155, 0.12)' : 'var(--bg-surface)',
+            color: userType === 'courier' ? 'var(--neon-emerald)' : 'var(--text-secondary)',
+            fontWeight: 800,
             cursor: 'pointer',
             fontSize: '14px',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px'
           }}
         >
           🛵 Sou Entregador
@@ -275,26 +269,30 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
           type="button"
           onClick={() => setUserType('store')}
           style={{
-            minHeight: '48px',
-            padding: '12px',
-            borderRadius: '12px',
-            border: userType === 'store' ? '2px solid #10b981' : '1px solid #334155',
-            backgroundColor: userType === 'store' ? 'rgba(16, 185, 129, 0.15)' : '#1e293b',
-            color: userType === 'store' ? '#10b981' : '#cbd5e1',
-            fontWeight: 600,
+            minHeight: '52px',
+            padding: '10px',
+            borderRadius: 'var(--radius-md)',
+            border: userType === 'store' ? '2px solid var(--highvis-yellow)' : '1px solid var(--border-subtle)',
+            backgroundColor: userType === 'store' ? 'var(--highvis-yellow-dim)' : 'var(--bg-surface)',
+            color: userType === 'store' ? 'var(--highvis-yellow)' : 'var(--text-secondary)',
+            fontWeight: 800,
             cursor: 'pointer',
             fontSize: '14px',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px'
           }}
         >
-          🏪 Sou Lojista
+          🏪 Sou Comerciante
         </button>
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* Dados Civis */}
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 500 }}>
+        {/* Dados Pessoais */}
+        <div style={{ marginBottom: '14px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
             {userType === 'courier' ? 'Nome Completo' : 'Nome do Responsável'} *
           </label>
           <input
@@ -303,23 +301,13 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             placeholder="Ex: Carlos Silva"
-            style={{
-              width: '100%',
-              minHeight: '48px',
-              padding: '0 14px',
-              borderRadius: '8px',
-              border: '1px solid #334155',
-              backgroundColor: '#0f172a',
-              color: '#fff',
-              fontSize: '15px',
-              boxSizing: 'border-box'
-            }}
+            className="tactical-input"
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '10px', marginBottom: '14px' }}>
           <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 500 }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
               CPF *
             </label>
             <input
@@ -329,16 +317,10 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
               value={cpf}
               onChange={handleCpfChange}
               placeholder="000.000.000-00"
+              className="tactical-input"
               style={{
-                width: '100%',
-                minHeight: '48px',
-                padding: '0 12px',
-                borderRadius: '8px',
-                border: cpfError ? '1px solid #ef4444' : '1px solid #334155',
-                backgroundColor: '#0f172a',
-                color: '#fff',
-                fontSize: '15px',
-                boxSizing: 'border-box'
+                borderColor: cpfError ? '#ef4444' : undefined,
+                fontFamily: 'var(--font-mono)'
               }}
             />
             {cpfError && (
@@ -349,7 +331,7 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 500 }}>
+            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
               Celular com DDD *
             </label>
             <input
@@ -359,16 +341,10 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
               value={phone}
               onChange={handlePhoneChange}
               placeholder="(11) 98765-4321"
+              className="tactical-input"
               style={{
-                width: '100%',
-                minHeight: '48px',
-                padding: '0 12px',
-                borderRadius: '8px',
-                border: phoneError ? '1px solid #ef4444' : '1px solid #334155',
-                backgroundColor: '#0f172a',
-                color: '#fff',
-                fontSize: '15px',
-                boxSizing: 'border-box'
+                borderColor: phoneError ? '#ef4444' : undefined,
+                fontFamily: 'var(--font-mono)'
               }}
             />
             {phoneError && (
@@ -380,29 +356,29 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
         </div>
 
         {/* Localização Geográfica em Cascata */}
-        <div style={{ marginBottom: '16px', padding: '14px', borderRadius: '10px', backgroundColor: '#1e293b' }}>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: '#38bdf8', marginBottom: '12px' }}>
-            📍 Micro-Região de Atuação
+        <div
+          style={{
+            marginBottom: '16px',
+            padding: '14px',
+            borderRadius: 'var(--radius-md)',
+            backgroundColor: 'var(--bg-base)',
+            border: '1px solid var(--border-subtle)'
+          }}
+        >
+          <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--neon-emerald)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            📍 Região de Atuação
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px', marginBottom: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '80px minmax(0, 1fr)', gap: '10px', marginBottom: '10px' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#94a3b8' }}>
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
                 UF
               </label>
               <select
                 value={selectedState}
                 onChange={(e) => handleStateChange(e.target.value)}
-                style={{
-                  width: '100%',
-                  minHeight: '48px',
-                  padding: '0 8px',
-                  borderRadius: '8px',
-                  border: '1px solid #334155',
-                  backgroundColor: '#0f172a',
-                  color: '#fff',
-                  fontSize: '15px'
-                }}
+                className="tactical-input"
+                style={{ padding: '0 8px' }}
               >
                 {states.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -413,22 +389,13 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#94a3b8' }}>
-                Cidade / Município
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                Cidade
               </label>
               <select
                 value={selectedCity}
                 onChange={(e) => handleCityChange(e.target.value)}
-                style={{
-                  width: '100%',
-                  minHeight: '48px',
-                  padding: '0 10px',
-                  borderRadius: '8px',
-                  border: '1px solid #334155',
-                  backgroundColor: '#0f172a',
-                  color: '#fff',
-                  fontSize: '14px'
-                }}
+                className="tactical-input"
               >
                 {cities.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -440,7 +407,7 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#94a3b8' }}>
+            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
               Bairro Principal
             </label>
             {!isCustomNeighborhood ? (
@@ -448,16 +415,8 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
                 <select
                   value={selectedNeighborhood}
                   onChange={(e) => setSelectedNeighborhood(e.target.value)}
-                  style={{
-                    flex: 1,
-                    minHeight: '48px',
-                    padding: '0 10px',
-                    borderRadius: '8px',
-                    border: '1px solid #334155',
-                    backgroundColor: '#0f172a',
-                    color: '#fff',
-                    fontSize: '14px'
-                  }}
+                  className="tactical-input"
+                  style={{ flex: 1 }}
                 >
                   {neighborhoods.map((n) => (
                     <option key={n.id} value={n.id}>
@@ -471,11 +430,12 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
                   style={{
                     minHeight: '48px',
                     padding: '0 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #475569',
-                    backgroundColor: '#334155',
-                    color: '#cbd5e1',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'var(--bg-surface-raised)',
+                    color: 'var(--text-secondary)',
                     fontSize: '12px',
+                    fontWeight: 700,
                     cursor: 'pointer'
                   }}
                 >
@@ -488,17 +448,9 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
                   type="text"
                   value={customNeighborhood}
                   onChange={(e) => setCustomNeighborhood(e.target.value)}
-                  placeholder="Digite o nome do seu bairro"
-                  style={{
-                    flex: 1,
-                    minHeight: '48px',
-                    padding: '0 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #38bdf8',
-                    backgroundColor: '#0f172a',
-                    color: '#fff',
-                    fontSize: '14px'
-                  }}
+                  placeholder="Nome do seu bairro"
+                  className="tactical-input"
+                  style={{ flex: 1, borderColor: 'var(--neon-emerald)' }}
                 />
                 <button
                   type="button"
@@ -506,11 +458,12 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
                   style={{
                     minHeight: '48px',
                     padding: '0 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #475569',
-                    backgroundColor: '#334155',
-                    color: '#cbd5e1',
+                    borderRadius: 'var(--radius-md)',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: 'var(--bg-surface-raised)',
+                    color: 'var(--text-secondary)',
                     fontSize: '12px',
+                    fontWeight: 700,
                     cursor: 'pointer'
                   }}
                 >
@@ -523,14 +476,14 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
 
         {/* Campos de Entregador */}
         {userType === 'courier' && (
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 500 }}>
-              Modal de Transporte *
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+              Como você vai fazer entregas? *
             </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginBottom: '14px' }}>
               {[
                 { id: 'motorcycle', label: 'Moto', icon: '🏍️' },
-                { id: 'bicycle', label: 'Bicicleta', icon: '🚲' },
+                { id: 'bicycle', label: 'Bike', icon: '🚲' },
                 { id: 'ebike_scooter', label: 'E-Bike', icon: '⚡' }
               ].map((m) => (
                 <button
@@ -539,25 +492,29 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
                   onClick={() => setTransportModal(m.id as TransportModal)}
                   style={{
                     minHeight: '48px',
-                    padding: '8px',
-                    borderRadius: '8px',
-                    border: transportModal === m.id ? '2px solid #38bdf8' : '1px solid #334155',
-                    backgroundColor: transportModal === m.id ? 'rgba(56, 189, 248, 0.2)' : '#0f172a',
-                    color: transportModal === m.id ? '#38bdf8' : '#cbd5e1',
+                    padding: '6px',
+                    borderRadius: 'var(--radius-md)',
+                    border: transportModal === m.id ? '2px solid var(--neon-emerald)' : '1px solid var(--border-subtle)',
+                    backgroundColor: transportModal === m.id ? 'rgba(0, 245, 155, 0.15)' : 'var(--bg-surface)',
+                    color: transportModal === m.id ? 'var(--neon-emerald)' : 'var(--text-secondary)',
                     cursor: 'pointer',
                     fontSize: '13px',
-                    fontWeight: 600
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px'
                   }}
                 >
-                  {m.icon} {m.label}
+                  <span>{m.icon}</span> <span>{m.label}</span>
                 </button>
               ))}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '10px', marginBottom: '14px' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#94a3b8' }}>
-                  Diária Base Pretendida (R$)
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  Diária pretendida (R$)
                 </label>
                 <input
                   type="number"
@@ -565,23 +522,13 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
                   step="5.00"
                   value={baseDailyRate}
                   onChange={(e) => setBaseDailyRate(e.target.value)}
-                  style={{
-                    width: '100%',
-                    minHeight: '48px',
-                    padding: '0 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #334155',
-                    backgroundColor: '#0f172a',
-                    color: '#fff',
-                    fontSize: '15px',
-                    boxSizing: 'border-box'
-                  }}
+                  className="tactical-input tabular-price"
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#94a3b8' }}>
-                  Taxa por Entrega (R$)
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  Taxa por entrega (R$)
                 </label>
                 <input
                   type="number"
@@ -589,52 +536,33 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
                   step="1.00"
                   value={baseDeliveryFee}
                   onChange={(e) => setBaseDeliveryFee(e.target.value)}
-                  style={{
-                    width: '100%',
-                    minHeight: '48px',
-                    padding: '0 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #334155',
-                    backgroundColor: '#0f172a',
-                    color: '#fff',
-                    fontSize: '15px',
-                    boxSizing: 'border-box'
-                  }}
+                  className="tactical-input tabular-price"
                 />
               </div>
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#94a3b8' }}>
-                Código de Indicação (opcional)
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                Código de indicação de colega (opcional)
               </label>
               <input
                 type="text"
                 placeholder="Ex: LIVRE-M84KD2"
                 value={referralCodeInput}
                 onChange={(e) => setReferralCodeInput(e.target.value.toUpperCase())}
-                style={{
-                  width: '100%',
-                  minHeight: '48px',
-                  padding: '0 12px',
-                  borderRadius: '8px',
-                  border: '1px solid #334155',
-                  backgroundColor: '#0f172a',
-                  color: '#fff',
-                  fontSize: '14px',
-                  boxSizing: 'border-box'
-                }}
+                className="tactical-input"
+                style={{ fontFamily: 'var(--font-mono)' }}
               />
             </div>
           </div>
         )}
 
-        {/* Campos de Lojista */}
+        {/* Campos de Comerciante */}
         {userType === 'store' && (
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{ marginBottom: '14px' }}>
-              <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 500 }}>
-                Nome da Loja / Fantasia *
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                Nome da Loja ou Restaurante *
               </label>
               <input
                 type="text"
@@ -642,46 +570,26 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
                 value={storeName}
                 onChange={(e) => setStoreName(e.target.value)}
                 placeholder="Ex: Pizzaria Forno Nobre"
-                style={{
-                  width: '100%',
-                  minHeight: '48px',
-                  padding: '0 14px',
-                  borderRadius: '8px',
-                  border: '1px solid #334155',
-                  backgroundColor: '#0f172a',
-                  color: '#fff',
-                  fontSize: '15px',
-                  boxSizing: 'border-box'
-                }}
+                className="tactical-input"
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '10px' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#94a3b8' }}>
-                  Rua / Logradouro
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  Rua ou Avenida
                 </label>
                 <input
                   type="text"
                   value={addressStreet}
                   onChange={(e) => setAddressStreet(e.target.value)}
                   placeholder="Ex: Rua das Flores"
-                  style={{
-                    width: '100%',
-                    minHeight: '48px',
-                    padding: '0 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #334155',
-                    backgroundColor: '#0f172a',
-                    color: '#fff',
-                    fontSize: '14px',
-                    boxSizing: 'border-box'
-                  }}
+                  className="tactical-input"
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#94a3b8' }}>
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
                   Número
                 </label>
                 <input
@@ -689,17 +597,7 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
                   value={addressNumber}
                   onChange={(e) => setAddressNumber(e.target.value)}
                   placeholder="Ex: 120"
-                  style={{
-                    width: '100%',
-                    minHeight: '48px',
-                    padding: '0 12px',
-                    borderRadius: '8px',
-                    border: '1px solid #334155',
-                    backgroundColor: '#0f172a',
-                    color: '#fff',
-                    fontSize: '14px',
-                    boxSizing: 'border-box'
-                  }}
+                  className="tactical-input"
                 />
               </div>
             </div>
@@ -711,7 +609,7 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
           <div
             style={{
               padding: '12px',
-              borderRadius: '8px',
+              borderRadius: 'var(--radius-md)',
               backgroundColor: 'rgba(239, 68, 68, 0.15)',
               border: '1px solid #ef4444',
               color: '#fca5a5',
@@ -727,10 +625,10 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
           <div
             style={{
               padding: '12px',
-              borderRadius: '8px',
-              backgroundColor: 'rgba(16, 185, 129, 0.15)',
-              border: '1px solid #10b981',
-              color: '#6ee7b7',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'rgba(0, 245, 155, 0.15)',
+              border: '1px solid var(--neon-emerald)',
+              color: 'var(--neon-emerald)',
               fontSize: '13px',
               marginBottom: '16px'
             }}
@@ -739,28 +637,15 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
           </div>
         )}
 
-        {/* Botão de Envio (Alvo de toque >= 48px) */}
-        <button
-          type="submit"
+        {/* Botão de Envio */}
+        <Button
+          variant="cta"
           disabled={isLoading}
-          style={{
-            width: '100%',
-            minHeight: '52px',
-            borderRadius: '12px',
-            border: 'none',
-            backgroundColor: userType === 'courier' ? '#0284c7' : '#059669',
-            color: '#ffffff',
-            fontWeight: 700,
-            fontSize: '16px',
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-            opacity: isLoading ? 0.7 : 1,
-            transition: 'background-color 0.2s ease',
-            boxShadow: '0 4px 14px rgba(0,0,0,0.3)'
-          }}
+          style={{ width: '100%' }}
         >
-          {isLoading ? 'Salvando Perfil...' : 'Finalizar Cadastro e Ativar Perfil'}
-        </button>
+          {isLoading ? 'Salvando Perfil...' : 'Cadastrar e Começar Agora'}
+        </Button>
       </form>
-    </div>
+    </Card>
   );
 };

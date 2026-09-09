@@ -1,11 +1,12 @@
 /**
  * @file RegionalQuorumThermometer.tsx
- * @description Componente visual de Termômetro de Desbloqueio Regional e Quórum Hiperlocal (FR-13, AD-8).
- * Apresenta o progresso de ativação territorial (10 lojas / 50 entregadores) com status pre_launch vs unlocked.
+ * @description Componente visual de Meta de Cadastros no Bairro (FR-13, AD-8).
+ * Apresenta o progresso de ativação territorial com linguagem natural, barras de progresso neon e convite viral.
  */
 
 import React from 'react';
 import { RegionQuorum } from '../../quorum/quorum-service.ts';
+import { Card, Badge, Button } from '../ui/index.ts';
 
 interface RegionalQuorumThermometerProps {
   quorum: RegionQuorum;
@@ -30,18 +31,9 @@ export const RegionalQuorumThermometer: React.FC<RegionalQuorumThermometerProps>
   const missingCouriers = Math.max(0, quorum.requiredCouriers - quorum.couriersCount);
 
   return (
-    <div
-      style={{
-        backgroundColor: '#131822',
-        borderRadius: '16px',
-        padding: '20px',
-        border: isUnlocked ? '1px solid #059669' : '1px solid #334155',
-        boxShadow: isUnlocked
-          ? '0 0 20px rgba(16, 185, 129, 0.15)'
-          : '0 4px 20px rgba(0, 0, 0, 0.3)',
-        marginBottom: '20px',
-        fontFamily: 'system-ui, -apple-system, sans-serif'
-      }}
+    <Card
+      variant={isUnlocked ? 'matched' : 'default'}
+      style={{ marginBottom: '16px' }}
     >
       {/* Cabeçalho com Localização e Badge */}
       <div
@@ -49,7 +41,7 @@ export const RegionalQuorumThermometer: React.FC<RegionalQuorumThermometerProps>
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
-          marginBottom: '16px',
+          marginBottom: '14px',
           flexWrap: 'wrap',
           gap: '8px'
         }}
@@ -58,17 +50,17 @@ export const RegionalQuorumThermometer: React.FC<RegionalQuorumThermometerProps>
           <span
             style={{
               fontSize: '11px',
-              fontWeight: 700,
+              fontWeight: 800,
               textTransform: 'uppercase',
-              color: '#38bdf8',
-              letterSpacing: '0.5px'
+              color: 'var(--neon-emerald)',
+              letterSpacing: '0.05em'
             }}
           >
-            TERMÔMETRO DE ATIVAÇÃO
+            Meta do Bairro
           </span>
-          <h3 style={{ margin: '4px 0 0 0', fontSize: '18px', fontWeight: 700, color: '#f8fafc' }}>
+          <h3 style={{ margin: '3px 0 0 0', fontSize: '17px', fontWeight: 800, color: '#ffffff' }}>
             📍 {locationLabel}
-            <span style={{ fontSize: '13px', fontWeight: 400, color: '#94a3b8' }}>
+            <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>
               {cityStateLabel}
             </span>
           </h3>
@@ -76,77 +68,52 @@ export const RegionalQuorumThermometer: React.FC<RegionalQuorumThermometerProps>
 
         <div>
           {isUnlocked ? (
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '9999px',
-                backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                color: '#34d399',
-                fontSize: '12px',
-                fontWeight: 700,
-                border: '1px solid #10b981'
-              }}
-            >
-              🟢 Região Desbloqueada & Ativa
-            </span>
+            <Badge variant="emerald" pulse>
+              ✓ Bairro 100% Ativo
+            </Badge>
           ) : (
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '9999px',
-                backgroundColor: 'rgba(245, 158, 11, 0.15)',
-                color: '#fbbf24',
-                fontSize: '12px',
-                fontWeight: 700,
-                border: '1px solid #f59e0b'
-              }}
-            >
-              ⏳ Pré-Lançamento (Quórum {quorum.overallPercentage}%)
-            </span>
+            <Badge variant="yellow">
+              Meta: {quorum.overallPercentage}% Concluída
+            </Badge>
           )}
         </div>
       </div>
 
       {/* Barra de Progresso de Lojistas */}
-      <div style={{ marginBottom: '14px' }}>
+      <div style={{ marginBottom: '12px' }}>
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '6px',
-            fontSize: '13px'
+            marginBottom: '4px',
+            fontSize: '12px'
           }}
         >
-          <span style={{ color: '#cbd5e1', fontWeight: 500 }}>
-            🏪 Lojistas Cadastrados
+          <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
+            🏪 Lojas Cadastradas
           </span>
-          <span style={{ color: '#38bdf8', fontWeight: 700 }}>
-            {quorum.storesCount}/{quorum.requiredStores} lojas ({quorum.storePercentage}%)
+          <span className="tabular-price" style={{ color: '#38bdf8', fontSize: '13px' }}>
+            {quorum.storesCount}/{quorum.requiredStores} ({quorum.storePercentage}%)
           </span>
         </div>
         <div
           style={{
             width: '100%',
-            height: '10px',
+            height: '8px',
             backgroundColor: '#1e293b',
-            borderRadius: '9999px',
+            borderRadius: 'var(--radius-full)',
             overflow: 'hidden'
           }}
         >
           <div
             style={{
-              width: `${quorum.storePercentage}%`,
+              width: `${Math.min(100, quorum.storePercentage)}%`,
               height: '100%',
-              backgroundColor: quorum.storePercentage >= 100 ? '#10b981' : '#38bdf8',
-              borderRadius: '9999px',
-              transition: 'width 0.4s ease'
+              backgroundColor: quorum.storePercentage >= 100 ? 'var(--neon-emerald)' : '#38bdf8',
+              borderRadius: 'var(--radius-full)',
+              transition: 'width 0.4s ease',
+              boxShadow: quorum.storePercentage >= 100 ? '0 0 8px var(--neon-emerald-glow)' : 'none'
             }}
           />
         </div>
@@ -159,33 +126,34 @@ export const RegionalQuorumThermometer: React.FC<RegionalQuorumThermometerProps>
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '6px',
-            fontSize: '13px'
+            marginBottom: '4px',
+            fontSize: '12px'
           }}
         >
-          <span style={{ color: '#cbd5e1', fontWeight: 500 }}>
-            🛵 Entregadores / Motoboys
+          <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
+            🛵 Entregadores Cadastrados
           </span>
-          <span style={{ color: '#f59e0b', fontWeight: 700 }}>
-            {quorum.couriersCount}/{quorum.requiredCouriers} motoboys ({quorum.courierPercentage}%)
+          <span className="tabular-price" style={{ color: 'var(--highvis-yellow)', fontSize: '13px' }}>
+            {quorum.couriersCount}/{quorum.requiredCouriers} ({quorum.courierPercentage}%)
           </span>
         </div>
         <div
           style={{
             width: '100%',
-            height: '10px',
+            height: '8px',
             backgroundColor: '#1e293b',
-            borderRadius: '9999px',
+            borderRadius: 'var(--radius-full)',
             overflow: 'hidden'
           }}
         >
           <div
             style={{
-              width: `${quorum.courierPercentage}%`,
+              width: `${Math.min(100, quorum.courierPercentage)}%`,
               height: '100%',
-              backgroundColor: quorum.courierPercentage >= 100 ? '#10b981' : '#f59e0b',
-              borderRadius: '9999px',
-              transition: 'width 0.4s ease'
+              backgroundColor: quorum.courierPercentage >= 100 ? 'var(--neon-emerald)' : 'var(--highvis-yellow)',
+              borderRadius: 'var(--radius-full)',
+              transition: 'width 0.4s ease',
+              boxShadow: quorum.courierPercentage >= 100 ? '0 0 8px var(--neon-emerald-glow)' : 'none'
             }}
           />
         </div>
@@ -195,9 +163,10 @@ export const RegionalQuorumThermometer: React.FC<RegionalQuorumThermometerProps>
       {!isUnlocked ? (
         <div
           style={{
-            backgroundColor: '#0f172a',
+            backgroundColor: 'var(--bg-surface-raised)',
+            border: '1px solid var(--border-subtle)',
             padding: '12px 14px',
-            borderRadius: '10px',
+            borderRadius: 'var(--radius-md)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -205,46 +174,38 @@ export const RegionalQuorumThermometer: React.FC<RegionalQuorumThermometerProps>
             gap: '10px'
           }}
         >
-          <div style={{ fontSize: '13px', color: '#94a3b8' }}>
-            Faltam <strong>{missingStores} lojas</strong> e <strong>{missingCouriers} entregadores</strong> para liberar as entregas neste bairro!
+          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.35, flex: 1, minWidth: '180px' }}>
+            Faltam apenas <strong>{missingStores} lojas</strong> e <strong>{missingCouriers} entregadores</strong> para liberar 100% dos turnos no bairro!
           </div>
 
           {onShareClick && (
-            <button
+            <Button
+              variant="cta"
+              size="sm"
               onClick={onShareClick}
-              style={{
-                minHeight: '48px',
-                padding: '0 16px',
-                borderRadius: '8px',
-                backgroundColor: '#0284c7',
-                color: '#fff',
-                border: 'none',
-                fontWeight: 600,
-                fontSize: '13px',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s ease',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
+              icon={<span>📢</span>}
             >
-              📢 Convidar Bairro
-            </button>
+              Convidar Amigos
+            </Button>
           )}
         </div>
       ) : (
         <div
           style={{
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            backgroundColor: 'rgba(0, 245, 155, 0.1)',
+            border: '1px solid rgba(0, 245, 155, 0.3)',
             padding: '10px 14px',
-            borderRadius: '8px',
+            borderRadius: 'var(--radius-md)',
             fontSize: '13px',
-            color: '#6ee7b7'
+            color: 'var(--neon-emerald)',
+            fontWeight: 700
           }}
         >
-          🎉 Parabéns! O quórum mínimo foi atingido. Operações de matching e entregas liberadas na região!
+          🎉 Parabéns! Meta alcançada: entregas e turnos 100% livres no bairro!
         </div>
       )}
-    </div>
+    </Card>
   );
 };
+
+export default RegionalQuorumThermometer;

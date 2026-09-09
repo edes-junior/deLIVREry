@@ -22,6 +22,10 @@ import { RegionalPricingWidget } from './components/pricing/RegionalPricingWidge
 import { DonationBottomSheet } from './components/donations/DonationBottomSheet.tsx';
 import { TransparencyPanel } from './components/donations/TransparencyPanel.tsx';
 import { DeveloperPortal } from './components/developers/DeveloperPortal.tsx';
+import { BottomNav, NavTab } from './components/ui/BottomNav.tsx';
+import { Card } from './components/ui/Card.tsx';
+import { Badge } from './components/ui/Badge.tsx';
+import { Button } from './components/ui/Button.tsx';
 import type { DonationTriggerMoment } from './donations/types.ts';
 
 export const App: React.FC = () => {
@@ -34,6 +38,7 @@ export const App: React.FC = () => {
   const [transparencyRefreshTrigger, setTransparencyRefreshTrigger] = useState(0);
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<'app' | 'developers'>('app');
+  const [activeTab, setActiveTab] = useState<NavTab>('turnos');
   const [donationModalState, setDonationModalState] = useState<{
     isOpen: boolean;
     triggerMoment: DonationTriggerMoment;
@@ -269,66 +274,163 @@ export const App: React.FC = () => {
 
   // Perfil Ativo -> Dashboard Inicial com Quórum e Indicação Viral (Story 1.4)
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundColor: '#0a0f1d',
-        color: '#f8fafc',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        padding: '24px 16px'
-      }}
-    >
-      <div
+    <div className="app-container">
+      {/* Barra Superior / Header Tático */}
+      <header
         style={{
-          maxWidth: '640px',
-          margin: '0 auto'
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '12px',
+          marginBottom: '20px',
+          paddingBottom: '16px',
+          borderBottom: '1px solid var(--border-subtle)',
+          width: '100%'
         }}
       >
-        {/* Barra Superior do Usuário */}
-        <div
-          style={{
-            backgroundColor: '#131822',
-            borderRadius: '16px',
-            padding: '20px',
-            border: '1px solid #1e293b',
-            marginBottom: '20px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}
-        >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div
+            style={{
+              fontSize: '22px',
+              fontWeight: 900,
+              letterSpacing: '-0.03em',
+              color: '#ffffff',
+              textTransform: 'uppercase',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '2px'
+            }}
+          >
+            de<span style={{ color: 'var(--neon-emerald)', textShadow: '0 0 12px var(--neon-emerald-glow)' }}>LIVRE</span>ry
+          </div>
+
+          {neighborhoodName && (
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'var(--bg-surface-raised)',
+                border: '1px solid var(--border-subtle)',
+                color: 'var(--text-primary)',
+                padding: '4px 10px',
+                borderRadius: 'var(--radius-full)',
+                fontSize: '12px',
+                fontWeight: 700,
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <span
+                style={{
+                  width: '7px',
+                  height: '7px',
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--neon-emerald)',
+                  boxShadow: '0 0 8px var(--neon-emerald)'
+                }}
+              />
+              <span>{neighborhoodName}</span>
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setDonationModalState({ isOpen: true, triggerMoment: 'manual_donation' })}
+            data-testid="header-btn-donate"
+            style={{
+              minHeight: '48px',
+              padding: '8px 14px',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'rgba(0, 245, 155, 0.12)',
+              border: '1px solid var(--neon-emerald)',
+              color: 'var(--neon-emerald)',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <span>💚</span>
+            <span>Apoiar</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentView('developers')}
+            data-testid="header-btn-developers"
+            style={{
+              minHeight: '48px',
+              padding: '8px 14px',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <span>⚡</span>
+            <span>API / Devs</span>
+          </button>
+
+          <button
+            onClick={() => signOut()}
+            style={{
+              minHeight: '48px',
+              padding: '8px 14px',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              color: '#f87171',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 600
+            }}
+          >
+            Sair
+          </button>
+        </div>
+      </header>
+
+      {/* Cartão de Identificação do Usuário */}
+      <Card variant="default" style={{ marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
           <div>
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '6px' }}>
               <span
                 style={{
                   fontSize: '11px',
-                  fontWeight: 700,
+                  fontWeight: 800,
                   textTransform: 'uppercase',
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  backgroundColor:
-                    profileData.user.userType === 'courier' ? '#0369a1' : '#047857',
-                  color: '#fff'
+                  padding: '4px 10px',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: profileData.user.userType === 'courier' ? 'rgba(0, 245, 155, 0.15)' : 'var(--highvis-yellow-dim)',
+                  color: profileData.user.userType === 'courier' ? 'var(--neon-emerald)' : 'var(--highvis-yellow)',
+                  border: profileData.user.userType === 'courier' ? '1px solid var(--neon-emerald)' : '1px solid var(--highvis-yellow)'
                 }}
               >
-                {profileData.user.userType === 'courier'
-                  ? '🛵 Entregador Ativo'
-                  : '🏪 Lojista Ativo'}
+                {profileData.user.userType === 'courier' ? '🛵 Entregador Ativo' : '🏪 Comerciante Ativo'}
               </span>
 
-              {/* Selo de Apoiador da Comunidade (Story 4.3) */}
               {Boolean(profileData.profile?.community_supporter) && (
                 <span
                   data-testid="badge-community-supporter"
                   style={{
                     fontSize: '11px',
-                    fontWeight: 700,
+                    fontWeight: 800,
                     textTransform: 'uppercase',
-                    padding: '4px 8px',
-                    borderRadius: '6px',
-                    backgroundColor: '#064e3b',
-                    color: '#34d399',
-                    border: '1px solid #059669',
+                    padding: '4px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'rgba(0, 245, 155, 0.15)',
+                    color: 'var(--neon-emerald)',
+                    border: '1px solid var(--neon-emerald)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '4px'
@@ -339,148 +441,85 @@ export const App: React.FC = () => {
                 </span>
               )}
 
-              {/* Badge de Nível e XP */}
               {profileData.profile?.level && (
                 <span
                   data-testid="badge-user-level"
                   style={{
                     fontSize: '11px',
-                    fontWeight: 700,
-                    padding: '4px 8px',
-                    borderRadius: '6px',
-                    backgroundColor: '#3b0764',
-                    color: '#d8b4fe',
-                    border: '1px solid #7e22ce'
+                    fontWeight: 800,
+                    padding: '4px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'rgba(255, 230, 0, 0.1)',
+                    color: 'var(--highvis-yellow)',
+                    border: '1px solid rgba(255, 230, 0, 0.3)'
                   }}
                 >
                   ⭐ Nível {profileData.profile.level} ({profileData.profile.xp_points || 0} XP)
                 </span>
               )}
             </div>
-            <h1 style={{ fontSize: '20px', margin: '8px 0 2px 0' }}>
+
+            <h1 style={{ fontSize: '20px', fontWeight: 800, margin: '4px 0 2px 0', color: 'var(--text-primary)' }}>
               Olá, {profileData.user.fullName}!
             </h1>
-            <p style={{ margin: 0, color: '#94a3b8', fontSize: '13px' }}>
+            <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '13px' }}>
               {profileData.user.email} • CPF: {profileData.user.cpf}
             </p>
           </div>
-
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <button
-              onClick={() => setDonationModalState({ isOpen: true, triggerMoment: 'manual_donation' })}
-              data-testid="header-btn-donate"
-              style={{
-                minHeight: '48px',
-                padding: '8px 16px',
-                borderRadius: '8px',
-                backgroundColor: '#064e3b',
-                border: '1px solid #059669',
-                color: '#34d399',
-                cursor: 'pointer',
-                fontSize: '13px',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-            >
-              <span>💚</span>
-              <span>Apoiar</span>
-            </button>
-
-            <button
-              onClick={() => setCurrentView('developers')}
-              data-testid="header-btn-developers"
-              style={{
-                minHeight: '48px',
-                padding: '8px 14px',
-                borderRadius: '8px',
-                backgroundColor: '#1e293b',
-                border: '1px solid #334155',
-                color: '#38bdf8',
-                cursor: 'pointer',
-                fontSize: '13px',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              <span>⚡</span>
-              <span>API / Devs</span>
-            </button>
-
-            <button
-              onClick={() => signOut()}
-              style={{
-                minHeight: '48px',
-                padding: '8px 14px',
-                borderRadius: '8px',
-                backgroundColor: '#1e293b',
-                border: '1px solid #334155',
-                color: '#f87171',
-                cursor: 'pointer',
-                fontSize: '13px',
-                fontWeight: 600
-              }}
-            >
-              Sair
-            </button>
-          </div>
         </div>
+      </Card>
 
-        {/* Termômetro de Desbloqueio Regional (FR-13) */}
-        {regionQuorum && (
-          <RegionalQuorumThermometer
-            quorum={regionQuorum}
-            neighborhoodName={neighborhoodName}
-            cityName={profileData.profile?.city_id}
-            stateId={profileData.profile?.state_id}
-            onShareClick={() => {
-              ReferralService.shareReferral(referralCode, neighborhoodName);
-            }}
-          />
-        )}
-
-        {/* Card de Indicação Viral Multicanal (FR-15) */}
-        <ReferralCard
-          referralCode={referralCode}
-          neighborhoodName={neighborhoodName}
-        />
-
-        {/* Balizador Inteligente de Preços Regionais (Story 3.4) */}
-        <div style={{ marginBottom: '16px' }}>
-          <RegionalPricingWidget
-            stateId={profileData.profile?.state_id || 'RJ'}
-            cityId={profileData.profile?.city_id || 'rio-de-janeiro'}
-            neighborhoodId={profileData.profile?.home_neighborhood_id || profileData.profile?.neighborhood_id || 'copacabana'}
-            initialModal={profileData.profile?.transport_modal || 'all'}
-            title="📊 Balizador de Preços da sua Região"
-          />
-        </div>
-
-        {/* Detalhes do Perfil e Modal */}
-        <div
-          style={{
-            backgroundColor: '#131822',
-            padding: '20px',
-            borderRadius: '16px',
-            border: '1px solid #1e293b'
-          }}
-        >
+      {/* Grid Responsivo de 2 Colunas no Desktop / 1 Coluna no Mobile */}
+      <div className="grid-responsive">
+        {/* COLUNA PRINCIPAL: Feed de Vagas ou Painel de Turnos do Lojista */}
+        <div className={`col-main mobile-tab-content ${activeTab === 'turnos' ? 'is-active' : ''}`}>
           {profileData.user.userType === 'courier' ? (
-            <div>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '12px',
-                  marginBottom: '14px'
-                }}
-              >
+            <JobFeed
+              courierUserId={user.id}
+              transportModal={profileData.profile?.transport_modal || 'motorcycle'}
+              stateId={profileData.profile?.state_id || 'SP'}
+              cityId={profileData.profile?.city_id || 'sao-paulo'}
+              neighborhoodId={profileData.profile?.home_neighborhood_id || 'centro'}
+            />
+          ) : (
+            <>
+              {/* Ação Primária Lojista: Publicar Nova Vaga */}
+              <Card variant="raised" style={{ textAlign: 'center', padding: '18px' }}>
+                <h3 style={{ margin: '0 0 6px 0', fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  Precisa de Entregadores para o seu Turno?
+                </h3>
+                <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                  Publique a vaga com mais de 48h de antecedência para acumular +50 XP.
+                </p>
+                <Button
+                  variant="cta"
+                  onClick={() => setIsJobModalOpen(true)}
+                  style={{ width: '100%', fontSize: '15px' }}
+                >
+                  ➕ Publicar Nova Vaga de Turno
+                </Button>
+              </Card>
+
+              <StoreJobsList
+                storeUserId={user.id}
+                refreshTrigger={jobsRefreshTrigger}
+              />
+            </>
+          )}
+        </div>
+
+        {/* COLUNA LATERAL: Métricas Regionais, Meta do Bairro e Indicação */}
+        <div className="col-sidebar">
+          {/* Resumo da Modalidade / Diária Base */}
+          <Card
+            variant="default"
+            className={`mobile-tab-content ${activeTab === 'turnos' || activeTab === 'precos' ? 'is-active' : ''}`}
+          >
+            {profileData.user.userType === 'courier' ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '12px' }}>
                 <div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Modal</div>
-                  <div style={{ fontSize: '15px', fontWeight: 600 }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Modal</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
                     {profileData.profile?.transport_modal === 'motorcycle'
                       ? '🏍️ Motocicleta'
                       : profileData.profile?.transport_modal === 'bicycle'
@@ -489,203 +528,145 @@ export const App: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Nível / XP</div>
-                  <div
-                    style={{ fontSize: '15px', fontWeight: 600, color: '#f59e0b' }}
-                  >
-                    {profileData.profile?.level || 'Bronze'} (0 XP)
-                  </div>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '12px'
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Diária Base</div>
-                  <div
-                    style={{ fontSize: '15px', fontWeight: 600, color: '#10b981' }}
-                  >
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Sua Diária Base</div>
+                  <div className="tabular-price" style={{ fontSize: '15px', color: 'var(--neon-emerald)' }}>
                     R$ {Number(profileData.profile?.base_daily_rate || 0).toFixed(2)}
                   </div>
                 </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                    Taxa por Entrega
-                  </div>
-                  <div
-                    style={{ fontSize: '15px', fontWeight: 600, color: '#10b981' }}
-                  >
-                    R$ {Number(profileData.profile?.base_delivery_fee || 0).toFixed(2)}
-                  </div>
-                </div>
               </div>
-            </div>
-          ) : (
-            <div>
-              <div style={{ marginBottom: '14px' }}>
-                <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                  Estabelecimento Comercial
-                </div>
-                <div style={{ fontSize: '16px', fontWeight: 700 }}>
+            ) : (
+              <div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Estabelecimento</div>
+                <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)' }}>
                   {profileData.profile?.store_name}
                 </div>
               </div>
+            )}
+          </Card>
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '12px'
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                    Reputação Inicial
-                  </div>
-                  <div
-                    style={{ fontSize: '15px', fontWeight: 600, color: '#eab308' }}
-                  >
-                    ⭐ {Number(profileData.profile?.reputation_score || 5).toFixed(2)} / 5.00
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                    Gamificação / Nível
-                  </div>
-                  <div style={{ fontSize: '15px', fontWeight: 600, color: '#f59e0b' }}>
-                    ⭐ {profileData.profile?.level || 'Bronze'} ({profileData.profile?.xp_points || 0} XP)
-                  </div>
-                </div>
-              </div>
-
-              {/* Botão de Ação Primária: Publicar Vaga de Turno */}
-              <div style={{ marginTop: '20px' }}>
-                <button
-                  type="button"
-                  onClick={() => setIsJobModalOpen(true)}
-                  style={{
-                    width: '100%',
-                    padding: '14px',
-                    borderRadius: '12px',
-                    backgroundColor: '#10b981',
-                    border: 'none',
-                    color: '#0f172a',
-                    fontWeight: 700,
-                    fontSize: '15px',
-                    cursor: 'pointer',
-                    minHeight: '48px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    boxShadow: '0 4px 14px 0 rgba(16, 185, 129, 0.35)'
-                  }}
-                >
-                  ➕ Publicar Nova Vaga de Turno
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Feed de Vagas para Entregadores (Story 2.3) */}
-        {profileData.user.userType === 'courier' && (
-          <JobFeed
-            courierUserId={user.id}
-            transportModal={profileData.profile?.transport_modal || 'motorcycle'}
-            stateId={profileData.profile?.state_id || 'SP'}
-            cityId={profileData.profile?.city_id || 'sao-paulo'}
-            neighborhoodId={profileData.profile?.home_neighborhood_id || 'centro'}
-          />
-        )}
-
-        {/* Gestão de Vagas e Matchings para Lojistas (Story 2.4) */}
-        {profileData.user.userType === 'store' && (
-          <StoreJobsList
-            storeUserId={user.id}
-            refreshTrigger={jobsRefreshTrigger}
-          />
-        )}
-
-        {/* Painel Público de Transparência de Custos do Servidor e Vitória Coletiva (Story 4.4 - FR-12) */}
-        <TransparencyPanel
-          refreshTrigger={transparencyRefreshTrigger}
-          onOpenDonationModal={(moment) =>
-            setDonationModalState({ isOpen: true, triggerMoment: moment })
-          }
-        />
-
-        {/* Toast de Sucesso */}
-        {successToast && (
-          <div
-            style={{
-              position: 'fixed',
-              bottom: '24px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              backgroundColor: '#10b981',
-              color: '#0f172a',
-              padding: '12px 24px',
-              borderRadius: '999px',
-              fontWeight: 700,
-              fontSize: '14px',
-              boxShadow: '0 10px 25px -5px rgba(16, 185, 129, 0.5)',
-              zIndex: 1100
-            }}
-          >
-            {successToast}
+          {/* Balizador de Preços da Região */}
+          <div className={`mobile-tab-content ${activeTab === 'precos' ? 'is-active' : ''}`} style={{ width: '100%' }}>
+            <RegionalPricingWidget
+              stateId={profileData.profile?.state_id || 'RJ'}
+              cityId={profileData.profile?.city_id || 'rio-de-janeiro'}
+              neighborhoodId={profileData.profile?.home_neighborhood_id || profileData.profile?.neighborhood_id || 'copacabana'}
+              initialModal={profileData.profile?.transport_modal || 'all'}
+              title="📊 Balizador de Preços da sua Região"
+            />
           </div>
-        )}
 
-        {/* Modal de Publicação de Vagas (Story 2.2) */}
-        {profileData?.user.userType === 'store' && (
-          <JobPublishModal
-            isOpen={isJobModalOpen}
-            onClose={() => setIsJobModalOpen(false)}
-            storeUserId={user?.id || ''}
-            storeName={profileData.profile?.store_name || 'Estabelecimento'}
-            defaultStateId={profileData.profile?.state_id || 'SP'}
-            defaultCityId={profileData.profile?.city_id || 'sao-paulo'}
-            defaultNeighborhoodId={profileData.profile?.neighborhood_id || 'centro'}
-            onSuccess={(_job, earnedXp) => {
-              setJobsRefreshTrigger((prev) => prev + 1);
-              const msg = earnedXp
-                ? '🎉 Vaga publicada com sucesso! +50 XP acumulados por antecipação!'
-                : '✅ Vaga publicada com sucesso!';
-              setSuccessToast(msg);
-              setTimeout(() => setSuccessToast(null), 4000);
-            }}
-          />
-        )}
+          {/* Termômetro de Meta do Bairro */}
+          <div className={`mobile-tab-content ${activeTab === 'quorum' ? 'is-active' : ''}`} style={{ width: '100%' }}>
+            {regionQuorum && (
+              <RegionalQuorumThermometer
+                quorum={regionQuorum}
+                neighborhoodName={neighborhoodName}
+                cityName={profileData.profile?.city_id}
+                stateId={profileData.profile?.state_id}
+                onShareClick={() => {
+                  ReferralService.shareReferral(referralCode, neighborhoodName);
+                }}
+              />
+            )}
+          </div>
 
-        {/* Bottom Sheet de Microdoação PIX (Story 4.2 - FR-10, FR-11) */}
-        <DonationBottomSheet
-          isOpen={donationModalState.isOpen}
-          onClose={() => setDonationModalState((prev) => ({ ...prev, isOpen: false }))}
-          triggerMoment={donationModalState.triggerMoment}
-          currentUserId={user?.id}
-          onDonated={async ({ amount }) => {
-            setTransparencyRefreshTrigger((prev) => prev + 1);
-            if (user?.id) {
-              try {
-                const refreshed = await ProfileService.getUserProfile(user.id);
-                if (refreshed) {
-                  setProfileData(refreshed);
-                }
-              } catch {
-                // Fallback silencioso
+          {/* Indicação Viral */}
+          <div className={`mobile-tab-content ${activeTab === 'quorum' ? 'is-active' : ''}`} style={{ width: '100%' }}>
+            <ReferralCard
+              referralCode={referralCode}
+              neighborhoodName={neighborhoodName}
+            />
+          </div>
+
+          {/* Painel Público de Transparência de Custos */}
+          <div className={`mobile-tab-content ${activeTab === 'doar' ? 'is-active' : ''}`} style={{ width: '100%' }}>
+            <TransparencyPanel
+              refreshTrigger={transparencyRefreshTrigger}
+              onOpenDonationModal={(moment) =>
+                setDonationModalState({ isOpen: true, triggerMoment: moment })
               }
-            }
-            setSuccessToast(`💚 Muito obrigado pelo apoio comunitário de R$ ${amount.toFixed(2).replace('.', ',')}!`);
-            setTimeout(() => setSuccessToast(null), 4500);
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Navegação Inferior Fixa para Mobile */}
+      <BottomNav
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          if (tab === 'doar') {
+            setDonationModalState({ isOpen: true, triggerMoment: 'manual_donation' });
+          }
+        }}
+      />
+
+      {/* Toast de Sucesso */}
+      {successToast && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '76px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: 'var(--neon-emerald)',
+            color: 'var(--bg-base)',
+            padding: '12px 24px',
+            borderRadius: 'var(--radius-full)',
+            fontWeight: 800,
+            fontSize: '14px',
+            boxShadow: '0 10px 25px -5px rgba(0, 245, 155, 0.4)',
+            zIndex: 1100,
+            whiteSpace: 'nowrap'
+          }}
+        >
+          {successToast}
+        </div>
+      )}
+
+      {/* Modal de Publicação de Vagas (Story 2.2) */}
+      {profileData?.user.userType === 'store' && (
+        <JobPublishModal
+          isOpen={isJobModalOpen}
+          onClose={() => setIsJobModalOpen(false)}
+          storeUserId={user?.id || ''}
+          storeName={profileData.profile?.store_name || 'Estabelecimento'}
+          defaultStateId={profileData.profile?.state_id || 'SP'}
+          defaultCityId={profileData.profile?.city_id || 'sao-paulo'}
+          defaultNeighborhoodId={profileData.profile?.neighborhood_id || 'centro'}
+          onSuccess={(_job, earnedXp) => {
+            setJobsRefreshTrigger((prev) => prev + 1);
+            const msg = earnedXp
+              ? '🎉 Vaga publicada com sucesso! +50 XP acumulados por antecipação!'
+              : '✅ Vaga publicada com sucesso!';
+            setSuccessToast(msg);
+            setTimeout(() => setSuccessToast(null), 4000);
           }}
         />
-      </div>
+      )}
+
+      {/* Bottom Sheet de Microdoação PIX (Story 4.2 - FR-10, FR-11) */}
+      <DonationBottomSheet
+        isOpen={donationModalState.isOpen}
+        onClose={() => setDonationModalState((prev) => ({ ...prev, isOpen: false }))}
+        triggerMoment={donationModalState.triggerMoment}
+        currentUserId={user?.id}
+        onDonated={async ({ amount }) => {
+          setTransparencyRefreshTrigger((prev) => prev + 1);
+          if (user?.id) {
+            try {
+              const refreshed = await ProfileService.getUserProfile(user.id);
+              if (refreshed) {
+                setProfileData(refreshed);
+              }
+            } catch {
+              // Fallback silencioso
+            }
+          }
+          setSuccessToast(`💚 Muito obrigado pelo apoio comunitário de R$ ${amount.toFixed(2).replace('.', ',')}!`);
+          setTimeout(() => setSuccessToast(null), 4500);
+        }}
+      />
     </div>
   );
 };

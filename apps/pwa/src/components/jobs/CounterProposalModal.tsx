@@ -1,12 +1,13 @@
 // ==============================================================================
 // Component: apps/pwa/src/components/jobs/CounterProposalModal.tsx
-// Description: Modal touch-friendly para contraproposta (Bid/Ask) de diária e taxa.
+// Description: Modal touch-friendly para proposta de valor (Bid/Ask) de diária e taxa.
 // Story: 2.3 - Listagem de Vagas Filtrada por Modal e Negociação Bid/Ask (Proposta/Contraproposta)
 // ==============================================================================
 
 import React, { useState } from 'react';
 import type { JobPost, JobBid } from '../../jobs/types.ts';
 import { submitBid } from '../../jobs/job-service.ts';
+import { Button, Card, triggerHaptic } from '../ui/index.ts';
 
 interface CounterProposalModalProps {
   isOpen: boolean;
@@ -32,18 +33,14 @@ export const CounterProposalModal: React.FC<CounterProposalModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const adjustDaily = (delta: number) => {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(10);
-    }
+    triggerHaptic(20);
     const current = parseFloat(bidDaily) || 0;
     const updated = Math.max(0, current + delta);
     setBidDaily(updated.toFixed(2));
   };
 
   const adjustFee = (delta: number) => {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(10);
-    }
+    triggerHaptic(20);
     const current = parseFloat(bidFee) || 0;
     const updated = Math.max(0, current + delta);
     setBidFee(updated.toFixed(2));
@@ -66,9 +63,7 @@ export const CounterProposalModal: React.FC<CounterProposalModalProps> = ({
       return;
     }
 
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate([15, 30, 15]);
-    }
+    triggerHaptic([20, 40, 20]);
 
     setIsSubmitting(true);
 
@@ -81,7 +76,7 @@ export const CounterProposalModal: React.FC<CounterProposalModalProps> = ({
       });
 
       if (!result.success || !result.bid) {
-        setErrorMessage(result.error || 'Erro ao submeter contraproposta.');
+        setErrorMessage(result.error || 'Erro ao enviar proposta.');
       } else {
         onSuccess(result.bid);
         onClose();
@@ -101,31 +96,28 @@ export const CounterProposalModal: React.FC<CounterProposalModalProps> = ({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(5, 8, 16, 0.85)',
-        backdropFilter: 'blur(6px)',
+        backgroundColor: 'rgba(5, 8, 16, 0.88)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '16px',
         zIndex: 1000,
-        fontFamily: 'system-ui, -apple-system, sans-serif'
+        fontFamily: 'var(--font-sans)'
       }}
     >
-      <div
+      <Card
         style={{
-          backgroundColor: '#0f172a',
-          border: '1px solid #334155',
-          borderRadius: '20px',
           width: '100%',
-          maxWidth: '480px',
-          padding: '24px',
-          color: '#f8fafc',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+          maxWidth: '440px',
+          padding: '24px 20px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)'
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>
-            💬 Enviar Contraproposta
+          <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#ffffff' }}>
+            🤝 Propor Outro Valor
           </h2>
           <button
             type="button"
@@ -133,11 +125,11 @@ export const CounterProposalModal: React.FC<CounterProposalModalProps> = ({
             style={{
               background: 'none',
               border: 'none',
-              color: '#94a3b8',
+              color: 'var(--text-secondary)',
               fontSize: '20px',
               cursor: 'pointer',
-              minWidth: '48px',
-              minHeight: '48px',
+              minWidth: '44px',
+              minHeight: '44px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -147,53 +139,45 @@ export const CounterProposalModal: React.FC<CounterProposalModalProps> = ({
           </button>
         </div>
 
-        <div style={{ backgroundColor: '#1e293b', padding: '12px', borderRadius: '12px', marginBottom: '16px' }}>
-          <div style={{ fontSize: '12px', color: '#94a3b8' }}>Valores Ofertados pelo Lojista:</div>
-          <div style={{ fontSize: '15px', fontWeight: 700, color: '#10b981', marginTop: '2px' }}>
-            Diária: R$ {Number(job.offered_daily_rate).toFixed(2)} • Taxa: R$ {Number(job.offered_delivery_fee).toFixed(2)}/entrega
+        <div style={{ backgroundColor: 'var(--bg-surface-raised)', border: '1px solid var(--border-subtle)', padding: '12px 14px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Valor Ofertado pela Loja:</div>
+          <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--neon-emerald)', marginTop: '2px' }}>
+            Diária: R$ {Number(job.offered_daily_rate).toFixed(2).replace('.', ',')} • Taxa: R$ {Number(job.offered_delivery_fee).toFixed(2).replace('.', ',')}/entrega
           </div>
         </div>
 
         {errorMessage && (
           <div
             style={{
-              backgroundColor: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid #ef4444',
-              color: '#fca5a5',
-              padding: '12px',
-              borderRadius: '10px',
-              fontSize: '13px',
-              marginBottom: '16px'
+              backgroundColor: 'var(--alert-warning-dim)',
+              border: '1px solid rgba(245, 158, 11, 0.4)',
+              color: '#fde68a',
+              padding: '10px 12px',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '12px',
+              marginBottom: '14px'
             }}
           >
-            {errorMessage}
+            ⚠️ {errorMessage}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
           {/* Ajuste de Diária */}
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '13px', color: '#94a3b8', marginBottom: '6px' }}>
+          <div style={{ marginBottom: '14px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px', textTransform: 'uppercase' }}>
               Sua Proposta de Diária (R$)
             </label>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="md"
                 onClick={() => adjustDaily(-5)}
-                style={{
-                  minWidth: '48px',
-                  minHeight: '48px',
-                  borderRadius: '10px',
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #334155',
-                  color: '#f8fafc',
-                  fontSize: '18px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
+                style={{ minWidth: '48px', padding: '0 8px' }}
               >
                 -5
-              </button>
+              </Button>
               <input
                 type="number"
                 step="0.50"
@@ -201,63 +185,48 @@ export const CounterProposalModal: React.FC<CounterProposalModalProps> = ({
                 value={bidDaily}
                 onChange={e => setBidDaily(e.target.value)}
                 required
+                className="tabular-price"
                 style={{
                   flex: 1,
-                  padding: '12px',
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #334155',
-                  borderRadius: '10px',
-                  color: '#38bdf8',
-                  fontWeight: 700,
+                  padding: '10px 12px',
+                  backgroundColor: 'var(--bg-surface-raised)',
+                  border: '1.5px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--neon-emerald)',
                   fontSize: '18px',
                   textAlign: 'center',
                   minHeight: '48px',
+                  outline: 'none',
                   boxSizing: 'border-box'
                 }}
               />
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="md"
                 onClick={() => adjustDaily(5)}
-                style={{
-                  minWidth: '48px',
-                  minHeight: '48px',
-                  borderRadius: '10px',
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #334155',
-                  color: '#f8fafc',
-                  fontSize: '18px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
+                style={{ minWidth: '48px', padding: '0 8px' }}
               >
                 +5
-              </button>
+              </Button>
             </div>
           </div>
 
           {/* Ajuste de Taxa por Entrega */}
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '13px', color: '#94a3b8', marginBottom: '6px' }}>
+          <div style={{ marginBottom: '14px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '6px', textTransform: 'uppercase' }}>
               Sua Proposta de Taxa por Entrega (R$)
             </label>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="md"
                 onClick={() => adjustFee(-0.50)}
-                style={{
-                  minWidth: '48px',
-                  minHeight: '48px',
-                  borderRadius: '10px',
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #334155',
-                  color: '#f8fafc',
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
+                style={{ minWidth: '48px', padding: '0 8px' }}
               >
                 -0.5
-              </button>
+              </Button>
               <input
                 type="number"
                 step="0.25"
@@ -265,103 +234,81 @@ export const CounterProposalModal: React.FC<CounterProposalModalProps> = ({
                 value={bidFee}
                 onChange={e => setBidFee(e.target.value)}
                 required
+                className="tabular-price"
                 style={{
                   flex: 1,
-                  padding: '12px',
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #334155',
-                  borderRadius: '10px',
-                  color: '#38bdf8',
-                  fontWeight: 700,
+                  padding: '10px 12px',
+                  backgroundColor: 'var(--bg-surface-raised)',
+                  border: '1.5px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--highvis-yellow)',
                   fontSize: '18px',
                   textAlign: 'center',
                   minHeight: '48px',
+                  outline: 'none',
                   boxSizing: 'border-box'
                 }}
               />
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="md"
                 onClick={() => adjustFee(0.50)}
-                style={{
-                  minWidth: '48px',
-                  minHeight: '48px',
-                  borderRadius: '10px',
-                  backgroundColor: '#1e293b',
-                  border: '1px solid #334155',
-                  color: '#f8fafc',
-                  fontSize: '16px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
+                style={{ minWidth: '48px', padding: '0 8px' }}
               >
                 +0.5
-              </button>
+              </Button>
             </div>
           </div>
 
           {/* Notas */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '6px' }}>
-              Observação para o Lojista (Opcional)
+          <div style={{ marginBottom: '18px' }}>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase' }}>
+              Mensagem para o Lojista (Opcional)
             </label>
             <textarea
               rows={2}
               value={notes}
               onChange={e => setNotes(e.target.value)}
-              placeholder="Ex: Disponibilidade para hora extra se necessário..."
+              placeholder="Ex: Chego em 20 min com bag grande..."
               style={{
                 width: '100%',
-                padding: '10px',
-                backgroundColor: '#1e293b',
-                border: '1px solid #334155',
-                borderRadius: '10px',
-                color: '#fff',
+                padding: '10px 12px',
+                backgroundColor: 'var(--bg-surface-raised)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--text-primary)',
                 fontSize: '13px',
                 boxSizing: 'border-box',
-                resize: 'none'
+                resize: 'none',
+                fontFamily: 'var(--font-sans)',
+                outline: 'none'
               }}
             />
           </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.5fr)', gap: '8px' }}>
+            <Button
               type="button"
+              variant="secondary"
+              size="md"
               onClick={onClose}
-              style={{
-                flex: 1,
-                padding: '14px',
-                backgroundColor: '#1e293b',
-                border: '1px solid #334155',
-                color: '#94a3b8',
-                borderRadius: '12px',
-                fontWeight: 600,
-                minHeight: '48px',
-                cursor: 'pointer'
-              }}
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              disabled={isSubmitting}
-              style={{
-                flex: 2,
-                padding: '14px',
-                backgroundColor: isSubmitting ? '#0284c7' : '#38bdf8',
-                border: 'none',
-                color: '#0f172a',
-                borderRadius: '12px',
-                fontWeight: 700,
-                fontSize: '15px',
-                minHeight: '48px',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer'
-              }}
+              variant="cta"
+              size="md"
+              isLoading={isSubmitting}
             >
-              {isSubmitting ? 'Enviando...' : 'Enviar Contraproposta'}
-            </button>
+              Enviar Proposta
+            </Button>
           </div>
         </form>
-      </div>
+      </Card>
     </div>
   );
 };
+
+export default CounterProposalModal;
