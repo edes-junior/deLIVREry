@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Party Mode Keepsake — deLIVREry (10/09/2026)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070a12;
+      --card-bg: rgba(17, 24, 39, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.25);
+      --sky: #38bdf8;
+      --sky-glow: rgba(56, 189, 248, 0.25);
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --purple: #a855f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(168, 85, 247, 0.05) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+      position: relative;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--sky);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      box-shadow: 0 0 20px var(--sky-glow);
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    .summary-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 32px;
+      margin-bottom: 48px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .summary-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--sky), var(--emerald), var(--purple));
+    }
+
+    .summary-card h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+    }
+
+    .decision-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .decision-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 18px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .decision-item:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .decision-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .decision-item h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #f1f5f9;
+    }
+
+    .decision-item p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .stats-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 20px;
+    }
+
+    .stat-pill {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: relative;
+    }
+
+    .turn {
+      display: flex;
+      gap: 18px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 22px;
+      transition: transform 0.2s;
+    }
+
+    .turn:hover {
+      transform: translateY(-2px);
+    }
+
+    .turn-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .turn-content {
+      flex: 1;
+    }
+
+    .turn-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .persona-name {
+      font-weight: 700;
+      font-size: 16px;
+      color: #f8fafc;
+    }
+
+    .persona-role {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .turn-body {
+      font-size: 14px;
+      color: #e2e8f0;
+      line-height: 1.65;
+    }
+
+    .turn-body code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #38bdf8;
+    }
+
+    /* Color styles by persona */
+    .turn[data-persona="edes"] .turn-avatar { background: #1e293b; border: 1px solid #475569; }
+    .turn[data-persona="john"] .turn-avatar { background: #1e1b4b; border: 1px solid #4338ca; }
+    .turn[data-persona="mary"] .turn-avatar { background: #064e3b; border: 1px solid #059669; }
+    .turn[data-persona="sally"] .turn-avatar { background: #4c1d95; border: 1px solid #7c3aed; }
+    .turn[data-persona="winston"] .turn-avatar { background: #451a03; border: 1px solid #b45309; }
+    .turn[data-persona="amelia"] .turn-avatar { background: #172554; border: 1px solid #2563eb; }
+    .turn[data-persona="murat"] .turn-avatar { background: #4c0519; border: 1px solid #be123c; }
+
+    footer {
+      text-align: center;
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">✨ deLIVREry • BMad Party Mode</div>
+      <h1>Cancelamento de Turno pelo Lojista</h1>
+      <p class="subtitle">Registro histórico da sessão de alinhamento estratégico, definição de produto e entrega com o BMAD Core Team.</p>
+    </header>
+
+    <div class="summary-card">
+      <h2>🏆 Resumo das Decisões & Arquitetura Final</h2>
+      <div class="decision-grid">
+        <div class="decision-item">
+          <span class="decision-icon">⏱️</span>
+          <h3>Janela de Tolerância de 1h</h3>
+          <p>Cancelamento sem penalidade (0 XP) até 60 min da publicação para cobrir erros humanos ou imprevistos imediatos.</p>
+        </div>
+        <div class="decision-item">
+          <span class="decision-icon">🛡️</span>
+          <h3>Isenção por Zero Lances</h3>
+          <p>Se após 1h nenhum entregador tiver demonstrado interesse, a vaga pode ser cancelada sem nenhum desconto de reputação.</p>
+        </div>
+        <div class="decision-item">
+          <span class="decision-icon">⚡</span>
+          <h3>Penalidade de -30 XP</h3>
+          <p>Cancelamentos após 1h com entregadores que já enviaram propostas aplicam desconto de 30 XP para valorizar o tempo do trabalhador.</p>
+        </div>
+        <div class="decision-item">
+          <span class="decision-icon">🤝</span>
+          <h3>Bloqueio Pós-Match</h3>
+          <p>Match é compromisso sagrado. Cancelamento unilateral é proibido após o matching; alinhamentos operacionais são feitos via WhatsApp/telefone direto.</p>
+        </div>
+        <div class="decision-item">
+          <span class="decision-icon">📊</span>
+          <h3>Motivo Obrigatório</h3>
+          <p>Seleção obrigatória de motivo (horário errado, cozinha/loja, demanda baixa, etc.) gerando insumos para indicadores analíticos.</p>
+        </div>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-pill">✅ 312 Testes Verdes</div>
+        <div class="stat-pill">🚀 Vite Build Sucesso</div>
+        <div class="stat-pill">📦 Commits 526fe34 & 4509de4</div>
+      </div>
+    </div>
+
+    <div class="timeline">
+      <!-- Turno Edes -->
+      <div class="turn" data-persona="edes">
+        <div class="turn-avatar">👤</div>
+        <div class="turn-content">
+          <div class="turn-header">
+            <span class="persona-name">Edes</span>
+            <span class="persona-role">Product Lead</span>
+          </div>
+          <div class="turn-body">
+            "Como lojista, quero poder cancelar um turno que publiquei."
+          </div>
+        </div>
+      </div>
+
+      <!-- Turno John -->
+      <div class="turn" data-persona="john">
+        <div class="turn-avatar">📋</div>
+        <div class="turn-content">
+          <div class="turn-header">
+            <span class="persona-name">John</span>
+            <span class="persona-role">Product Manager</span>
+          </div>
+          <div class="turn-body">
+            "Turno cancelado é onde a confiança do entregador no deLIVREry morre se a gente fizer de qualquer jeito. Se o lojista solta um turno pra sexta à noite e cancela 15 minutos antes porque o movimento tá fraco, o motoboy fica na mão. Qual é o job desse cancelamento? É imprevisto real ou conveniência unilateral?"
+          </div>
+        </div>
+      </div>
+
+      <!-- Turno Amelia -->
+      <div class="turn" data-persona="amelia">
+        <div class="turn-avatar">💻</div>
+        <div class="turn-content">
+          <div class="turn-header">
+            <span class="persona-name">Amelia</span>
+            <span class="persona-role">Senior Software Engineer</span>
+          </div>
+          <div class="turn-body">
+            "No código atual, <code>StoreJobManagementCard.tsx</code> nem sequer renderiza botão de cancelamento para vagas <code>open</code>! O cancelamento só existia dentro do <code>MatchedContactCard.tsx</code>. Se o lojista errou a publicação há 2 minutos, ele fica refém da tela."
+          </div>
+        </div>
+      </div>
+
+      <!-- Turno Sally -->
+      <div class="turn" data-persona="sally">
+        <div class="turn-avatar">🎨</div>
+        <div class="turn-content">
+          <div class="turn-header">
+            <span class="persona-name">Sally</span>
+            <span class="persona-role">UX Designer</span>
+          </div>
+          <div class="turn-body">
+            "A experiência precisa de duas trilhas claras: no turno aberto, um modal ágil com chips rápidos de motivos para o polegar. E um banner visual inconfundível: verde com escudo quando isento, ou vermelho de alerta quando houver débito de XP."
+          </div>
+        </div>
+      </div>
+
+      <!-- Turno Edes Decisão -->
+      <div class="turn" data-persona="edes">
+        <div class="turn-avatar">👤</div>
+        <div class="turn-content">
+          <div class="turn-header">
+            <span class="persona-name">Edes</span>
+            <span class="persona-role">Product Lead</span>
+          </div>
+          <div class="turn-body">
+            "1. Cancelar sem penalidade dentro de 1h da publicação ou enquanto nenhum entregador tiver demonstrado interesse.<br>
+             2. Pedir motivo para geração de indicadores no futuro.<br>
+             3. Não deve ser permitido o cancelamento depois do match."
+          </div>
+        </div>
+      </div>
+
+      <!-- Turno Mary -->
+      <div class="turn" data-persona="mary">
+        <div class="turn-avatar">📊</div>
+        <div class="turn-content">
+          <div class="turn-header">
+            <span class="persona-name">Mary</span>
+            <span class="persona-role">Business Analyst</span>
+          </div>
+          <div class="turn-body">
+            "Essa é a jogada de ouro para a liquidez da rede! O motoboy sabe que no deLIVREry o match é garantido. Acaba o fantasma do cancelamento na porta do restaurante. A confiança mútua é o maior motor de retenção orgânica."
+          </div>
+        </div>
+      </div>
+
+      <!-- Turno Winston -->
+      <div class="turn" data-persona="winston">
+        <div class="turn-avatar">🏗️</div>
+        <div class="turn-content">
+          <div class="turn-header">
+            <span class="persona-name">Winston</span>
+            <span class="persona-role">System Architect</span>
+          </div>
+          <div class="turn-body">
+            "A máquina de estados ficou cristalina: <code>open -> cancelled</code> é a única transição válida do lojista. A transição <code>matched -> cancelled</code> foi extirpada da loja. Menos concorrência, migração atômica e zero estados zumbis no banco."
+          </div>
+        </div>
+      </div>
+
+      <!-- Turno Murat -->
+      <div class="turn" data-persona="murat">
+        <div class="turn-avatar">🧪</div>
+        <div class="turn-content">
+          <div class="turn-header">
+            <span class="persona-name">Murat</span>
+            <span class="persona-role">Master Test Architect</span>
+          </div>
+          <div class="turn-body">
+            "Construímos a suíte de testes dedicada cobrindo a matriz inteira (1h, 0 lances, penalidade, bloqueio pós-match e validação de motivo). 312 testes no verde cravados na esteira!"
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      deLIVREry • Plataforma Livre de Entregas • Sessão realizada em 10 de Setembro de 2026.
+    </footer>
+  </div>
+</body>
+</html>
