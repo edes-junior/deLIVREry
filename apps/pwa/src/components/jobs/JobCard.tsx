@@ -8,7 +8,7 @@ import React, { useState } from 'react';
 import type { JobPost, JobBid } from '../../jobs/types.ts';
 import { submitBid } from '../../jobs/job-service.ts';
 import { Card, Button, Badge, triggerHaptic } from '../ui/index.ts';
-import { Calendar, Clock, MapPin, Target, Hourglass, Zap, Handshake } from 'lucide-react';
+import { Calendar, Clock, MapPin, Target, Hourglass, Zap, Handshake, Bike, AlertTriangle, Check } from 'lucide-react';
 
 interface JobCardProps {
   job: JobPost;

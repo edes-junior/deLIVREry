@@ -99,6 +99,16 @@ describe('Story 4.3: Isonomia Radical nos Componentes do PWA (Sem Selos de Casta
     assert.ok(!code.includes('data-testid="badge-job-supporter"'), 'JobCard NÃO deve conter badge-job-supporter');
   });
 
+  it('deve garantir integridade dos ícones importados no JobCard.tsx (Bike, AlertTriangle, Check)', () => {
+    const cardPath = path.resolve(process.cwd(), 'apps/pwa/src/components/jobs/JobCard.tsx');
+    const code = fs.readFileSync(cardPath, 'utf8');
+
+    const importLine = code.split('\n').find(l => l.includes("from 'lucide-react'"));
+    assert.ok(importLine && importLine.includes('Bike'), 'JobCard deve importar Bike de lucide-react');
+    assert.ok(importLine && importLine.includes('AlertTriangle'), 'JobCard deve importar AlertTriangle de lucide-react');
+    assert.ok(importLine && importLine.includes('Check'), 'JobCard deve importar Check de lucide-react');
+  });
+
   it('NÃO deve conter selo de apoiador nas propostas recebidas (StoreJobManagementCard.tsx)', () => {
     const storeCardPath = path.resolve(process.cwd(), 'apps/pwa/src/components/jobs/StoreJobManagementCard.tsx');
     const code = fs.readFileSync(storeCardPath, 'utf8');
