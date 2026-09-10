@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   getSession,
   checkProfileCompletion,
@@ -12,6 +12,7 @@ export interface UseAuthState {
   user: any | null;
   session: any | null;
   loading: boolean;
+  isLoading: boolean;
   profileStatus: ProfileStatus | null;
   sendMagicLink: (email: string) => Promise<any>;
   signOut: () => Promise<void>;
@@ -24,17 +25,57 @@ export function useAuth(): UseAuthState {
   const [loading, setLoading] = useState(true);
   const [profileStatus, setProfileStatus] = useState<ProfileStatus | null>(null);
 
-  const evaluateSession = useCallback(async (currentSession: any) => {
-    setSession(currentSession);
-    const currentUser = currentSession?.user || null;
-    setUser(currentUser);
+  const lastUserIdRef = useRef<string | null>(null);
+  const lastTokenRef = useRef<string | null>(null);
+  const profileStatusRef = useRef<ProfileStatus | null>(null);
 
-    if (currentUser?.id) {
-      const status = await checkProfileCompletion(currentUser.id);
-      setProfileStatus(status);
-    } else {
-      setProfileStatus(null);
+  const evaluateSession = useCallback(async (currentSession: any) => {
+    const currentUser = currentSession?.user || null;
+    const currentUserId = currentUser?.id || null;
+    const currentToken = currentSession?.access_token || null;
+
+    const isSameUser = currentUserId === lastUserIdRef.current;
+    const isSameToken = currentToken === lastTokenRef.current;
+
+    // Se o token e usuário são idênticos, não recria estado nem engatilha re-render
+    if (isSameUser && isSameToken) {
+      setLoading(false);
+      return;
     }
+
+    lastTokenRef.current = currentToken;
+    setSession(currentSession);
+
+    if (!isSameUser) {
+      lastUserIdRef.current = currentUserId;
+      setUser(currentUser);
+
+      if (currentUserId) {
+        try {
+          const status = await checkProfileCompletion(currentUserId);
+          profileStatusRef.current = status;
+          setProfileStatus(status);
+        } catch (e) {
+          console.error('Erro ao verificar status do perfil:', e);
+        }
+      } else {
+        profileStatusRef.current = null;
+        setProfileStatus(null);
+      }
+    } else {
+      // Se apenas o token foi renovado (ex: window focus ou visibility change do Supabase),
+      // preservamos a referência do usuário para NÃO engatilhar hooks dependentes de user
+      if (!profileStatusRef.current && currentUserId) {
+        try {
+          const status = await checkProfileCompletion(currentUserId);
+          profileStatusRef.current = status;
+          setProfileStatus(status);
+        } catch (e) {
+          console.error('Erro ao checar status do perfil em segundo plano:', e);
+        }
+      }
+    }
+
     setLoading(false);
   }, []);
 
@@ -67,6 +108,9 @@ export function useAuth(): UseAuthState {
 
   const signOut = useCallback(async () => {
     await authSignOut();
+    lastUserIdRef.current = null;
+    lastTokenRef.current = null;
+    profileStatusRef.current = null;
     setSession(null);
     setUser(null);
     setProfileStatus(null);
@@ -80,6 +124,7 @@ export function useAuth(): UseAuthState {
     user,
     session,
     loading,
+    isLoading: loading,
     profileStatus,
     sendMagicLink,
     signOut,

@@ -18,6 +18,8 @@ export interface DetectedRegion {
   neighborhoodName: string;
   cityName?: string;
   stateName?: string;
+  street?: string;
+  postalCode?: string;
   formattedLabel: string;
   latitude: number;
   longitude: number;
@@ -163,6 +165,27 @@ export class GeolocationService {
             ? matchedNeighborhood.name
             : rawNeighborhood;
 
+          // Logradouro (rua, avenida, etc.)
+          const rawStreet =
+            address.road ||
+            address.street ||
+            address.pedestrian ||
+            address.footway ||
+            address.avenue ||
+            address.residential ||
+            undefined;
+
+          // CEP se disponível pelo Nominatim (formatado 00000-000)
+          let parsedPostalCode: string | undefined = undefined;
+          if (address.postcode) {
+            const clean = address.postcode.replace(/\D/g, '');
+            if (clean.length === 8) {
+              parsedPostalCode = `${clean.slice(0, 5)}-${clean.slice(5)}`;
+            } else {
+              parsedPostalCode = address.postcode;
+            }
+          }
+
           return {
             stateId,
             cityId,
@@ -170,6 +193,8 @@ export class GeolocationService {
             neighborhoodName: finalNeighborhoodName,
             cityName,
             stateName: stateObj?.name || stateId,
+            street: rawStreet,
+            postalCode: parsedPostalCode,
             formattedLabel: `${finalNeighborhoodName}, ${cityName} - ${stateId}`,
             latitude,
             longitude

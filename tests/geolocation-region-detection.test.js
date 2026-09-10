@@ -100,5 +100,32 @@ describe('Feature: Identificação Territorial por Geolocalização', () => {
       assert.equal(region.neighborhoodId, 'rio-de-janeiro-centro');
       assert.match(region.formattedLabel, /Rio de Janeiro - RJ/);
     });
+
+    test('Cenário 6: Geocodificação reversa extrai logradouro (rua) e CEP formatado para autocompletar do lojista', async () => {
+      globalThis.fetch = async (url) => {
+        assert.ok(url.includes('nominatim.openstreetmap.org'));
+        return {
+          ok: true,
+          json: async () => ({
+            address: {
+              road: 'Avenida Paulista',
+              suburb: 'Bela Vista',
+              city: 'São Paulo',
+              state: 'São Paulo',
+              postcode: '01310100',
+              'ISO3166-2-lvl4': 'BR-SP'
+            }
+          })
+        };
+      };
+
+      const region = await GeolocationService.detectRegionFromCoordinates(-23.561, -46.655);
+      assert.ok(region);
+      assert.equal(region.street, 'Avenida Paulista');
+      assert.equal(region.postalCode, '01310-100');
+      assert.equal(region.neighborhoodName, 'Bela Vista');
+      assert.equal(region.stateId, 'SP');
+      assert.equal(region.cityId, 'sao-paulo');
+    });
   });
 });

@@ -140,17 +140,22 @@ export const App: React.FC = () => {
     (window.location.hash.includes('access_token') || window.location.search.includes('code'));
 
   // Carrega perfil e quórum regional do usuário
+  const userId = user?.id;
+
   useEffect(() => {
     async function loadUserProfileAndQuorum() {
-      if (!user) {
+      if (!userId) {
         setProfileData(null);
         setRegionQuorum(null);
         return;
       }
 
-      setIsProfileLoading(true);
+      // Só ativa isProfileLoading se ainda não tivermos nenhum dado em memória
+      if (!profileData) {
+        setIsProfileLoading(true);
+      }
       try {
-        const data = await ProfileService.getUserProfile(user.id);
+        const data = await ProfileService.getUserProfile(userId);
         setProfileData(data);
 
         // Se o perfil tiver localização, busca o quórum regional
@@ -177,7 +182,7 @@ export const App: React.FC = () => {
     }
 
     loadUserProfileAndQuorum();
-  }, [user]);
+  }, [userId]);
 
   if (isAuthCallback) {
     return (
@@ -192,7 +197,10 @@ export const App: React.FC = () => {
   }
 
   // Estado de Carregamento Inicial (Splash Screen de Abertura)
-  if (isAuthLoading || isProfileLoading) {
+  // CRÍTICO: Só exibe Splash Screen se profileData AINDA for nulo no carregamento inicial!
+  // Revalidações em segundo plano (como ao alternar de abas ou focar a janela) mantêm a árvore React
+  // montada, preservando dados de formulários e modais abertos.
+  if (!profileData && (isAuthLoading || isProfileLoading)) {
     return (
       <div
         style={{

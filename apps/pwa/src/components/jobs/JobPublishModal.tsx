@@ -5,7 +5,7 @@
 // Story: 2.2 - Publicação de Vagas de Turno e Notificações Web Push (FCM)
 // ==============================================================================
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Megaphone, X, Sparkles, Lightbulb, Bike, Zap } from 'lucide-react';
 import type { TransportModal } from '../../profile/types.ts';
 import { createJobPost } from '../../jobs/job-service.ts';
@@ -46,6 +46,45 @@ export const JobPublishModal: React.FC<JobPublishModalProps> = ({
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Restaura rascunho salvo anteriormente se existir
+  useEffect(() => {
+    if (!isOpen || !storeUserId || typeof window === 'undefined') return;
+    try {
+      const saved = sessionStorage.getItem(`delivrery_job_draft_${storeUserId}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.startTime) setStartTime(parsed.startTime);
+        if (parsed.endTime) setEndTime(parsed.endTime);
+        if (parsed.dailyRate) setDailyRate(parsed.dailyRate);
+        if (parsed.deliveryFee) setDeliveryFee(parsed.deliveryFee);
+        if (parsed.selectedModals && Array.isArray(parsed.selectedModals) && parsed.selectedModals.length > 0) {
+          setSelectedModals(parsed.selectedModals);
+        }
+        if (parsed.description) setDescription(parsed.description);
+      }
+    } catch {
+      // Ignora erro de parsing
+    }
+  }, [isOpen, storeUserId]);
+
+  // Salva rascunho a cada alteração enquanto o modal estiver aberto
+  useEffect(() => {
+    if (!isOpen || !storeUserId || typeof window === 'undefined') return;
+    try {
+      const draft = {
+        startTime,
+        endTime,
+        dailyRate,
+        deliveryFee,
+        selectedModals,
+        description
+      };
+      sessionStorage.setItem(`delivrery_job_draft_${storeUserId}`, JSON.stringify(draft));
+    } catch {
+      // Ignora erro de storage
+    }
+  }, [isOpen, startTime, endTime, dailyRate, deliveryFee, selectedModals, description, storeUserId]);
 
   // Verifica dinamicamente se qualifica para o bônus de antecedência de +50 XP (>48h)
   const qualifiesForEarlyBonus = useMemo(() => {
@@ -115,6 +154,9 @@ export const JobPublishModal: React.FC<JobPublishModalProps> = ({
       if (!result.success) {
         setErrorMessage(result.error || 'Erro ao publicar vaga.');
       } else {
+        try {
+          sessionStorage.removeItem(`delivrery_job_draft_${storeUserId}`);
+        } catch {}
         onSuccess(result.job, !!result.earnedXpBonus);
         onClose();
       }

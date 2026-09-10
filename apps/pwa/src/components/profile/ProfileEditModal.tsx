@@ -76,8 +76,10 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [locationFeedback, setLocationFeedback] = useState<string | null>(null);
 
-  // Referência para foco no número
+  // Referência para foco no número e CEP
   const addressNumberInputRef = useRef<HTMLInputElement>(null);
+  const postalCodeInputRef = useRef<HTMLInputElement>(null);
+  const [showManualLocation, setShowManualLocation] = useState(false);
 
   // Geografia
   const [states, setStates] = useState<StateItem[]>([]);
@@ -252,14 +254,33 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
         if (isCourier) {
           setOperatingNeighborhoods(prev => Array.from(new Set([...prev, region.neighborhoodId])));
+          setLocationFeedback(`📍 Região detectada: ${region.formattedLabel}`);
+        } else {
+          if (region.street) {
+            setAddressStreet(region.street);
+          }
+          if (region.postalCode) {
+            setPostalCode(region.postalCode);
+          }
+          setLocationFeedback(`📍 Localização detectada: ${region.formattedLabel}`);
+          setTimeout(() => {
+            addressNumberInputRef.current?.focus();
+          }, 80);
         }
 
-        setLocationFeedback(`📍 Região detectada: ${region.formattedLabel}`);
-        setTimeout(() => setLocationFeedback(null), 5000);
+        setTimeout(() => setLocationFeedback(null), 6000);
       }
     } catch (err: any) {
-      setLocationFeedback(err?.message || 'Não foi possível obter sua localização.');
-      setTimeout(() => setLocationFeedback(null), 5000);
+      const rawMsg = err?.message || 'Não foi possível obter sua localização.';
+      if (!isCourier && (rawMsg.includes('Permissão') || rawMsg.includes('negada'))) {
+        setLocationFeedback('Permissão de GPS não concedida. Preencha pelo CEP abaixo.');
+        setTimeout(() => {
+          postalCodeInputRef.current?.focus();
+        }, 100);
+      } else {
+        setLocationFeedback(rawMsg);
+      }
+      setTimeout(() => setLocationFeedback(null), 6000);
     } finally {
       setIsDetectingLocation(false);
     }
@@ -631,9 +652,9 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             </div>
           )}
 
-          {/* Campos Específicos para Lojista */}
+          {/* Campos Específicos para Lojista: Endereço Unificado com GPS Primário e CEP */}
           {!isCourier && (
-            <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)', display: 'block', marginBottom: '6px' }}>
                   Nome da Loja / Estabelecimento *
@@ -659,55 +680,176 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                 />
               </div>
 
-              {/* CEP do Estabelecimento com Busca Automática */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)' }}>
-                    CEP do Estabelecimento
-                  </label>
-                  {isSearchingCep && (
-                    <span style={{ fontSize: '11px', color: 'var(--neon-emerald, #00f59b)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Loader2 size={12} className="spin-animate" /> Buscando endereço...
+              {/* Bloco Unificado: Endereço do Estabelecimento */}
+              <div
+                style={{
+                  padding: '16px',
+                  borderRadius: '10px',
+                  backgroundColor: 'rgba(15, 23, 42, 0.7)',
+                  border: '1px solid var(--border-subtle, #334155)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}
+              >
+                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--neon-emerald, #00f59b)', letterSpacing: '0.05em' }}>
+                  Endereço do Estabelecimento
+                </span>
+
+                {/* Botão Primário: Preenchimento por GPS */}
+                <button
+                  type="button"
+                  onClick={handleDetectLocation}
+                  disabled={isDetectingLocation}
+                  style={{
+                    width: '100%',
+                    minHeight: '48px',
+                    borderRadius: '8px',
+                    background: 'linear-gradient(135deg, rgba(0, 245, 155, 0.2) 0%, rgba(0, 245, 155, 0.08) 100%)',
+                    border: '1px solid var(--neon-emerald, #00f59b)',
+                    color: 'var(--neon-emerald, #00f59b)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '2px',
+                    cursor: isDetectingLocation ? 'wait' : 'pointer',
+                    padding: '8px 12px',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '13px' }}>
+                    {isDetectingLocation ? <Loader2 size={15} className="spin-animate" /> : <Crosshair size={15} />}
+                    <span>{isDetectingLocation ? 'Detectando Localização...' : '📍 Estou na Loja: Preencher por Localização'}</span>
+                  </div>
+                  <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>
+                    Concede permissão de GPS e atualiza rua, bairro e CEP num toque
+                  </span>
+                </button>
+
+                {/* Divisor Visual */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '4px 0' }}>
+                  <div style={{ flex: 1, height: '1px', backgroundColor: '#334155' }} />
+                  <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    ou altere pelo CEP
+                  </span>
+                  <div style={{ flex: 1, height: '1px', backgroundColor: '#334155' }} />
+                </div>
+
+                {locationFeedback && (
+                  <div
+                    style={{
+                      fontSize: '12px',
+                      padding: '8px 10px',
+                      borderRadius: '6px',
+                      backgroundColor: locationFeedback.includes('negada') || locationFeedback.includes('Erro') || locationFeedback.includes('não') ? 'rgba(239, 68, 68, 0.1)' : 'rgba(0, 245, 155, 0.1)',
+                      border: locationFeedback.includes('negada') || locationFeedback.includes('Erro') || locationFeedback.includes('não') ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(0, 245, 155, 0.3)',
+                      color: locationFeedback.includes('negada') || locationFeedback.includes('Erro') || locationFeedback.includes('não') ? '#fca5a5' : 'var(--neon-emerald, #00f59b)',
+                      fontWeight: 600
+                    }}
+                  >
+                    {locationFeedback}
+                  </div>
+                )}
+
+                {/* CEP do Estabelecimento com Busca Automática */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)' }}>
+                      CEP do Estabelecimento
+                    </label>
+                    {isSearchingCep && (
+                      <span style={{ fontSize: '11px', color: 'var(--neon-emerald, #00f59b)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Loader2 size={12} className="spin-animate" /> Buscando endereço...
+                      </span>
+                    )}
+                  </div>
+                  <input
+                    ref={postalCodeInputRef}
+                    type="text"
+                    value={postalCode}
+                    onChange={handleCepChange}
+                    placeholder="Ex: 01310-100"
+                    maxLength={9}
+                    style={{
+                      width: '100%',
+                      minHeight: '44px',
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      backgroundColor: '#0a0f1d',
+                      border: '1px solid var(--border-subtle, #334155)',
+                      color: 'var(--text-primary, #f8fafc)',
+                      fontSize: '14px',
+                      fontFamily: 'monospace',
+                      boxSizing: 'border-box'
+                    }}
+                    data-testid="input-edit-postalcode"
+                  />
+                  {cepError && (
+                    <span style={{ fontSize: '11px', color: '#f87171' }}>
+                      {cepError}
                     </span>
                   )}
                 </div>
-                <input
-                  type="text"
-                  value={postalCode}
-                  onChange={handleCepChange}
-                  placeholder="Ex: 01310-100"
-                  maxLength={9}
-                  style={{
-                    width: '100%',
-                    minHeight: '44px',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    backgroundColor: '#0a0f1d',
-                    border: '1px solid var(--border-subtle, #334155)',
-                    color: 'var(--text-primary, #f8fafc)',
-                    fontSize: '14px',
-                    fontFamily: 'monospace',
-                    boxSizing: 'border-box'
-                  }}
-                  data-testid="input-edit-postalcode"
-                />
-                {cepError && (
-                  <span style={{ fontSize: '11px', color: '#f87171' }}>
-                    {cepError}
-                  </span>
-                )}
-              </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)', display: 'block', marginBottom: '4px' }}>
+                      Rua / Avenida *
+                    </label>
+                    <input
+                      type="text"
+                      value={addressStreet}
+                      onChange={(e) => setAddressStreet(e.target.value)}
+                      placeholder="Logradouro comercial"
+                      style={{
+                        width: '100%',
+                        minHeight: '44px',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        backgroundColor: '#0a0f1d',
+                        border: '1px solid var(--border-subtle, #334155)',
+                        color: 'var(--text-primary, #f8fafc)',
+                        fontSize: '14px',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)', display: 'block', marginBottom: '4px' }}>
+                      Número *
+                    </label>
+                    <input
+                      ref={addressNumberInputRef}
+                      type="text"
+                      value={addressNumber}
+                      onChange={(e) => setAddressNumber(e.target.value)}
+                      placeholder="Ex: 123"
+                      style={{
+                        width: '100%',
+                        minHeight: '44px',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        backgroundColor: '#0a0f1d',
+                        border: '1px solid var(--border-subtle, #334155)',
+                        color: 'var(--text-primary, #f8fafc)',
+                        fontSize: '14px',
+                        boxSizing: 'border-box'
+                      }}
+                      data-testid="input-edit-addressnumber"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)', display: 'block', marginBottom: '6px' }}>
-                    Rua / Avenida
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)', display: 'block', marginBottom: '4px' }}>
+                    Complemento (opcional)
                   </label>
                   <input
                     type="text"
-                    value={addressStreet}
-                    onChange={(e) => setAddressStreet(e.target.value)}
-                    placeholder="Logradouro comercial"
+                    value={addressComplement}
+                    onChange={(e) => setAddressComplement(e.target.value)}
+                    placeholder="Ex: Sala 102, Galpão B, Apto 4"
                     style={{
                       width: '100%',
                       minHeight: '44px',
@@ -719,66 +861,189 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                       fontSize: '14px',
                       boxSizing: 'border-box'
                     }}
+                    data-testid="input-edit-addresscomplement"
                   />
                 </div>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)', display: 'block', marginBottom: '6px' }}>
-                    Número *
-                  </label>
-                  <input
-                    ref={addressNumberInputRef}
-                    type="text"
-                    value={addressNumber}
-                    onChange={(e) => setAddressNumber(e.target.value)}
-                    placeholder="Ex: 123"
-                    style={{
-                      width: '100%',
-                      minHeight: '44px',
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      backgroundColor: '#0a0f1d',
-                      border: '1px solid var(--border-subtle, #334155)',
-                      color: 'var(--text-primary, #f8fafc)',
-                      fontSize: '14px',
-                      boxSizing: 'border-box'
-                    }}
-                    data-testid="input-edit-addressnumber"
-                  />
-                </div>
-              </div>
 
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)', display: 'block', marginBottom: '6px' }}>
-                  Complemento (opcional)
-                </label>
-                <input
-                  type="text"
-                  value={addressComplement}
-                  onChange={(e) => setAddressComplement(e.target.value)}
-                  placeholder="Ex: Sala 102, Galpão B, Apto 4"
+                {/* Resumo Territorial e Ajuste Manual */}
+                <div
                   style={{
-                    width: '100%',
-                    minHeight: '44px',
-                    padding: '10px 14px',
+                    padding: '10px 12px',
                     borderRadius: '8px',
                     backgroundColor: '#0a0f1d',
-                    border: '1px solid var(--border-subtle, #334155)',
-                    color: 'var(--text-primary, #f8fafc)',
-                    fontSize: '14px',
-                    boxSizing: 'border-box'
+                    border: '1px solid #1e293b'
                   }}
-                  data-testid="input-edit-addresscomplement"
-                />
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '12px', color: '#f8fafc' }}>
+                      <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>Bairro e Cidade Vinculados:</span>
+                      <strong>{isCustomNeighborhood ? customNeighborhood : (neighborhoods.find(n => n.id === selectedNeighborhood)?.name || selectedNeighborhood || 'Não selecionado')}</strong>
+                      <span> — {cities.find(c => c.id === selectedCity)?.name || selectedCity || 'Cidade'} / {selectedState}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowManualLocation(prev => !prev)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--neon-emerald, #00f59b)',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                        padding: '4px 6px'
+                      }}
+                    >
+                      {showManualLocation ? 'Ocultar' : 'Ajustar Bairro'}
+                    </button>
+                  </div>
+
+                  {showManualLocation && (
+                    <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed #334155' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px', marginBottom: '10px' }}>
+                        <div>
+                          <label style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '4px' }}>UF</label>
+                          <select
+                            value={selectedState}
+                            onChange={(e) => handleStateChange(e.target.value)}
+                            style={{
+                              width: '100%',
+                              minHeight: '44px',
+                              padding: '8px 10px',
+                              borderRadius: '8px',
+                              backgroundColor: '#0a0f1d',
+                              border: '1px solid #334155',
+                              color: '#f8fafc',
+                              fontSize: '14px',
+                              boxSizing: 'border-box'
+                            }}
+                            data-testid="select-edit-state"
+                          >
+                            {states.map((s) => (
+                              <option key={s.id} value={s.id}>
+                                {s.id}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '4px' }}>Cidade</label>
+                          <select
+                            value={selectedCity}
+                            onChange={(e) => handleCityChange(e.target.value)}
+                            style={{
+                              width: '100%',
+                              minHeight: '44px',
+                              padding: '8px 10px',
+                              borderRadius: '8px',
+                              backgroundColor: '#0a0f1d',
+                              border: '1px solid #334155',
+                              color: '#f8fafc',
+                              fontSize: '14px',
+                              boxSizing: 'border-box'
+                            }}
+                            data-testid="select-edit-city"
+                          >
+                            {cities.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '4px' }}>Bairro da Loja</label>
+                        {!isCustomNeighborhood ? (
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <select
+                              value={selectedNeighborhood}
+                              onChange={(e) => {
+                                if (e.target.value === 'custom') {
+                                  setIsCustomNeighborhood(true);
+                                  setSelectedNeighborhood('custom');
+                                } else {
+                                  setSelectedNeighborhood(e.target.value);
+                                  setIsCustomNeighborhood(false);
+                                }
+                              }}
+                              style={{
+                                width: '100%',
+                                minHeight: '44px',
+                                padding: '8px 10px',
+                                borderRadius: '8px',
+                                backgroundColor: '#0a0f1d',
+                                border: '1px solid #334155',
+                                color: '#f8fafc',
+                                fontSize: '14px',
+                                boxSizing: 'border-box'
+                              }}
+                              data-testid="select-edit-neighborhood"
+                            >
+                              {neighborhoods.map((n) => (
+                                <option key={n.id} value={n.id}>
+                                  {n.name}
+                                </option>
+                              ))}
+                              <option value="custom">+ Informar outro bairro...</option>
+                            </select>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <input
+                              type="text"
+                              value={customNeighborhood}
+                              onChange={(e) => setCustomNeighborhood(e.target.value)}
+                              placeholder="Digite o nome do bairro"
+                              style={{
+                                flex: 1,
+                                minHeight: '44px',
+                                padding: '10px 14px',
+                                borderRadius: '8px',
+                                backgroundColor: '#0a0f1d',
+                                border: '1px solid var(--neon-emerald, #00f59b)',
+                                color: 'var(--text-primary, #f8fafc)',
+                                fontSize: '14px',
+                                boxSizing: 'border-box'
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsCustomNeighborhood(false);
+                                setSelectedNeighborhood(neighborhoods[0]?.id ?? '');
+                              }}
+                              style={{
+                                padding: '0 12px',
+                                backgroundColor: '#1e293b',
+                                border: '1px solid #334155',
+                                color: '#94a3b8',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Voltar
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </>
+            </div>
           )}
 
-          {/* Localização Territorial / Cascata Geográfica */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)' }}>
-                {isCourier ? 'Bairro Base de Atuação (Quórum Regional)' : 'Localização do Estabelecimento'} *
-              </label>
+          {/* Localização Territorial / Cascata Geográfica (Exclusivo Entregador) */}
+          {isCourier && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)' }}>
+                  Bairro Base de Atuação (Quórum Regional) *
+                </label>
               <button
                 type="button"
                 onClick={handleDetectLocation}
@@ -977,6 +1242,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               </div>
             )}
           </div>
+        )}
 
           {/* Botões de Ação */}
           <div style={{ display: 'flex', gap: '12px', marginTop: '12px', justifyContent: 'flex-end' }}>

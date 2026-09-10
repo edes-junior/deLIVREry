@@ -67,15 +67,17 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
   const [locationFeedback, setLocationFeedback] = useState<string | null>(null);
 
-  // Referência para focar no campo Número
+  // Referência para focar no campo Número e CEP
   const addressNumberInputRef = useRef<HTMLInputElement>(null);
+  const postalCodeInputRef = useRef<HTMLInputElement>(null);
+  const [showManualLocation, setShowManualLocation] = useState(false);
 
   // Estados de Controle de UI
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Carrega lista de estados e recupera referral_code do storage ao montar
+  // Carrega lista de estados e recupera referral_code e rascunhos do storage ao montar
   useEffect(() => {
     const loadedStates = GeographyService.getStates();
     setStates(loadedStates);
@@ -87,7 +89,90 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
     if (storedRef && !referralCodeInput) {
       setReferralCodeInput(storedRef);
     }
-  }, []);
+
+    // Restaura rascunho salvo do sessionStorage se existir
+    if (userId && typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem(`delivrery_profile_draft_${userId}`);
+        if (saved) {
+          const draft = JSON.parse(saved);
+          if (draft.userType) setUserType(draft.userType);
+          if (draft.fullName) setFullName(draft.fullName);
+          if (draft.cpf) setCpf(draft.cpf);
+          if (draft.phone) setPhone(draft.phone);
+          if (draft.transportModal) setTransportModal(draft.transportModal);
+          if (draft.baseDailyRate) setBaseDailyRate(draft.baseDailyRate);
+          if (draft.baseDeliveryFee) setBaseDeliveryFee(draft.baseDeliveryFee);
+          if (draft.referralCodeInput) setReferralCodeInput(draft.referralCodeInput);
+          if (draft.operatingNeighborhoods?.length) setOperatingNeighborhoods(draft.operatingNeighborhoods);
+          if (draft.storeName) setStoreName(draft.storeName);
+          if (draft.postalCode) setPostalCode(draft.postalCode);
+          if (draft.addressStreet) setAddressStreet(draft.addressStreet);
+          if (draft.addressNumber) setAddressNumber(draft.addressNumber);
+          if (draft.addressComplement) setAddressComplement(draft.addressComplement);
+          if (draft.selectedState) {
+            setSelectedState(draft.selectedState);
+            const loadedCities = GeographyService.getCitiesByState(draft.selectedState);
+            setCities(loadedCities);
+            if (draft.selectedCity) {
+              setSelectedCity(draft.selectedCity);
+              const loadedNeighborhoods = GeographyService.getNeighborhoodsByCity(draft.selectedCity);
+              setNeighborhoods(loadedNeighborhoods);
+              if (draft.selectedNeighborhood) {
+                setSelectedNeighborhood(draft.selectedNeighborhood);
+              }
+            }
+          }
+        }
+      } catch {}
+    }
+  }, [userId]);
+
+  // Salva rascunho no sessionStorage continuamente
+  useEffect(() => {
+    if (!userId || typeof window === 'undefined') return;
+    try {
+      const draft = {
+        userType,
+        fullName,
+        cpf,
+        phone,
+        selectedState,
+        selectedCity,
+        selectedNeighborhood,
+        transportModal,
+        baseDailyRate,
+        baseDeliveryFee,
+        referralCodeInput,
+        operatingNeighborhoods,
+        storeName,
+        postalCode,
+        addressStreet,
+        addressNumber,
+        addressComplement
+      };
+      sessionStorage.setItem(`delivrery_profile_draft_${userId}`, JSON.stringify(draft));
+    } catch {}
+  }, [
+    userId,
+    userType,
+    fullName,
+    cpf,
+    phone,
+    selectedState,
+    selectedCity,
+    selectedNeighborhood,
+    transportModal,
+    baseDailyRate,
+    baseDeliveryFee,
+    referralCodeInput,
+    operatingNeighborhoods,
+    storeName,
+    postalCode,
+    addressStreet,
+    addressNumber,
+    addressComplement
+  ]);
 
   const handleStateChange = (stateId: string) => {
     setSelectedState(stateId);
@@ -213,14 +298,33 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
 
         if (userType === 'courier') {
           setOperatingNeighborhoods(prev => Array.from(new Set([...prev, region.neighborhoodId])));
+          setLocationFeedback(`📍 Região detectada: ${region.formattedLabel}`);
+        } else {
+          if (region.street) {
+            setAddressStreet(region.street);
+          }
+          if (region.postalCode) {
+            setPostalCode(region.postalCode);
+          }
+          setLocationFeedback(`📍 Localização detectada: ${region.formattedLabel}`);
+          setTimeout(() => {
+            addressNumberInputRef.current?.focus();
+          }, 80);
         }
 
-        setLocationFeedback(`📍 Região detectada: ${region.formattedLabel}`);
-        setTimeout(() => setLocationFeedback(null), 5000);
+        setTimeout(() => setLocationFeedback(null), 6000);
       }
     } catch (err: any) {
-      setLocationFeedback(err?.message || 'Não foi possível obter sua localização.');
-      setTimeout(() => setLocationFeedback(null), 5000);
+      const rawMsg = err?.message || 'Não foi possível obter sua localização.';
+      if (userType === 'store' && (rawMsg.includes('Permissão') || rawMsg.includes('negada'))) {
+        setLocationFeedback('Permissão de GPS não concedida. Preencha pelo CEP abaixo.');
+        setTimeout(() => {
+          postalCodeInputRef.current?.focus();
+        }, 100);
+      } else {
+        setLocationFeedback(rawMsg);
+      }
+      setTimeout(() => setLocationFeedback(null), 6000);
     } finally {
       setIsDetectingLocation(false);
     }
@@ -288,6 +392,9 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
           referredByCode: referralCodeInput.trim() || undefined
         });
 
+        try {
+          sessionStorage.removeItem(`delivrery_profile_draft_${userId}`);
+        } catch {}
         setSuccessMessage('Perfil de entregador ativado com sucesso!');
         onProfileCompleted(result);
       } else {
@@ -312,6 +419,9 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
           neighborhoodId: neighborhoodFinalId
         });
 
+        try {
+          sessionStorage.removeItem(`delivrery_profile_draft_${userId}`);
+        } catch {}
         setSuccessMessage('Perfil de lojista ativado com sucesso!');
         onProfileCompleted(result);
       }
@@ -470,188 +580,190 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
           )}
         </div>
 
-        {/* Localização Geográfica em Cascata */}
-        <div
-          style={{
-            marginBottom: '16px',
-            padding: '14px',
-            borderRadius: 'var(--radius-md)',
-            backgroundColor: 'var(--bg-base)',
-            border: '1px solid var(--border-subtle)'
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--neon-emerald)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <MapPin size={14} />
-              <span>{userType === 'courier' ? 'Bairro Base e Atuação' : 'Localização da Loja'}</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleDetectLocation}
-              disabled={isDetectingLocation}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                background: 'rgba(0, 245, 155, 0.1)',
-                border: '1px solid rgba(0, 245, 155, 0.3)',
-                color: 'var(--neon-emerald)',
-                borderRadius: 'var(--radius-full)',
-                padding: '4px 10px',
-                fontSize: '11px',
-                fontWeight: 700,
-                cursor: isDetectingLocation ? 'wait' : 'pointer'
-              }}
-            >
-              {isDetectingLocation ? <Loader2 size={12} className="spin-animate" /> : <Crosshair size={12} />}
-              <span>{isDetectingLocation ? 'Detectando...' : 'Minha localização'}</span>
-            </button>
-          </div>
-          {locationFeedback && (
-            <div style={{ fontSize: '11px', color: 'var(--neon-emerald)', marginBottom: '10px', fontWeight: 600 }}>
-              {locationFeedback}
-            </div>
-          )}
-
-          <div style={{ display: 'grid', gridTemplateColumns: '80px minmax(0, 1fr)', gap: '10px', marginBottom: '10px' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
-                UF
-              </label>
-              <select
-                value={selectedState}
-                onChange={(e) => handleStateChange(e.target.value)}
-                className="tactical-input"
-                style={{ padding: '0 8px' }}
+        {/* Localização Geográfica em Cascata (Exclusivo para Entregadores) */}
+        {userType === 'courier' && (
+          <div
+            style={{
+              marginBottom: '16px',
+              padding: '14px',
+              borderRadius: 'var(--radius-md)',
+              backgroundColor: 'var(--bg-base)',
+              border: '1px solid var(--border-subtle)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--neon-emerald)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <MapPin size={14} />
+                <span>Bairro Base e Atuação</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleDetectLocation}
+                disabled={isDetectingLocation}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  background: 'rgba(0, 245, 155, 0.1)',
+                  border: '1px solid rgba(0, 245, 155, 0.3)',
+                  color: 'var(--neon-emerald)',
+                  borderRadius: 'var(--radius-full)',
+                  padding: '4px 10px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: isDetectingLocation ? 'wait' : 'pointer'
+                }}
               >
-                {states.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.id}
-                  </option>
-                ))}
-              </select>
+                {isDetectingLocation ? <Loader2 size={12} className="spin-animate" /> : <Crosshair size={12} />}
+                <span>{isDetectingLocation ? 'Detectando...' : 'Minha localização'}</span>
+              </button>
             </div>
+            {locationFeedback && (
+              <div style={{ fontSize: '11px', color: 'var(--neon-emerald)', marginBottom: '10px', fontWeight: 600 }}>
+                {locationFeedback}
+              </div>
+            )}
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
-                Cidade
-              </label>
-              <select
-                value={selectedCity}
-                onChange={(e) => handleCityChange(e.target.value)}
-                className="tactical-input"
-              >
-                {cities.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
-              Bairro Principal
-            </label>
-            {!isCustomNeighborhood ? (
-              <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '80px minmax(0, 1fr)', gap: '10px', marginBottom: '10px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  UF
+                </label>
                 <select
-                  value={selectedNeighborhood}
-                  onChange={(e) => setSelectedNeighborhood(e.target.value)}
+                  value={selectedState}
+                  onChange={(e) => handleStateChange(e.target.value)}
                   className="tactical-input"
-                  style={{ flex: 1 }}
+                  style={{ padding: '0 8px' }}
                 >
-                  {neighborhoods.map((n) => (
-                    <option key={n.id} value={n.id}>
-                      {n.name}
+                  {states.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.id}
                     </option>
                   ))}
                 </select>
-                <button
-                  type="button"
-                  onClick={() => setIsCustomNeighborhood(true)}
-                  style={{
-                    minHeight: '48px',
-                    padding: '0 12px',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border-subtle)',
-                    backgroundColor: 'var(--bg-surface-raised)',
-                    color: 'var(--text-secondary)',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Outro
-                </button>
               </div>
-            ) : (
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  type="text"
-                  value={customNeighborhood}
-                  onChange={(e) => setCustomNeighborhood(e.target.value)}
-                  placeholder="Nome do seu bairro"
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  Cidade
+                </label>
+                <select
+                  value={selectedCity}
+                  onChange={(e) => handleCityChange(e.target.value)}
                   className="tactical-input"
-                  style={{ flex: 1, borderColor: 'var(--neon-emerald)' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setIsCustomNeighborhood(false)}
-                  style={{
-                    minHeight: '48px',
-                    padding: '0 12px',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border-subtle)',
-                    backgroundColor: 'var(--bg-surface-raised)',
-                    color: 'var(--text-secondary)',
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
                 >
-                  Voltar
-                </button>
+                  {cities.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                Bairro Principal
+              </label>
+              {!isCustomNeighborhood ? (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <select
+                    value={selectedNeighborhood}
+                    onChange={(e) => setSelectedNeighborhood(e.target.value)}
+                    className="tactical-input"
+                    style={{ flex: 1 }}
+                  >
+                    {neighborhoods.map((n) => (
+                      <option key={n.id} value={n.id}>
+                        {n.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomNeighborhood(true)}
+                    style={{
+                      minHeight: '48px',
+                      padding: '0 12px',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: 'var(--bg-surface-raised)',
+                      color: 'var(--text-secondary)',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Outro
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    value={customNeighborhood}
+                    onChange={(e) => setCustomNeighborhood(e.target.value)}
+                    placeholder="Nome do seu bairro"
+                    className="tactical-input"
+                    style={{ flex: 1, borderColor: 'var(--neon-emerald)' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomNeighborhood(false)}
+                    style={{
+                      minHeight: '48px',
+                      padding: '0 12px',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: 'var(--bg-surface-raised)',
+                      color: 'var(--text-secondary)',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Voltar
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Múltiplos Bairros de Atuação para Entregador */}
+            {neighborhoods.length > 1 && (
+              <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed var(--border-subtle)' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  Outros bairros onde você também aceita realizar turnos:
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {neighborhoods
+                    .filter((n) => n.id !== selectedNeighborhood)
+                    .map((n) => {
+                      const isSelected = operatingNeighborhoods.includes(n.id);
+                      return (
+                        <button
+                          key={n.id}
+                          type="button"
+                          onClick={() => toggleOperatingNeighborhood(n.id)}
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: 'var(--radius-full)',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            border: isSelected ? '1px solid var(--neon-emerald)' : '1px solid var(--border-subtle)',
+                            backgroundColor: isSelected ? 'rgba(0, 245, 155, 0.15)' : 'var(--bg-surface-raised)',
+                            color: isSelected ? 'var(--neon-emerald)' : 'var(--text-secondary)',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {isSelected ? '✓ ' : '+ '} {n.name}
+                        </button>
+                      );
+                    })}
+                </div>
               </div>
             )}
           </div>
-
-          {/* Múltiplos Bairros de Atuação para Entregador */}
-          {userType === 'courier' && neighborhoods.length > 1 && (
-            <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed var(--border-subtle)' }}>
-              <label style={{ display: 'block', marginBottom: '6px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
-                Outros bairros onde você também aceita realizar turnos:
-              </label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {neighborhoods
-                  .filter((n) => n.id !== selectedNeighborhood)
-                  .map((n) => {
-                    const isSelected = operatingNeighborhoods.includes(n.id);
-                    return (
-                      <button
-                        key={n.id}
-                        type="button"
-                        onClick={() => toggleOperatingNeighborhood(n.id)}
-                        style={{
-                          padding: '4px 8px',
-                          borderRadius: 'var(--radius-full)',
-                          fontSize: '11px',
-                          fontWeight: 600,
-                          border: isSelected ? '1px solid var(--neon-emerald)' : '1px solid var(--border-subtle)',
-                          backgroundColor: isSelected ? 'rgba(0, 245, 155, 0.15)' : 'var(--bg-surface-raised)',
-                          color: isSelected ? 'var(--neon-emerald)' : 'var(--text-secondary)',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {isSelected ? '✓ ' : '+ '} {n.name}
-                      </button>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
-        </div>
+        )}
 
         {/* Campos de Entregador */}
         {userType === 'courier' && (
@@ -740,10 +852,10 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
           </div>
         )}
 
-        {/* Campos de Comerciante */}
+        {/* Campos de Comerciante: Endereço Unificado com GPS Primário e CEP */}
         {userType === 'store' && (
           <div style={{ marginBottom: '16px' }}>
-            <div style={{ marginBottom: '12px' }}>
+            <div style={{ marginBottom: '14px' }}>
               <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
                 Nome da Loja ou Restaurante *
               </label>
@@ -754,77 +866,304 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
                 onChange={(e) => setStoreName(e.target.value)}
                 placeholder="Ex: Pizzaria Forno Nobre"
                 className="tactical-input"
+                style={{ width: '100%' }}
               />
             </div>
 
-            {/* CEP do Estabelecimento com Busca Automática */}
-            <div style={{ marginBottom: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
-                  CEP do Estabelecimento (busca automática)
-                </label>
-                {isSearchingCep && (
-                  <span style={{ fontSize: '11px', color: 'var(--neon-emerald)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Loader2 size={12} className="spin-animate" /> Buscando endereço...
+            {/* Bloco Unificado: Endereço do Estabelecimento */}
+            <div
+              style={{
+                marginBottom: '16px',
+                padding: '16px',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'var(--bg-base)',
+                border: '1px solid var(--border-subtle)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                <MapPin size={16} style={{ color: 'var(--neon-emerald)' }} />
+                <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Endereço do Estabelecimento
+                </span>
+              </div>
+
+              {/* Botão Primário: Preenchimento por GPS / Localização Atual */}
+              <button
+                type="button"
+                onClick={handleDetectLocation}
+                disabled={isDetectingLocation}
+                style={{
+                  width: '100%',
+                  minHeight: '52px',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'linear-gradient(135deg, rgba(0, 245, 155, 0.2) 0%, rgba(0, 245, 155, 0.08) 100%)',
+                  border: '2px solid var(--neon-emerald)',
+                  color: 'var(--neon-emerald)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '2px',
+                  cursor: isDetectingLocation ? 'wait' : 'pointer',
+                  padding: '10px 14px',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 14px rgba(0, 245, 155, 0.12)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, fontSize: '14px' }}>
+                  {isDetectingLocation ? <Loader2 size={16} className="spin-animate" /> : <Crosshair size={16} />}
+                  <span>{isDetectingLocation ? 'Detectando Localização...' : '📍 Estou na Loja: Preencher por Localização'}</span>
+                </div>
+                <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                  Concede permissão de GPS e preenche rua, bairro e CEP num toque
+                </span>
+              </button>
+
+              {/* Divisor Visual */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '14px 0 12px 0' }}>
+                <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-subtle)' }} />
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  ou informe o CEP
+                </span>
+                <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--border-subtle)' }} />
+              </div>
+
+              {locationFeedback && (
+                <div
+                  style={{
+                    fontSize: '12px',
+                    padding: '8px 10px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: locationFeedback.includes('negada') || locationFeedback.includes('Erro') || locationFeedback.includes('não') ? 'rgba(239, 68, 68, 0.1)' : 'rgba(0, 245, 155, 0.1)',
+                    border: locationFeedback.includes('negada') || locationFeedback.includes('Erro') || locationFeedback.includes('não') ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(0, 245, 155, 0.3)',
+                    color: locationFeedback.includes('negada') || locationFeedback.includes('Erro') || locationFeedback.includes('não') ? '#fca5a5' : 'var(--neon-emerald)',
+                    marginBottom: '12px',
+                    fontWeight: 600
+                  }}
+                >
+                  {locationFeedback}
+                </div>
+              )}
+
+              {/* Campo de CEP */}
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                    CEP da Loja (busca automática)
+                  </label>
+                  {isSearchingCep && (
+                    <span style={{ fontSize: '11px', color: 'var(--neon-emerald)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Loader2 size={12} className="spin-animate" /> Buscando endereço...
+                    </span>
+                  )}
+                </div>
+                <input
+                  ref={postalCodeInputRef}
+                  type="text"
+                  value={postalCode}
+                  onChange={handleCepChange}
+                  placeholder="Ex: 01310-100"
+                  maxLength={9}
+                  className="tactical-input"
+                  style={{ fontFamily: 'var(--font-mono)', width: '100%' }}
+                />
+                {cepError && (
+                  <span style={{ fontSize: '11px', color: '#f87171', marginTop: '4px', display: 'block' }}>
+                    {cepError}
                   </span>
                 )}
               </div>
-              <input
-                type="text"
-                value={postalCode}
-                onChange={handleCepChange}
-                placeholder="Ex: 01310-100"
-                maxLength={9}
-                className="tactical-input"
-                style={{ fontFamily: 'var(--font-mono)' }}
-              />
-              {cepError && (
-                <span style={{ fontSize: '11px', color: '#f87171', marginTop: '4px', display: 'block' }}>
-                  {cepError}
-                </span>
-              )}
-            </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '10px', marginBottom: '10px' }}>
-              <div>
+              {/* Logradouro e Número */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '10px', marginBottom: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                    Rua ou Avenida *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={addressStreet}
+                    onChange={(e) => setAddressStreet(e.target.value)}
+                    placeholder="Ex: Rua das Flores"
+                    className="tactical-input"
+                    style={{ width: '100%' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                    Número *
+                  </label>
+                  <input
+                    ref={addressNumberInputRef}
+                    type="text"
+                    required
+                    value={addressNumber}
+                    onChange={(e) => setAddressNumber(e.target.value)}
+                    placeholder="Ex: 120"
+                    className="tactical-input"
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              </div>
+
+              {/* Complemento */}
+              <div style={{ marginBottom: '12px' }}>
                 <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
-                  Rua ou Avenida
+                  Complemento (opcional)
                 </label>
                 <input
                   type="text"
-                  value={addressStreet}
-                  onChange={(e) => setAddressStreet(e.target.value)}
-                  placeholder="Ex: Rua das Flores"
+                  value={addressComplement}
+                  onChange={(e) => setAddressComplement(e.target.value)}
+                  placeholder="Ex: Sala 102, Galpão B, Apto 4"
                   className="tactical-input"
+                  style={{ width: '100%' }}
                 />
               </div>
 
-              <div>
-                <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
-                  Número *
-                </label>
-                <input
-                  ref={addressNumberInputRef}
-                  type="text"
-                  value={addressNumber}
-                  onChange={(e) => setAddressNumber(e.target.value)}
-                  placeholder="Ex: 120"
-                  className="tactical-input"
-                />
-              </div>
-            </div>
+              {/* Resumo da Região e Ajuste Manual */}
+              <div
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: 'var(--bg-surface-raised)',
+                  border: '1px solid var(--border-subtle)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '11px', display: 'block' }}>Bairro e Cidade Vinculados:</span>
+                    <strong>{isCustomNeighborhood ? customNeighborhood : (neighborhoods.find(n => n.id === selectedNeighborhood)?.name || selectedNeighborhood || 'Não selecionado')}</strong>
+                    <span> — {cities.find(c => c.id === selectedCity)?.name || selectedCity || 'Cidade'} / {selectedState}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowManualLocation(prev => !prev)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--neon-emerald)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      padding: '4px 6px'
+                    }}
+                  >
+                    {showManualLocation ? 'Ocultar' : 'Ajustar Bairro'}
+                  </button>
+                </div>
 
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
-                Complemento (opcional)
-              </label>
-              <input
-                type="text"
-                value={addressComplement}
-                onChange={(e) => setAddressComplement(e.target.value)}
-                placeholder="Ex: Sala 102, Galpão B, Apto 4"
-                className="tactical-input"
-              />
+                {showManualLocation && (
+                  <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed var(--border-subtle)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '80px minmax(0, 1fr)', gap: '10px', marginBottom: '10px' }}>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                          UF
+                        </label>
+                        <select
+                          value={selectedState}
+                          onChange={(e) => handleStateChange(e.target.value)}
+                          className="tactical-input"
+                          style={{ padding: '0 8px' }}
+                        >
+                          {states.map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.id}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                          Cidade
+                        </label>
+                        <select
+                          value={selectedCity}
+                          onChange={(e) => handleCityChange(e.target.value)}
+                          className="tactical-input"
+                        >
+                          {cities.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                        Bairro da Loja
+                      </label>
+                      {!isCustomNeighborhood ? (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <select
+                            value={selectedNeighborhood}
+                            onChange={(e) => setSelectedNeighborhood(e.target.value)}
+                            className="tactical-input"
+                            style={{ flex: 1 }}
+                          >
+                            {neighborhoods.map((n) => (
+                              <option key={n.id} value={n.id}>
+                                {n.name}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => setIsCustomNeighborhood(true)}
+                            style={{
+                              minHeight: '44px',
+                              padding: '0 12px',
+                              borderRadius: 'var(--radius-md)',
+                              border: '1px solid var(--border-subtle)',
+                              backgroundColor: 'var(--bg-surface-raised)',
+                              color: 'var(--text-secondary)',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Outro
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input
+                            type="text"
+                            value={customNeighborhood}
+                            onChange={(e) => setCustomNeighborhood(e.target.value)}
+                            placeholder="Nome do bairro"
+                            className="tactical-input"
+                            style={{ flex: 1, borderColor: 'var(--neon-emerald)' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setIsCustomNeighborhood(false)}
+                            style={{
+                              minHeight: '44px',
+                              padding: '0 12px',
+                              borderRadius: 'var(--radius-md)',
+                              border: '1px solid var(--border-subtle)',
+                              backgroundColor: 'var(--bg-surface-raised)',
+                              color: 'var(--text-secondary)',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Voltar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
