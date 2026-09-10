@@ -23,6 +23,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 export const Button: React.FC<ButtonProps> = ({
   children,
+  type = 'button',
   variant = 'secondary',
   size = 'md',
   haptic = true,
@@ -132,6 +133,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
+      type={type}
       onClick={handleClick}
       disabled={disabled || isLoading}
       style={{ ...getBaseStyle(), ...style }}

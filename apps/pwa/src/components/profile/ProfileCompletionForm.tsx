@@ -1211,6 +1211,7 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
 
         {/* Botão de Envio */}
         <Button
+          type="submit"
           variant="cta"
           disabled={isLoading}
           style={{ width: '100%' }}

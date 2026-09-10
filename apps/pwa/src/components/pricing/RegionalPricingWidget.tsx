@@ -132,6 +132,7 @@ export const RegionalPricingWidget: React.FC<RegionalPricingWidgetProps> = ({
           return (
             <Button
               key={m.id}
+              type="button"
               variant="pill"
               size="sm"
               isActive={isSelected}
