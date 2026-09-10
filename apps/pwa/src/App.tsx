@@ -359,7 +359,6 @@ export const App: React.FC = () => {
     );
   }
 
-  const isCourier = profileData.user?.userType === 'courier';
   const baseNeighborhood =
     profileData.profile?.home_neighborhood_id ||
     profileData.profile?.neighborhood_id ||
