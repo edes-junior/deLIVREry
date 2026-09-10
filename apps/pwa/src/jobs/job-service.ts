@@ -771,7 +771,12 @@ export async function submitJobRating(
 }
 
 /**
- * Cancela um turno e aplica penalidade de XP (-30 XP) caso cancelado com menos de 2h do início (FR-14).
+ * Cancela um turno aplicando regras de integridade e penalidade de reputação (-30 XP):
+ * - Lojista: permitido somente enquanto o turno estiver 'open' (proibido após o match).
+ *   - Isento de penalidade se cancelado em até 1h da publicação OU se não houver propostas de entregadores.
+ *   - Penalidade de -30 XP se cancelado após 1h da publicação com propostas existentes.
+ *   - Motivo de cancelamento é obrigatório para auditoria e indicadores.
+ * - Entregador: penalidade de -30 XP caso cancelado com menos de 2h do início do turno (FR-14).
  */
 export async function cancelJobWithPenaltyCheck(
   cancellingUserId: string,
@@ -805,39 +810,53 @@ export async function cancelJobWithPenaltyCheck(
     return { success: false, penaltyApplied: false, error: 'Este turno já se encontra cancelado.' };
   }
 
-  // Verifica antecedência em relação ao início do turno
-  let hoursBeforeShift = 999;
-  try {
-    const shiftStart = new Date(job.shift_start_time).getTime();
-    const now = Date.now();
-    hoursBeforeShift = (shiftStart - now) / (1000 * 60 * 60);
-  } catch {
-    hoursBeforeShift = 999;
+  const isStore = cancellingUserId === job.store_id;
+
+  // Regra Estrita: Se for o lojista, não é permitido cancelar após o match
+  if (isStore && job.status === 'matched') {
+    return {
+      success: false,
+      penaltyApplied: false,
+      error: 'Não é permitido o cancelamento pelo lojista após o matching com o entregador.'
+    };
   }
 
-  // Penalidade de -30 XP se vaga estava matched e foi cancelada com menos de 2h (FR-14)
-  const isLateCancellation = job.status === 'matched' && hoursBeforeShift < 2.0;
+  // Motivo obrigatório para cancelamento
+  if (!reason || !reason.trim()) {
+    return {
+      success: false,
+      penaltyApplied: false,
+      error: 'O motivo do cancelamento é obrigatório.'
+    };
+  }
+
   const PENALTY_XP = 30;
+  let penaltyApplied = false;
 
-  if (isLateCancellation) {
+  if (isStore) {
+    // Regra de cancelamento pelo lojista:
+    // Isento se: dentro de 1h da publicação OU nenhum entregador demonstrou interesse
+    const publishedAt = job.created_at ? new Date(job.created_at).getTime() : Date.now();
+    const elapsedHours = (Date.now() - publishedAt) / (1000 * 60 * 60);
+    const isWithinOneHour = elapsedHours <= 1.0;
+
+    let bidsCount = 0;
     try {
-      // Se quem cancelou foi o entregador
-      if (cancellingUserId === job.matched_courier_id) {
-        const { data: courierProf } = await client
-          .from('courier_profiles')
-          .select('xp_points')
-          .eq('user_id', cancellingUserId)
-          .single();
+      const { data: bids } = await client
+        .from('job_bids')
+        .select('*')
+        .eq('job_id', jobId)
+        .neq('status', 'cancelled');
+      bidsCount = (bids || []).length;
+    } catch {
+      bidsCount = 0;
+    }
 
-        if (courierProf) {
-          const currentXp = courierProf.xp_points || 0;
-          await client
-            .from('courier_profiles')
-            .update({ xp_points: Math.max(0, currentXp - PENALTY_XP) })
-            .eq('user_id', cancellingUserId);
-        }
-      } else if (cancellingUserId === job.store_id) {
-        // Se quem cancelou foi o lojista
+    const isExempt = isWithinOneHour || bidsCount === 0;
+
+    if (!isExempt) {
+      penaltyApplied = true;
+      try {
         const { data: storeProf } = await client
           .from('store_profiles')
           .select('xp_points')
@@ -851,16 +870,53 @@ export async function cancelJobWithPenaltyCheck(
             .update({ xp_points: Math.max(0, currentXp - PENALTY_XP) })
             .eq('user_id', cancellingUserId);
         }
+      } catch {
+        // Degradação graciosa
       }
+    }
+  } else {
+    // Cancelamento pelo entregador (quando matched)
+    let hoursBeforeShift = 999;
+    try {
+      const shiftStart = new Date(job.shift_start_time).getTime();
+      const now = Date.now();
+      hoursBeforeShift = (shiftStart - now) / (1000 * 60 * 60);
     } catch {
-      // Degradação graciosa
+      hoursBeforeShift = 999;
+    }
+
+    const isLateCancellation = job.status === 'matched' && hoursBeforeShift < 2.0;
+    if (isLateCancellation) {
+      penaltyApplied = true;
+      try {
+        const { data: courierProf } = await client
+          .from('courier_profiles')
+          .select('xp_points')
+          .eq('user_id', cancellingUserId)
+          .single();
+
+        if (courierProf) {
+          const currentXp = courierProf.xp_points || 0;
+          await client
+            .from('courier_profiles')
+            .update({ xp_points: Math.max(0, currentXp - PENALTY_XP) })
+            .eq('user_id', cancellingUserId);
+        }
+      } catch {
+        // Degradação graciosa
+      }
     }
   }
 
   // Atualiza status da vaga para cancelled
+  const nowIso = new Date().toISOString();
   const { data: updatedJob, error: updateErr } = await client
     .from('job_posts')
-    .update({ status: 'cancelled' })
+    .update({
+      status: 'cancelled',
+      cancellation_reason: reason.trim(),
+      cancelled_at: nowIso
+    })
     .eq('id', jobId)
     .select()
     .single();
@@ -883,7 +939,9 @@ export async function cancelJobWithPenaltyCheck(
   return {
     success: true,
     job: updatedJob as JobPost,
-    penaltyApplied: isLateCancellation,
-    penaltyXp: isLateCancellation ? PENALTY_XP : 0
+    penaltyApplied,
+    penaltyXp: penaltyApplied ? PENALTY_XP : 0
   };
 }
+
+export const cancelJob = cancelJobWithPenaltyCheck;

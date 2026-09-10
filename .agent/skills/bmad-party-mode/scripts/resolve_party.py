@@ -30,6 +30,7 @@ customize.toml directly if the customization resolver is unavailable.
   resolve_party.py --project-root P --skill S --party writers-room
 """
 
+import os
 import argparse
 import json
 import subprocess
@@ -46,8 +47,10 @@ except ImportError:  # pragma: no cover - guarded for <3.11
 def _run_json(cmd):
     """Run a resolver script and parse its JSON stdout. None on any failure."""
     try:
+        env = dict(os.environ)
+        env["PYTHONIOENCODING"] = "utf-8"
         out = subprocess.run(
-            cmd, capture_output=True, text=True, encoding="utf-8", timeout=60
+            cmd, capture_output=True, text=True, encoding="utf-8", timeout=60, env=env
         )
     except (OSError, subprocess.SubprocessError):
         return None

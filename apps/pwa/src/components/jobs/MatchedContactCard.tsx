@@ -314,24 +314,26 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
           </button>
         )}
 
-        <button
-          type="button"
-          disabled={isProcessing}
-          onClick={handleCancelShift}
-          style={{
-            minHeight: '48px',
-            padding: '0 14px',
-            borderRadius: '12px',
-            backgroundColor: '#1e293b',
-            border: '1px solid #7f1d1d',
-            color: '#f87171',
-            fontWeight: 600,
-            fontSize: '13px',
-            cursor: isProcessing ? 'not-allowed' : 'pointer'
-          }}
-        >
-          Cancelar
-        </button>
+        {!isStore && (
+          <button
+            type="button"
+            disabled={isProcessing}
+            onClick={handleCancelShift}
+            style={{
+              minHeight: '48px',
+              padding: '0 14px',
+              borderRadius: '12px',
+              backgroundColor: '#1e293b',
+              border: '1px solid #7f1d1d',
+              color: '#f87171',
+              fontWeight: 600,
+              fontSize: '13px',
+              cursor: isProcessing ? 'not-allowed' : 'pointer'
+            }}
+          >
+            Cancelar
+          </button>
+        )}
       </div>
 
       {/* Modal de Microdoação PIX (Story 4.2 - Delight Moment #1) */}

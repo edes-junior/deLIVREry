@@ -26,9 +26,21 @@ export interface JobPost {
   status: JobStatus;
   matched_bid_id?: string | null;
   matched_courier_id?: string | null;
+  cancellation_reason?: string | null;
+  cancelled_at?: string | null;
   created_at?: string;
   updated_at?: string;
 }
+
+export const CANCELLATION_REASONS = [
+  'Erro no horário ou data da vaga',
+  'Problema operacional ou imprevisto na loja',
+  'Movimento fraco / sem demanda suficiente',
+  'Vaga preenchida por outro meio',
+  'Outro motivo'
+] as const;
+
+export type CancellationReason = typeof CANCELLATION_REASONS[number];
 
 export interface JobBid {
   id: string;

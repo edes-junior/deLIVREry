@@ -8,8 +8,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { JobPost, JobBid, MatchedJobContact } from '../../jobs/types.ts';
 import { listBidsForJob, acceptBid, getMatchedJobDetails } from '../../jobs/job-service.ts';
 import { MatchedContactCard } from './MatchedContactCard.tsx';
+import { JobCancellationModal } from './JobCancellationModal.tsx';
 import { Avatar } from '../ui/Avatar.tsx';
-import { MapPin, AlertTriangle, Inbox, RefreshCw, Bike, Car, Zap, Star, MessageSquare, Handshake } from 'lucide-react';
+import { MapPin, AlertTriangle, Inbox, RefreshCw, Bike, Car, Zap, Star, MessageSquare, Handshake, XCircle } from 'lucide-react';
 
 interface StoreJobManagementCardProps {
   job: JobPost;
@@ -28,6 +29,7 @@ export const StoreJobManagementCard: React.FC<StoreJobManagementCardProps> = ({
   const [isLoadingBids, setIsLoadingBids] = useState(false);
   const [isAcceptingBidId, setIsAcceptingBidId] = useState<string | null>(null);
   const [matchedContact, setMatchedContact] = useState<MatchedJobContact | null>(null);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fetchBids = useCallback(async () => {
@@ -380,8 +382,76 @@ export const StoreJobManagementCard: React.FC<StoreJobManagementCardProps> = ({
               })}
             </div>
           )}
+
+          {/* Ação de Cancelamento de Vaga Aberta */}
+          <div
+            style={{
+              marginTop: '16px',
+              paddingTop: '12px',
+              borderTop: '1px solid #1e293b',
+              display: 'flex',
+              justifyContent: 'flex-end'
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setIsCancelModalOpen(true)}
+              style={{
+                minHeight: '38px',
+                padding: '0 14px',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                color: '#f87171',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.15s'
+              }}
+            >
+              <XCircle size={14} />
+              <span>Cancelar Turno</span>
+            </button>
+          </div>
         </div>
       )}
+
+      {/* Detalhes de Turno Cancelado */}
+      {job.status === 'cancelled' && (
+        <div
+          style={{
+            marginTop: '12px',
+            backgroundColor: '#181216',
+            border: '1px solid #4a1d24',
+            borderRadius: '10px',
+            padding: '12px 14px',
+            fontSize: '12px',
+            color: '#fca5a5'
+          }}
+        >
+          <strong style={{ color: '#f87171', display: 'block', marginBottom: '2px' }}>
+            Turno Cancelado
+          </strong>
+          {job.cancellation_reason && (
+            <span>Motivo: <em>{job.cancellation_reason}</em></span>
+          )}
+        </div>
+      )}
+
+      {/* Modal de Cancelamento com Validação de Tolerância e Motivo */}
+      <JobCancellationModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        job={job}
+        storeUserId={storeUserId}
+        bidsCount={bids.length}
+        onJobCancelled={(updatedJob) => {
+          onJobUpdated(updatedJob);
+        }}
+      />
     </div>
   );
 };
