@@ -17,7 +17,9 @@ import type {
   JobRating,
   CreateJobRatingDTO,
   JobCompletionResult,
-  JobCancellationResult
+  JobCancellationResult,
+  PendingJobReview,
+  JobRatingSubmissionResult
 } from './types.ts';
 
 const VALID_MODALS: TransportModal[] = ['motorcycle', 'bicycle', 'ebike_scooter'];
@@ -683,7 +685,7 @@ export async function submitJobRating(
   raterUserId: string,
   input: CreateJobRatingDTO,
   client: any = supabase
-): Promise<{ success: boolean; rating?: JobRating; error?: string }> {
+): Promise<JobRatingSubmissionResult> {
   if (!raterUserId) {
     return { success: false, error: 'Identificador do avaliador não fornecido.' };
   }
@@ -720,26 +722,97 @@ export async function submitJobRating(
     return { success: false, error: 'O usuário informado não é o parceiro deste turno.' };
   }
 
-  // Insere a avaliação
-  const payload = {
+  // Insere a avaliação com critérios especializados
+  const payload: any = {
     job_id: input.job_id,
     rater_id: raterUserId,
     rated_user_id: input.rated_user_id,
     rating: Number(input.rating.toFixed(1)),
-    comment: input.comment ? input.comment.trim() : null
+    comment: input.comment ? input.comment.trim() : null,
+    criteria: input.criteria || {}
   };
 
-  const { data: ratingData, error: ratingErr } = await client
+  let { data: ratingData, error: ratingErr } = await client
     .from('job_ratings')
     .insert(payload)
     .select()
     .single();
+
+  // Fallback resiliente caso o cache de schema ainda não tenha recarregado a coluna criteria
+  if (ratingErr && ratingErr.message && (ratingErr.message.includes('criteria') || ratingErr.message.includes('schema cache'))) {
+    const fallbackPayload = { ...payload };
+    delete fallbackPayload.criteria;
+    const retry = await client
+      .from('job_ratings')
+      .insert(fallbackPayload)
+      .select()
+      .single();
+    ratingData = retry.data;
+    ratingErr = retry.error;
+  }
 
   if (ratingErr) {
     if (ratingErr.message?.includes('unique_job_rater') || ratingErr.message?.includes('duplicate key')) {
       return { success: false, error: 'Você já avaliou este participante neste turno.' };
     }
     return { success: false, error: ratingErr.message };
+  }
+
+  // Concessão de +10 XP para quem realizou a avaliação (Gamificação de feedback mútuo)
+  const RATER_XP_BONUS = 10;
+  try {
+    if (isCourier) {
+      const { data: prof } = await client
+        .from('courier_profiles')
+        .select('xp_points')
+        .eq('user_id', raterUserId)
+        .single();
+      if (prof) {
+        await client
+          .from('courier_profiles')
+          .update({ xp_points: (prof.xp_points || 0) + RATER_XP_BONUS })
+          .eq('user_id', raterUserId);
+      }
+    } else if (isStore) {
+      const { data: prof } = await client
+        .from('store_profiles')
+        .select('xp_points')
+        .eq('user_id', raterUserId)
+        .single();
+      if (prof) {
+        await client
+          .from('store_profiles')
+          .update({ xp_points: (prof.xp_points || 0) + RATER_XP_BONUS })
+          .eq('user_id', raterUserId);
+      }
+    }
+  } catch {
+    // Falha não-bloqueante na pontuação de gamificação
+  }
+
+  // Transição bilateral para 'completed':
+  // Verifica se a contraparte também já enviou sua avaliação OU se já se passaram 6h do término previsto
+  try {
+    const { data: counterRating } = await client
+      .from('job_ratings')
+      .select('id')
+      .eq('job_id', input.job_id)
+      .eq('rater_id', input.rated_user_id)
+      .maybeSingle();
+
+    const shiftEndTime = new Date(job.shift_end_time).getTime();
+    const isPastSixHours = Date.now() > shiftEndTime + 6 * 60 * 60 * 1000;
+
+    if (counterRating || isPastSixHours) {
+      if (job.status !== 'completed') {
+        await client
+          .from('job_posts')
+          .update({ status: 'completed' })
+          .eq('id', input.job_id);
+      }
+    }
+  } catch {
+    // Falha não-bloqueante na transição de status
   }
 
   // Recalcula média de reputação em fallback caso o trigger do banco não esteja ativo no mock
@@ -767,7 +840,88 @@ export async function submitJobRating(
     // Trigger em PostgreSQL cuida do cálculo nativo
   }
 
-  return { success: true, rating: ratingData as JobRating };
+  return {
+    success: true,
+    rating: { ...(ratingData as JobRating), earnedXp: RATER_XP_BONUS },
+    earnedXp: RATER_XP_BONUS
+  };
+}
+
+/**
+ * Consulta avaliações de turnos pendentes para o usuário logado (loja ou entregador).
+ * Retorna turnos cujo término previsto já ocorreu nos últimos 7 dias e ainda não foram avaliados pelo usuário.
+ */
+export async function getPendingJobReviews(
+  userId: string,
+  client: any = supabase
+): Promise<{ success: boolean; pending: PendingJobReview[]; error?: string }> {
+  if (!userId) {
+    return { success: false, pending: [], error: 'Identificador do usuário não fornecido.' };
+  }
+
+  try {
+    // 1. Busca contatos de turnos casados ou concluídos onde o usuário participou
+    const { data: matchedContacts, error: matchedErr } = await client
+      .from('job_matched_contacts')
+      .select('*')
+      .or(`store_id.eq.${userId},courier_id.eq.${userId}`);
+
+    if (matchedErr) {
+      return { success: false, pending: [], error: matchedErr.message };
+    }
+
+    if (!matchedContacts || matchedContacts.length === 0) {
+      return { success: true, pending: [] };
+    }
+
+    // 2. Busca IDs dos turnos que o usuário já avaliou
+    const jobIds = matchedContacts.map((c: any) => c.job_id);
+    const { data: userRatings, error: ratingsErr } = await client
+      .from('job_ratings')
+      .select('job_id')
+      .eq('rater_id', userId)
+      .in('job_id', jobIds);
+
+    if (ratingsErr) {
+      return { success: false, pending: [], error: ratingsErr.message };
+    }
+
+    const ratedJobIds = new Set((userRatings || []).map((r: any) => r.job_id));
+    const now = Date.now();
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    const pendingList: PendingJobReview[] = [];
+
+    for (const c of matchedContacts) {
+      if (ratedJobIds.has(c.job_id)) continue;
+
+      const shiftEnd = new Date(c.shift_end_time).getTime();
+      // O turno precisa ter passado do horário previsto de término e ter ocorrido nos últimos 7 dias
+      if (shiftEnd > now || (now - shiftEnd) > sevenDaysMs) continue;
+
+      const isStore = c.store_id === userId;
+      pendingList.push({
+        job_id: c.job_id,
+        partner_id: isStore ? c.courier_id : c.store_id,
+        partner_name: isStore ? c.courier_name : (c.store_contact_name || c.store_name),
+        partner_phone: isStore ? c.courier_phone_number : c.store_phone_number,
+        partner_avatar_url: isStore ? c.courier_avatar_url : c.store_avatar_url,
+        partner_role: isStore ? 'courier' : 'store',
+        partner_modal: isStore ? c.courier_modal : undefined,
+        shift_start_time: c.shift_start_time,
+        shift_end_time: c.shift_end_time,
+        offered_daily_rate: c.offered_daily_rate,
+        offered_delivery_fee: c.offered_delivery_fee,
+        is_store: isStore
+      });
+    }
+
+    // Ordena do mais recente para o mais antigo
+    pendingList.sort((a, b) => new Date(b.shift_end_time).getTime() - new Date(a.shift_end_time).getTime());
+
+    return { success: true, pending: pendingList };
+  } catch (err: any) {
+    return { success: false, pending: [], error: err?.message || 'Falha ao buscar avaliações pendentes.' };
+  }
 }
 
 /**

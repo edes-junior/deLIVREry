@@ -19,6 +19,10 @@ import { ReferralCard } from './components/referral/ReferralCard.tsx';
 import { JobPublishModal } from './components/jobs/JobPublishModal.tsx';
 import { JobFeed } from './components/jobs/JobFeed.tsx';
 import { StoreJobsList } from './components/jobs/StoreJobsList.tsx';
+import { PendingRatingBanner } from './components/jobs/PendingRatingBanner.tsx';
+import { JobRatingModal } from './components/jobs/JobRatingModal.tsx';
+import { getPendingJobReviews } from './jobs/job-service.ts';
+import type { PendingJobReview, JobRating } from './jobs/types.ts';
 import { RegionalPricingWidget } from './components/pricing/RegionalPricingWidget.tsx';
 import { DonationBottomSheet } from './components/donations/DonationBottomSheet.tsx';
 import { TransparencyPanel } from './components/donations/TransparencyPanel.tsx';
@@ -61,6 +65,8 @@ export const App: React.FC = () => {
     isOpen: boolean;
     triggerMoment: DonationTriggerMoment;
   }>({ isOpen: false, triggerMoment: 'manual_donation' });
+  const [pendingReviews, setPendingReviews] = useState<PendingJobReview[]>([]);
+  const [selectedReviewForRating, setSelectedReviewForRating] = useState<PendingJobReview | null>(null);
 
   const isCourier = profileData?.user?.userType === 'courier';
   const isCourierActive = profileData?.profile?.is_active !== false;
@@ -183,6 +189,44 @@ export const App: React.FC = () => {
 
     loadUserProfileAndQuorum();
   }, [userId]);
+
+  // Busca avaliações pendentes de turnos anteriores na inicialização e em atualizações
+  const fetchPendingReviews = async (uid?: string) => {
+    const targetId = uid || userId;
+    if (!targetId) return;
+    try {
+      const res = await getPendingJobReviews(targetId);
+      if (res.success && res.pending) {
+        setPendingReviews(res.pending);
+      }
+    } catch (err) {
+      console.error('Erro ao buscar avaliações pendentes:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (userId) {
+      fetchPendingReviews(userId);
+    }
+  }, [userId, jobsRefreshTrigger]);
+
+  const handleRatingSuccess = async (_rating: JobRating, earnedXp?: number) => {
+    setSuccessToast(
+      earnedXp
+        ? `Avaliação enviada com sucesso! +${earnedXp} XP creditados na sua conta.`
+        : 'Avaliação registrada com sucesso!'
+    );
+    setTimeout(() => setSuccessToast(null), 5000);
+    if (userId) {
+      try {
+        const refreshed = await ProfileService.getUserProfile(userId);
+        if (refreshed) setProfileData(refreshed);
+        fetchPendingReviews(userId);
+      } catch {
+        // Fallback silencioso
+      }
+    }
+  };
 
   if (isAuthCallback) {
     return (
@@ -652,6 +696,12 @@ export const App: React.FC = () => {
       <div className="grid-responsive">
         {/* COLUNA PRINCIPAL: Feed de Vagas ou Painel de Turnos do Lojista */}
         <div className={`col-main mobile-tab-content ${activeTab === 'turnos' ? 'is-active' : ''}`}>
+          {/* Banner de Avaliações Pendentes Desacoplada com Resgate de XP (Story 2.4 / CAP-3) */}
+          <PendingRatingBanner
+            pendingReviews={pendingReviews}
+            onOpenRatingModal={(review) => setSelectedReviewForRating(review)}
+          />
+
           {profileData.user.userType === 'courier' ? (
             <>
               {!isCourierActive && (
@@ -923,6 +973,16 @@ export const App: React.FC = () => {
           onProfileUpdated={handleProfileUpdated}
         />
       )}
+
+      {/* Modal de Avaliação de Turno Desacoplado (Story 2.4 / CAP-3) */}
+      <JobRatingModal
+        isOpen={!!selectedReviewForRating}
+        onClose={() => setSelectedReviewForRating(null)}
+        contact={selectedReviewForRating}
+        currentUserId={userId}
+        isStore={profileData?.user?.userType === 'store'}
+        onSuccess={handleRatingSuccess}
+      />
     </div>
   );
 };

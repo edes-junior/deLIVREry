@@ -113,6 +113,22 @@ export interface JobFilterParams {
   exclude_conflicting_shifts?: boolean;
 }
 
+export const COURIER_RATING_CRITERIA = [
+  { key: 'punctuality', label: 'Pontualidade', icon: '⏱️' },
+  { key: 'care', label: 'Cuidado com Pedido', icon: '📦' },
+  { key: 'courtesy', label: 'Educação & Postura', icon: '🤝' },
+  { key: 'communication', label: 'Comunicação', icon: '📱' },
+  { key: 'commitment', label: 'Comprometimento', icon: '🛡️' }
+] as const;
+
+export const STORE_RATING_CRITERIA = [
+  { key: 'hospitality', label: 'Ponto de Apoio', icon: '☕' },
+  { key: 'speed', label: 'Agilidade de Expedição', icon: '⏳' },
+  { key: 'respect', label: 'Respeito no Trato', icon: '💬' },
+  { key: 'meals', label: 'Alimentação Acordada', icon: '🍔' },
+  { key: 'organization', label: 'Organização & Comandas', icon: '📋' }
+] as const;
+
 export interface JobRating {
   id: string;
   job_id: string;
@@ -120,7 +136,9 @@ export interface JobRating {
   rated_user_id: string;
   rating: number;
   comment?: string | null;
+  criteria?: Record<string, boolean>;
   created_at?: string;
+  earnedXp?: number;
 }
 
 export interface CreateJobRatingDTO {
@@ -128,6 +146,29 @@ export interface CreateJobRatingDTO {
   rated_user_id: string;
   rating: number;
   comment?: string;
+  criteria?: Record<string, boolean>;
+}
+
+export interface PendingJobReview {
+  job_id: string;
+  partner_id: string;
+  partner_name: string;
+  partner_phone?: string;
+  partner_avatar_url?: string | null;
+  partner_role: 'courier' | 'store';
+  partner_modal?: TransportModal;
+  shift_start_time: string;
+  shift_end_time: string;
+  offered_daily_rate: number;
+  offered_delivery_fee: number;
+  is_store: boolean;
+}
+
+export interface JobRatingSubmissionResult {
+  success: boolean;
+  rating?: JobRating;
+  earnedXp?: number;
+  error?: string;
 }
 
 export interface JobCompletionResult {

@@ -1,21 +1,31 @@
 // ==============================================================================
 // Component: apps/pwa/src/components/jobs/JobRatingModal.tsx
-// Description: Modal touch-friendly para avaliação mútua e pontuação de reputação (1 a 5 estrelas).
+// Description: Modal touch-friendly para avaliação mútua e pontuação de reputação
+//              com critérios especializados, avaliação cega e concessão de +10 XP.
 // Story: 2.4 - Fechamento de Matching, Liberação de Contatos e Gestão de Reputação/XP
 // ==============================================================================
 
 import React, { useState } from 'react';
-import type { MatchedJobContact, JobRating } from '../../jobs/types.ts';
+import type { 
+  MatchedJobContact, 
+  PendingJobReview, 
+  JobRating, 
+  JobRatingSubmissionResult 
+} from '../../jobs/types.ts';
+import { 
+  COURIER_RATING_CRITERIA, 
+  STORE_RATING_CRITERIA 
+} from '../../jobs/types.ts';
 import { submitJobRating } from '../../jobs/job-service.ts';
-import { X, AlertTriangle, Star } from 'lucide-react';
+import { X, AlertTriangle, Star, ShieldCheck, Sparkles, Award } from 'lucide-react';
 
 interface JobRatingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  contact: MatchedJobContact | null;
+  contact: MatchedJobContact | PendingJobReview | null;
   currentUserId: string;
   isStore: boolean;
-  onSuccess: (rating: JobRating) => void;
+  onSuccess: (rating: JobRating, earnedXp?: number) => void;
 }
 
 export const JobRatingModal: React.FC<JobRatingModalProps> = ({
@@ -29,22 +39,39 @@ export const JobRatingModal: React.FC<JobRatingModalProps> = ({
   if (!isOpen || !contact) return null;
 
   const [selectedRating, setSelectedRating] = useState<number>(5);
+  const [selectedCriteria, setSelectedCriteria] = useState<Record<string, boolean>>({});
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const targetPartnerId = isStore ? contact.courier_id : contact.store_id;
-  const targetPartnerName = isStore ? contact.courier_name : contact.store_name;
+  // Resolve os dados da contraparte independente se for MatchedJobContact ou PendingJobReview
+  const targetPartnerId = 
+    (contact as any).partner_id || 
+    (isStore ? (contact as MatchedJobContact).courier_id : (contact as MatchedJobContact).store_id);
 
-  const triggerHaptic = (ms: number = 15) => {
+  const targetPartnerName = 
+    (contact as any).partner_name || 
+    (isStore ? (contact as MatchedJobContact).courier_name : ((contact as MatchedJobContact).store_contact_name || (contact as MatchedJobContact).store_name));
+
+  const availableCriteria = isStore ? COURIER_RATING_CRITERIA : STORE_RATING_CRITERIA;
+
+  const triggerHaptic = (pattern: number | number[] = 15) => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(ms);
+      navigator.vibrate(pattern);
     }
   };
 
   const handleStarClick = (star: number) => {
     triggerHaptic(20);
     setSelectedRating(star);
+  };
+
+  const handleToggleCriteria = (key: string) => {
+    triggerHaptic(15);
+    setSelectedCriteria(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,17 +87,18 @@ export const JobRatingModal: React.FC<JobRatingModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      const res = await submitJobRating(currentUserId, {
+      const res: JobRatingSubmissionResult = await submitJobRating(currentUserId, {
         job_id: contact.job_id,
         rated_user_id: targetPartnerId,
         rating: selectedRating,
-        comment: comment.trim() || undefined
+        comment: comment.trim() || undefined,
+        criteria: selectedCriteria
       });
 
       if (!res.success || !res.rating) {
         setErrorMessage(res.error || 'Erro ao registrar avaliação.');
       } else {
-        onSuccess(res.rating);
+        onSuccess(res.rating, res.earnedXp);
         onClose();
       }
     } catch (err: any) {
@@ -104,16 +132,39 @@ export const JobRatingModal: React.FC<JobRatingModalProps> = ({
           border: '1px solid #334155',
           borderRadius: '20px',
           width: '100%',
-          maxWidth: '440px',
-          padding: '24px',
+          maxWidth: '460px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          padding: '22px',
           color: '#f8fafc',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>
-            ⭐ Avaliar Experiência
-          </h2>
+        {/* Cabeçalho */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Star size={20} fill="#facc15" color="#facc15" />
+              <span>Avaliar Experiência</span>
+            </h2>
+            <span
+              style={{
+                fontSize: '11px',
+                fontWeight: 700,
+                color: '#facc15',
+                backgroundColor: 'rgba(250, 204, 21, 0.15)',
+                border: '1px solid rgba(250, 204, 21, 0.3)',
+                padding: '2px 8px',
+                borderRadius: '12px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '3px'
+              }}
+            >
+              <Award size={12} /> +10 XP
+            </span>
+          </div>
+
           <button
             type="button"
             onClick={onClose}
@@ -121,10 +172,9 @@ export const JobRatingModal: React.FC<JobRatingModalProps> = ({
               background: 'none',
               border: 'none',
               color: '#94a3b8',
-              fontSize: '20px',
               cursor: 'pointer',
-              minWidth: '48px',
-              minHeight: '48px',
+              minWidth: '40px',
+              minHeight: '40px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -134,8 +184,29 @@ export const JobRatingModal: React.FC<JobRatingModalProps> = ({
           </button>
         </div>
 
+        {/* Banner de Avaliação Cega */}
+        <div
+          style={{
+            backgroundColor: '#131d31',
+            border: '1px solid #1e3a5f',
+            borderRadius: '10px',
+            padding: '10px 12px',
+            marginBottom: '16px',
+            fontSize: '12px',
+            color: '#93c5fd',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '8px'
+          }}
+        >
+          <ShieldCheck size={16} color="#38bdf8" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <span>
+            <strong>Avaliação Cega:</strong> Sua nota e comentários são sigilosos e revelados apenas quando ambos avaliarem ou após 6 horas do término do turno.
+          </span>
+        </div>
+
         <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#94a3b8' }}>
-          Como foi a pontualidade e cooperação de <strong style={{ color: '#f8fafc' }}>{targetPartnerName}</strong> neste turno?
+          Como foi o turno com <strong style={{ color: '#f8fafc' }}>{targetPartnerName}</strong>?
         </p>
 
         {errorMessage && (
@@ -165,7 +236,7 @@ export const JobRatingModal: React.FC<JobRatingModalProps> = ({
               display: 'flex',
               justifyContent: 'center',
               gap: '8px',
-              marginBottom: '20px'
+              marginBottom: '12px'
             }}
           >
             {[1, 2, 3, 4, 5].map((star) => (
@@ -192,12 +263,49 @@ export const JobRatingModal: React.FC<JobRatingModalProps> = ({
             ))}
           </div>
 
-          <div style={{ textAlign: 'center', marginBottom: '16px', fontSize: '14px', fontWeight: 600, color: '#facc15' }}>
+          <div style={{ textAlign: 'center', marginBottom: '18px', fontSize: '13px', fontWeight: 600, color: '#facc15' }}>
             {selectedRating === 5 && 'Excelente / Impecável'}
             {selectedRating === 4 && 'Muito Bom / Recomendado'}
             {selectedRating === 3 && 'Regular / Aceitável'}
             {selectedRating === 2 && 'Ruim / Teve Problemas'}
             {selectedRating === 1 && 'Péssimo / Não Recomendo'}
+          </div>
+
+          {/* Chips de Critérios Especializados */}
+          <div style={{ marginBottom: '18px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#94a3b8', marginBottom: '8px' }}>
+              Destaques do Turno (Toque para selecionar)
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {availableCriteria.map((c) => {
+                const isSelected = !!selectedCriteria[c.key];
+                return (
+                  <button
+                    key={c.key}
+                    type="button"
+                    onClick={() => handleToggleCriteria(c.key)}
+                    style={{
+                      minHeight: '38px',
+                      padding: '6px 12px',
+                      borderRadius: '20px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      border: isSelected ? '1px solid #10b981' : '1px solid #334155',
+                      backgroundColor: isSelected ? 'rgba(16, 185, 129, 0.18)' : '#1e293b',
+                      color: isSelected ? '#34d399' : '#cbd5e1',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <span>{c.icon}</span>
+                    <span>{c.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Campo de Comentário Opcional */}
@@ -247,7 +355,14 @@ export const JobRatingModal: React.FC<JobRatingModalProps> = ({
               boxShadow: '0 4px 14px rgba(250, 204, 21, 0.35)'
             }}
           >
-            {isSubmitting ? 'Gravando...' : '⭐ Enviar Avaliação'}
+            {isSubmitting ? (
+              'Gravando...'
+            ) : (
+              <>
+                <Sparkles size={16} />
+                <span>Enviar Avaliação (+10 XP)</span>
+              </>
+            )}
           </button>
         </form>
       </div>

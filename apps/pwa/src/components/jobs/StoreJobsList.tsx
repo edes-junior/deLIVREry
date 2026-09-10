@@ -49,12 +49,16 @@ export const StoreJobsList: React.FC<StoreJobsListProps> = ({
     setJobs((prev) => prev.map((j) => (j.id === updatedJob.id ? updatedJob : j)));
   };
 
-  const handleRatingSuccess = (_rating: JobRating, awardedFiveStars: boolean) => {
-    if (awardedFiveStars) {
+  const handleRatingSuccess = (rating: JobRating, earnedXp?: number) => {
+    if (rating.rating === 5) {
       setIsDonationOpen(true);
     } else {
-      setToastMessage('Avaliação enviada com sucesso!');
-      setTimeout(() => setToastMessage(null), 3000);
+      setToastMessage(
+        earnedXp
+          ? `Avaliação enviada com sucesso! +${earnedXp} XP creditados.`
+          : 'Avaliação enviada com sucesso!'
+      );
+      setTimeout(() => setToastMessage(null), 3500);
     }
   };
 
