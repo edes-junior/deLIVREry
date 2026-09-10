@@ -359,15 +359,15 @@ export const App: React.FC = () => {
     );
   }
 
-  const baseNeighborhood =
+  const neighborhoodName =
     profileData.profile?.home_neighborhood_id ||
     profileData.profile?.neighborhood_id ||
     'Bairro';
 
   const operatingCount = profileData.profile?.operating_neighborhoods?.length || 0;
   const neighborhoodBadgeLabel = isCourier && operatingCount > 1
-    ? `${baseNeighborhood} +${operatingCount - 1}`
-    : baseNeighborhood;
+    ? `${neighborhoodName} +${operatingCount - 1}`
+    : neighborhoodName;
 
   const referralCode =
     profileData.profile?.referral_code ||
