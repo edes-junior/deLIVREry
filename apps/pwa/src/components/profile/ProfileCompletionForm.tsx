@@ -4,15 +4,17 @@
  * Suporta Entregadores e Lojistas com validação rigorosa de CPF, telefones com DDD e árvore geográfica nacional (FR-2, AD-8, NFR-9).
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { validateCPF, formatCPF, validatePhone, formatPhone } from '../../profile/cpf-validator.ts';
 import { GeographyService, StateItem, CityItem, NeighborhoodItem } from '../../geography/geography-service.ts';
+import { fetchAddressByCep, formatCEP, cleanCEP } from '../../geography/cep-service.ts';
+import { GeolocationService } from '../../geography/geolocation-service.ts';
 import { ProfileService, TransportModal } from '../../profile/profile-service.ts';
 import { ReferralService } from '../../referral/referral-service.ts';
 import { Card } from '../ui/Card.tsx';
 import { Button } from '../ui/Button.tsx';
 import { Badge } from '../ui/Badge.tsx';
-import { Bike, Store, MapPin, Zap, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Bike, Store, MapPin, Zap, AlertTriangle, CheckCircle2, Crosshair, Loader2 } from 'lucide-react';
 
 interface ProfileCompletionFormProps {
   userId: string;
@@ -50,11 +52,23 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
   const [baseDailyRate, setBaseDailyRate] = useState<string>('120.00');
   const [baseDeliveryFee, setBaseDeliveryFee] = useState<string>('8.00');
   const [referralCodeInput, setReferralCodeInput] = useState<string>('');
+  const [operatingNeighborhoods, setOperatingNeighborhoods] = useState<string[]>([]);
 
   // Campos específicos de Lojista
   const [storeName, setStoreName] = useState('');
+  const [postalCode, setPostalCode] = useState('');
   const [addressStreet, setAddressStreet] = useState('');
   const [addressNumber, setAddressNumber] = useState('');
+  const [addressComplement, setAddressComplement] = useState('');
+  const [isSearchingCep, setIsSearchingCep] = useState(false);
+  const [cepError, setCepError] = useState<string | null>(null);
+
+  // Geolocalização
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [locationFeedback, setLocationFeedback] = useState<string | null>(null);
+
+  // Referência para focar no campo Número
+  const addressNumberInputRef = useRef<HTMLInputElement>(null);
 
   // Estados de Controle de UI
   const [isLoading, setIsLoading] = useState(false);
@@ -129,6 +143,99 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
     }
   };
 
+  const handleCepChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCEP(e.target.value);
+    setPostalCode(formatted);
+    setCepError(null);
+
+    const clean = cleanCEP(formatted);
+    if (clean.length === 8) {
+      setIsSearchingCep(true);
+      try {
+        const res = await fetchAddressByCep(clean);
+        if (res.success) {
+          if (res.street) setAddressStreet(res.street);
+          if (res.state) {
+            setSelectedState(res.state);
+            const loadedCities = GeographyService.getCitiesByState(res.state);
+            setCities(loadedCities);
+            const citySlug = res.city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
+            const matchedCity = loadedCities.find(c => c.name.toLowerCase() === res.city.toLowerCase() || c.id === citySlug);
+            const activeCityId = matchedCity ? matchedCity.id : (loadedCities[0]?.id || citySlug);
+            setSelectedCity(activeCityId);
+
+            const loadedNeighborhoods = GeographyService.getNeighborhoodsByCity(activeCityId);
+            setNeighborhoods(loadedNeighborhoods);
+
+            if (res.neighborhood) {
+              const neighSlug = res.neighborhood.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
+              const matchedNeigh = loadedNeighborhoods.find(n => n.name.toLowerCase() === res.neighborhood.toLowerCase() || n.id.includes(neighSlug));
+              if (matchedNeigh) {
+                setSelectedNeighborhood(matchedNeigh.id);
+                setIsCustomNeighborhood(false);
+              } else {
+                setIsCustomNeighborhood(true);
+                setCustomNeighborhood(res.neighborhood);
+              }
+            }
+          }
+          // Move o foco para o número automaticamente com pequeno delay
+          setTimeout(() => {
+            addressNumberInputRef.current?.focus();
+          }, 60);
+        } else {
+          setCepError(res.error || 'CEP não encontrado.');
+        }
+      } catch {
+        setCepError('Erro ao consultar CEP.');
+      } finally {
+        setIsSearchingCep(false);
+      }
+    }
+  };
+
+  const handleDetectLocation = async () => {
+    setIsDetectingLocation(true);
+    setLocationFeedback(null);
+    try {
+      const coords = await GeolocationService.getCurrentPosition();
+      const region = await GeolocationService.detectRegionFromCoordinates(coords.latitude, coords.longitude);
+      if (region) {
+        setSelectedState(region.stateId);
+        const loadedCities = GeographyService.getCitiesByState(region.stateId);
+        setCities(loadedCities);
+        setSelectedCity(region.cityId);
+
+        const loadedNeighborhoods = GeographyService.getNeighborhoodsByCity(region.cityId);
+        setNeighborhoods(loadedNeighborhoods);
+        setSelectedNeighborhood(region.neighborhoodId);
+        setIsCustomNeighborhood(false);
+
+        if (userType === 'courier') {
+          setOperatingNeighborhoods(prev => Array.from(new Set([...prev, region.neighborhoodId])));
+        }
+
+        setLocationFeedback(`📍 Região detectada: ${region.formattedLabel}`);
+        setTimeout(() => setLocationFeedback(null), 5000);
+      }
+    } catch (err: any) {
+      setLocationFeedback(err?.message || 'Não foi possível obter sua localização.');
+      setTimeout(() => setLocationFeedback(null), 5000);
+    } finally {
+      setIsDetectingLocation(false);
+    }
+  };
+
+  const toggleOperatingNeighborhood = (neighId: string) => {
+    setOperatingNeighborhoods(prev => {
+      if (prev.includes(neighId)) {
+        return prev.filter(id => id !== neighId);
+      } else {
+        return [...prev, neighId];
+      }
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -165,6 +272,7 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
 
     try {
       if (userType === 'courier') {
+        const finalOperating = Array.from(new Set([neighborhoodFinalId, ...operatingNeighborhoods]));
         const result = await ProfileService.completeCourierProfile({
           userId,
           fullName,
@@ -176,6 +284,7 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
           stateId: selectedState,
           cityId: selectedCity,
           homeNeighborhoodId: neighborhoodFinalId,
+          operatingNeighborhoods: finalOperating,
           referredByCode: referralCodeInput.trim() || undefined
         });
 
@@ -196,6 +305,8 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
           storeName,
           addressStreet,
           addressNumber,
+          addressComplement: addressComplement.trim() || undefined,
+          postalCode: postalCode.trim() || undefined,
           stateId: selectedState,
           cityId: selectedCity,
           neighborhoodId: neighborhoodFinalId
@@ -369,10 +480,38 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
             border: '1px solid var(--border-subtle)'
           }}
         >
-          <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--neon-emerald)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <MapPin size={14} />
-            <span>Região de Atuação</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--neon-emerald)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <MapPin size={14} />
+              <span>{userType === 'courier' ? 'Bairro Base e Atuação' : 'Localização da Loja'}</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleDetectLocation}
+              disabled={isDetectingLocation}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: 'rgba(0, 245, 155, 0.1)',
+                border: '1px solid rgba(0, 245, 155, 0.3)',
+                color: 'var(--neon-emerald)',
+                borderRadius: 'var(--radius-full)',
+                padding: '4px 10px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: isDetectingLocation ? 'wait' : 'pointer'
+              }}
+            >
+              {isDetectingLocation ? <Loader2 size={12} className="spin-animate" /> : <Crosshair size={12} />}
+              <span>{isDetectingLocation ? 'Detectando...' : 'Minha localização'}</span>
+            </button>
           </div>
+          {locationFeedback && (
+            <div style={{ fontSize: '11px', color: 'var(--neon-emerald)', marginBottom: '10px', fontWeight: 600 }}>
+              {locationFeedback}
+            </div>
+          )}
 
           <div style={{ display: 'grid', gridTemplateColumns: '80px minmax(0, 1fr)', gap: '10px', marginBottom: '10px' }}>
             <div>
@@ -477,6 +616,41 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
               </div>
             )}
           </div>
+
+          {/* Múltiplos Bairros de Atuação para Entregador */}
+          {userType === 'courier' && neighborhoods.length > 1 && (
+            <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed var(--border-subtle)' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                Outros bairros onde você também aceita realizar turnos:
+              </label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {neighborhoods
+                  .filter((n) => n.id !== selectedNeighborhood)
+                  .map((n) => {
+                    const isSelected = operatingNeighborhoods.includes(n.id);
+                    return (
+                      <button
+                        key={n.id}
+                        type="button"
+                        onClick={() => toggleOperatingNeighborhood(n.id)}
+                        style={{
+                          padding: '4px 8px',
+                          borderRadius: 'var(--radius-full)',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          border: isSelected ? '1px solid var(--neon-emerald)' : '1px solid var(--border-subtle)',
+                          backgroundColor: isSelected ? 'rgba(0, 245, 155, 0.15)' : 'var(--bg-surface-raised)',
+                          color: isSelected ? 'var(--neon-emerald)' : 'var(--text-secondary)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {isSelected ? '✓ ' : '+ '} {n.name}
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Campos de Entregador */}
@@ -583,7 +757,35 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '10px' }}>
+            {/* CEP do Estabelecimento com Busca Automática */}
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  CEP do Estabelecimento (busca automática)
+                </label>
+                {isSearchingCep && (
+                  <span style={{ fontSize: '11px', color: 'var(--neon-emerald)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Loader2 size={12} className="spin-animate" /> Buscando endereço...
+                  </span>
+                )}
+              </div>
+              <input
+                type="text"
+                value={postalCode}
+                onChange={handleCepChange}
+                placeholder="Ex: 01310-100"
+                maxLength={9}
+                className="tactical-input"
+                style={{ fontFamily: 'var(--font-mono)' }}
+              />
+              {cepError && (
+                <span style={{ fontSize: '11px', color: '#f87171', marginTop: '4px', display: 'block' }}>
+                  {cepError}
+                </span>
+              )}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '10px', marginBottom: '10px' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
                   Rua ou Avenida
@@ -599,9 +801,10 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
 
               <div>
                 <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
-                  Número
+                  Número *
                 </label>
                 <input
+                  ref={addressNumberInputRef}
                   type="text"
                   value={addressNumber}
                   onChange={(e) => setAddressNumber(e.target.value)}
@@ -609,6 +812,19 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
                   className="tactical-input"
                 />
               </div>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                Complemento (opcional)
+              </label>
+              <input
+                type="text"
+                value={addressComplement}
+                onChange={(e) => setAddressComplement(e.target.value)}
+                placeholder="Ex: Sala 102, Galpão B, Apto 4"
+                className="tactical-input"
+              />
             </div>
           </div>
         )}

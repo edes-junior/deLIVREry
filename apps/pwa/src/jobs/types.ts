@@ -93,6 +93,7 @@ export interface JobFilterParams {
   state_id?: string;
   city_id?: string;
   neighborhood_id?: string;
+  neighborhood_ids?: string[];
   modal?: TransportModal;
   max_radius_km?: number;
   status?: JobStatus;

@@ -359,10 +359,16 @@ export const App: React.FC = () => {
     );
   }
 
-  const neighborhoodName =
+  const isCourier = profileData.user?.userType === 'courier';
+  const baseNeighborhood =
     profileData.profile?.home_neighborhood_id ||
     profileData.profile?.neighborhood_id ||
     'Bairro';
+
+  const operatingCount = profileData.profile?.operating_neighborhoods?.length || 0;
+  const neighborhoodBadgeLabel = isCourier && operatingCount > 1
+    ? `${baseNeighborhood} +${operatingCount - 1}`
+    : baseNeighborhood;
 
   const referralCode =
     profileData.profile?.referral_code ||
@@ -377,7 +383,7 @@ export const App: React.FC = () => {
           <Logo variant="horizontal" size="sm" showTagline={false} className="mobile-only" />
           <Logo variant="horizontal" size="sm" showTagline={true} className="desktop-only" />
 
-          {neighborhoodName && (
+          {neighborhoodBadgeLabel && (
             <div
               style={{
                 display: 'inline-flex',
@@ -391,7 +397,7 @@ export const App: React.FC = () => {
                 fontSize: '11px',
                 fontWeight: 700,
                 whiteSpace: 'nowrap',
-                maxWidth: '120px',
+                maxWidth: '140px',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis'
               }}
@@ -406,7 +412,7 @@ export const App: React.FC = () => {
                   flexShrink: 0
                 }}
               />
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{neighborhoodName}</span>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{neighborhoodBadgeLabel}</span>
             </div>
           )}
         </div>
@@ -699,6 +705,7 @@ export const App: React.FC = () => {
                 stateId={profileData.profile?.state_id || 'SP'}
                 cityId={profileData.profile?.city_id || 'sao-paulo'}
                 neighborhoodId={profileData.profile?.home_neighborhood_id || 'centro'}
+                operatingNeighborhoods={profileData.profile?.operating_neighborhoods || []}
               />
             </>
           ) : (

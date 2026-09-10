@@ -18,6 +18,7 @@ interface JobFeedProps {
   stateId: string;
   cityId: string;
   neighborhoodId: string;
+  operatingNeighborhoods?: string[];
 }
 
 export const JobFeed: React.FC<JobFeedProps> = ({
@@ -25,15 +26,20 @@ export const JobFeed: React.FC<JobFeedProps> = ({
   transportModal,
   stateId,
   cityId,
-  neighborhoodId
+  neighborhoodId,
+  operatingNeighborhoods = []
 }) => {
   const [jobs, setJobs] = useState<JobPost[]>([]);
   const [userBids, setUserBids] = useState<Record<string, JobBid>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [filterNeighborhood, setFilterNeighborhood] = useState(true); // Padrão: Meu Bairro cadastrado (CAP-6)
+  const [filterNeighborhood, setFilterNeighborhood] = useState(true); // Padrão: Bairros de Atuação (CAP-6)
   const [selectedJobForCounter, setSelectedJobForCounter] = useState<JobPost | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const targetNeighborhoods = Array.from(
+    new Set([neighborhoodId, ...(operatingNeighborhoods || [])])
+  ).filter(Boolean);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -48,7 +54,7 @@ export const JobFeed: React.FC<JobFeedProps> = ({
       const res = await listOpenJobs({
         state_id: stateId,
         city_id: cityId,
-        neighborhood_id: filterNeighborhood ? neighborhoodId : undefined,
+        neighborhood_ids: filterNeighborhood && targetNeighborhoods.length > 0 ? targetNeighborhoods : undefined,
         modal: transportModal,
         courier_user_id: courierUserId // Exclui oportunidades conflitantes com a agenda aceita (CAP-5)
       });
@@ -64,7 +70,7 @@ export const JobFeed: React.FC<JobFeedProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [stateId, cityId, neighborhoodId, transportModal, filterNeighborhood, courierUserId]);
+  }, [stateId, cityId, neighborhoodId, operatingNeighborhoods, transportModal, filterNeighborhood, courierUserId]);
 
   useEffect(() => {
     fetchJobs();
@@ -89,6 +95,10 @@ export const JobFeed: React.FC<JobFeedProps> = ({
       : transportModal === 'motorcycle'
       ? 'Moto'
       : 'E-Bike';
+
+  const filterButtonLabel = targetNeighborhoods.length > 1
+    ? (filterNeighborhood ? `Meus Bairros (${targetNeighborhoods.length})` : 'Toda a Cidade')
+    : (filterNeighborhood ? 'Meu Bairro' : 'Região');
 
   return (
     <div style={{ marginTop: '4px', width: '100%', minWidth: 0 }}>
@@ -137,7 +147,7 @@ export const JobFeed: React.FC<JobFeedProps> = ({
             }}
           >
             {filterNeighborhood ? <MapPin size={12} /> : <Globe size={12} />}
-            <span>{filterNeighborhood ? 'Meu Bairro' : 'Região'}</span>
+            <span>{filterButtonLabel}</span>
           </button>
 
           <button

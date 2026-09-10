@@ -5,9 +5,11 @@
  * modal de transporte, estabelecimento e bairro de atuação com recálculo de quórum.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { validatePhone, formatPhone } from '../../profile/cpf-validator.ts';
 import { GeographyService, StateItem, CityItem, NeighborhoodItem } from '../../geography/geography-service.ts';
+import { fetchAddressByCep, formatCEP, cleanCEP } from '../../geography/cep-service.ts';
+import { GeolocationService } from '../../geography/geolocation-service.ts';
 import { 
   ProfileService, 
   UserProfileResponse, 
@@ -17,7 +19,7 @@ import {
 } from '../../profile/profile-service.ts';
 import { Button } from '../ui/Button.tsx';
 import { AvatarUpload } from './AvatarUpload.tsx';
-import { X, AlertTriangle, Lock, Bike, Zap, Save } from 'lucide-react';
+import { X, AlertTriangle, Lock, Bike, Zap, Save, Crosshair, Loader2 } from 'lucide-react';
 
 interface ProfileEditModalProps {
   isOpen: boolean;
@@ -58,8 +60,24 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
   // Campos de Lojista
   const [storeName, setStoreName] = useState(profileData.profile?.store_name || '');
+  const [postalCode, setPostalCode] = useState(profileData.profile?.postal_code || '');
   const [addressStreet, setAddressStreet] = useState(profileData.profile?.address_street || '');
   const [addressNumber, setAddressNumber] = useState(profileData.profile?.address_number || '');
+  const [addressComplement, setAddressComplement] = useState(profileData.profile?.address_complement || '');
+  const [isSearchingCep, setIsSearchingCep] = useState(false);
+  const [cepError, setCepError] = useState<string | null>(null);
+
+  // Campos adicionais de Entregador
+  const [operatingNeighborhoods, setOperatingNeighborhoods] = useState<string[]>(
+    profileData.profile?.operating_neighborhoods || []
+  );
+
+  // Geolocalização
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [locationFeedback, setLocationFeedback] = useState<string | null>(null);
+
+  // Referência para foco no número
+  const addressNumberInputRef = useRef<HTMLInputElement>(null);
 
   // Geografia
   const [states, setStates] = useState<StateItem[]>([]);
@@ -116,8 +134,15 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
     setFullName(profileData.user.fullName || '');
     setPhoneNumber(profileData.user.phoneNumber || '');
+    setPostalCode(profileData.profile?.postal_code || '');
+    setAddressStreet(profileData.profile?.address_street || '');
+    setAddressNumber(profileData.profile?.address_number || '');
+    setAddressComplement(profileData.profile?.address_complement || '');
+    setOperatingNeighborhoods(profileData.profile?.operating_neighborhoods || []);
     setPhoneError(null);
     setErrorMessage(null);
+    setCepError(null);
+    setLocationFeedback(null);
   }, [isOpen, profileData]);
 
   const handleStateChange = (stateId: string) => {
@@ -158,6 +183,98 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
     }
   };
 
+  const handleCepChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCEP(e.target.value);
+    setPostalCode(formatted);
+    setCepError(null);
+
+    const clean = cleanCEP(formatted);
+    if (clean.length === 8) {
+      setIsSearchingCep(true);
+      try {
+        const res = await fetchAddressByCep(clean);
+        if (res.success) {
+          if (res.street) setAddressStreet(res.street);
+          if (res.state) {
+            setSelectedState(res.state);
+            const loadedCities = GeographyService.getCitiesByState(res.state);
+            setCities(loadedCities);
+            const citySlug = res.city.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
+            const matchedCity = loadedCities.find(c => c.name.toLowerCase() === res.city.toLowerCase() || c.id === citySlug);
+            const activeCityId = matchedCity ? matchedCity.id : (loadedCities[0]?.id || citySlug);
+            setSelectedCity(activeCityId);
+
+            const loadedNeighborhoods = GeographyService.getNeighborhoodsByCity(activeCityId);
+            setNeighborhoods(loadedNeighborhoods);
+
+            if (res.neighborhood) {
+              const neighSlug = res.neighborhood.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
+              const matchedNeigh = loadedNeighborhoods.find(n => n.name.toLowerCase() === res.neighborhood.toLowerCase() || n.id.includes(neighSlug));
+              if (matchedNeigh) {
+                setSelectedNeighborhood(matchedNeigh.id);
+                setIsCustomNeighborhood(false);
+              } else {
+                setIsCustomNeighborhood(true);
+                setCustomNeighborhood(res.neighborhood);
+              }
+            }
+          }
+          setTimeout(() => {
+            addressNumberInputRef.current?.focus();
+          }, 60);
+        } else {
+          setCepError(res.error || 'CEP não encontrado.');
+        }
+      } catch {
+        setCepError('Erro ao consultar CEP.');
+      } finally {
+        setIsSearchingCep(false);
+      }
+    }
+  };
+
+  const handleDetectLocation = async () => {
+    setIsDetectingLocation(true);
+    setLocationFeedback(null);
+    try {
+      const coords = await GeolocationService.getCurrentPosition();
+      const region = await GeolocationService.detectRegionFromCoordinates(coords.latitude, coords.longitude);
+      if (region) {
+        setSelectedState(region.stateId);
+        const loadedCities = GeographyService.getCitiesByState(region.stateId);
+        setCities(loadedCities);
+        setSelectedCity(region.cityId);
+
+        const loadedNeighborhoods = GeographyService.getNeighborhoodsByCity(region.cityId);
+        setNeighborhoods(loadedNeighborhoods);
+        setSelectedNeighborhood(region.neighborhoodId);
+        setIsCustomNeighborhood(false);
+
+        if (isCourier) {
+          setOperatingNeighborhoods(prev => Array.from(new Set([...prev, region.neighborhoodId])));
+        }
+
+        setLocationFeedback(`📍 Região detectada: ${region.formattedLabel}`);
+        setTimeout(() => setLocationFeedback(null), 5000);
+      }
+    } catch (err: any) {
+      setLocationFeedback(err?.message || 'Não foi possível obter sua localização.');
+      setTimeout(() => setLocationFeedback(null), 5000);
+    } finally {
+      setIsDetectingLocation(false);
+    }
+  };
+
+  const toggleOperatingNeighborhood = (neighId: string) => {
+    setOperatingNeighborhoods(prev => {
+      if (prev.includes(neighId)) {
+        return prev.filter(id => id !== neighId);
+      } else {
+        return [...prev, neighId];
+      }
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -185,6 +302,7 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
     try {
       if (isCourier) {
+        const finalOperating = Array.from(new Set([effectiveNeighborhood, ...operatingNeighborhoods]));
         const payload: UpdateCourierProfileDTO = {
           userId: profileData.user.id,
           fullName: fullName.trim(),
@@ -192,7 +310,8 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           transportModal,
           stateId: selectedState,
           cityId: selectedCity,
-          homeNeighborhoodId: effectiveNeighborhood
+          homeNeighborhoodId: effectiveNeighborhood,
+          operatingNeighborhoods: finalOperating
         };
 
         const updated = await ProfileService.updateCourierProfile(payload);
@@ -212,6 +331,8 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           storeName: storeName.trim(),
           addressStreet: addressStreet.trim() || undefined,
           addressNumber: addressNumber.trim() || undefined,
+          addressComplement: addressComplement.trim() || undefined,
+          postalCode: postalCode.trim() || undefined,
           stateId: selectedState,
           cityId: selectedCity,
           neighborhoodId: effectiveNeighborhood
@@ -538,6 +659,45 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                 />
               </div>
 
+              {/* CEP do Estabelecimento com Busca Automática */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)' }}>
+                    CEP do Estabelecimento
+                  </label>
+                  {isSearchingCep && (
+                    <span style={{ fontSize: '11px', color: 'var(--neon-emerald, #00f59b)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Loader2 size={12} className="spin-animate" /> Buscando endereço...
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  value={postalCode}
+                  onChange={handleCepChange}
+                  placeholder="Ex: 01310-100"
+                  maxLength={9}
+                  style={{
+                    width: '100%',
+                    minHeight: '44px',
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    backgroundColor: '#0a0f1d',
+                    border: '1px solid var(--border-subtle, #334155)',
+                    color: 'var(--text-primary, #f8fafc)',
+                    fontSize: '14px',
+                    fontFamily: 'monospace',
+                    boxSizing: 'border-box'
+                  }}
+                  data-testid="input-edit-postalcode"
+                />
+                {cepError && (
+                  <span style={{ fontSize: '11px', color: '#f87171' }}>
+                    {cepError}
+                  </span>
+                )}
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
                 <div>
                   <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)', display: 'block', marginBottom: '6px' }}>
@@ -563,9 +723,10 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                 </div>
                 <div>
                   <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)', display: 'block', marginBottom: '6px' }}>
-                    Número
+                    Número *
                   </label>
                   <input
+                    ref={addressNumberInputRef}
                     type="text"
                     value={addressNumber}
                     onChange={(e) => setAddressNumber(e.target.value)}
@@ -581,17 +742,70 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                       fontSize: '14px',
                       boxSizing: 'border-box'
                     }}
+                    data-testid="input-edit-addressnumber"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)', display: 'block', marginBottom: '6px' }}>
+                  Complemento (opcional)
+                </label>
+                <input
+                  type="text"
+                  value={addressComplement}
+                  onChange={(e) => setAddressComplement(e.target.value)}
+                  placeholder="Ex: Sala 102, Galpão B, Apto 4"
+                  style={{
+                    width: '100%',
+                    minHeight: '44px',
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    backgroundColor: '#0a0f1d',
+                    border: '1px solid var(--border-subtle, #334155)',
+                    color: 'var(--text-primary, #f8fafc)',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                  data-testid="input-edit-addresscomplement"
+                />
               </div>
             </>
           )}
 
           {/* Localização Territorial / Cascata Geográfica */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)', display: 'block' }}>
-              {isCourier ? 'Bairro Base de Atuação (Quórum Regional)' : 'Localização do Estabelecimento'} *
-            </label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary, #94a3b8)' }}>
+                {isCourier ? 'Bairro Base de Atuação (Quórum Regional)' : 'Localização do Estabelecimento'} *
+              </label>
+              <button
+                type="button"
+                onClick={handleDetectLocation}
+                disabled={isDetectingLocation}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  background: 'rgba(0, 245, 155, 0.1)',
+                  border: '1px solid rgba(0, 245, 155, 0.3)',
+                  color: 'var(--neon-emerald, #00f59b)',
+                  borderRadius: '16px',
+                  padding: '3px 8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: isDetectingLocation ? 'wait' : 'pointer'
+                }}
+              >
+                {isDetectingLocation ? <Loader2 size={12} className="spin-animate" /> : <Crosshair size={12} />}
+                <span>{isDetectingLocation ? 'Detectando...' : 'Minha localização'}</span>
+              </button>
+            </div>
+            {locationFeedback && (
+              <div style={{ fontSize: '11px', color: 'var(--neon-emerald, #00f59b)', fontWeight: 600 }}>
+                {locationFeedback}
+              </div>
+            )}
 
             <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
               {/* Estado UF */}
@@ -727,6 +941,41 @@ export const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Múltiplos Bairros de Atuação para Entregador */}
+            {isCourier && neighborhoods.length > 1 && (
+              <div style={{ marginTop: '4px', paddingTop: '8px', borderTop: '1px dashed #334155' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>
+                  Bairros adicionais para receber turnos e entregas:
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {neighborhoods
+                    .filter((n) => n.id !== selectedNeighborhood)
+                    .map((n) => {
+                      const isSelected = operatingNeighborhoods.includes(n.id);
+                      return (
+                        <button
+                          key={n.id}
+                          type="button"
+                          onClick={() => toggleOperatingNeighborhood(n.id)}
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: '16px',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            border: isSelected ? '1px solid var(--neon-emerald, #00f59b)' : '1px solid #334155',
+                            backgroundColor: isSelected ? 'rgba(0, 245, 155, 0.15)' : '#0a0f1d',
+                            color: isSelected ? 'var(--neon-emerald, #00f59b)' : '#94a3b8',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {isSelected ? '✓ ' : '+ '} {n.name}
+                        </button>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Botões de Ação */}

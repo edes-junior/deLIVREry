@@ -6,6 +6,7 @@
 
 import { supabase } from '../lib/supabase.ts';
 import { validateCPF, validatePhone, cleanDigits, formatCPF, formatPhone } from './cpf-validator.ts';
+import { cleanCEP } from '../geography/cep-service.ts';
 
 export type TransportModal = 'motorcycle' | 'bicycle' | 'ebike_scooter';
 
@@ -20,6 +21,7 @@ export interface CourierProfileInput {
   stateId: string;
   cityId: string;
   homeNeighborhoodId: string;
+  operatingNeighborhoods?: string[];
   referredByCode?: string;
 }
 
@@ -31,6 +33,8 @@ export interface StoreProfileInput {
   storeName: string;
   addressStreet?: string;
   addressNumber?: string;
+  addressComplement?: string;
+  postalCode?: string;
   latitude?: number;
   longitude?: number;
   stateId: string;
@@ -46,6 +50,7 @@ export interface UpdateCourierProfileDTO {
   stateId: string;
   cityId: string;
   homeNeighborhoodId: string;
+  operatingNeighborhoods?: string[];
 }
 
 export interface UpdateStoreProfileDTO {
@@ -55,6 +60,8 @@ export interface UpdateStoreProfileDTO {
   storeName: string;
   addressStreet?: string;
   addressNumber?: string;
+  addressComplement?: string;
+  postalCode?: string;
   latitude?: number;
   longitude?: number;
   stateId: string;
@@ -205,6 +212,11 @@ export class ProfileService {
     let courierError: any = null;
     let attempts = 0;
 
+    const operatingNeighborhoods =
+      input.operatingNeighborhoods && input.operatingNeighborhoods.length > 0
+        ? input.operatingNeighborhoods
+        : [input.homeNeighborhoodId];
+
     while (attempts < 3) {
       const referralCode = existingProfile?.referral_code || generateReferralCode('LIVRE');
       const { data, error } = await supabase
@@ -221,6 +233,7 @@ export class ProfileService {
           state_id: input.stateId.toUpperCase(),
           city_id: input.cityId,
           home_neighborhood_id: input.homeNeighborhoodId,
+          operating_neighborhoods: operatingNeighborhoods,
           rate_updated_at: rateUpdatedAt,
           updated_at: new Date().toISOString()
         })
@@ -320,6 +333,8 @@ export class ProfileService {
         store_name: input.storeName.trim(),
         address_street: input.addressStreet?.trim() || 'Não informado',
         address_number: input.addressNumber?.trim() || 'S/N',
+        address_complement: input.addressComplement?.trim() || null,
+        postal_code: input.postalCode ? cleanCEP(input.postalCode) : null,
         latitude: input.latitude || null,
         longitude: input.longitude || null,
         state_id: input.stateId.toUpperCase(),
@@ -602,6 +617,11 @@ export class ProfileService {
     }
 
     // 2. Atualiza public.courier_profiles
+    const operatingNeighborhoods =
+      input.operatingNeighborhoods && input.operatingNeighborhoods.length > 0
+        ? input.operatingNeighborhoods
+        : [input.homeNeighborhoodId];
+
     const { data: updatedProfile, error: profileError } = await client
       .from('courier_profiles')
       .update({
@@ -609,6 +629,7 @@ export class ProfileService {
         state_id: input.stateId.toUpperCase(),
         city_id: input.cityId,
         home_neighborhood_id: input.homeNeighborhoodId,
+        operating_neighborhoods: operatingNeighborhoods,
         updated_at: new Date().toISOString()
       })
       .eq('user_id', input.userId)
@@ -686,6 +707,8 @@ export class ProfileService {
         store_name: input.storeName.trim(),
         address_street: input.addressStreet?.trim() || null,
         address_number: input.addressNumber?.trim() || null,
+        address_complement: input.addressComplement?.trim() || null,
+        postal_code: input.postalCode ? cleanCEP(input.postalCode) : null,
         latitude: input.latitude ?? null,
         longitude: input.longitude ?? null,
         state_id: input.stateId.toUpperCase(),

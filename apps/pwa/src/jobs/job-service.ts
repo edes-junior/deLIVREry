@@ -285,7 +285,11 @@ export async function listOpenJobs(
     query = query.eq('city_id', filters.city_id);
   }
 
-  if (filters?.neighborhood_id) {
+  if (Array.isArray(filters?.neighborhood_ids) && filters.neighborhood_ids.length > 0) {
+    if (typeof query.in === 'function') {
+      query = query.in('neighborhood_id', filters.neighborhood_ids);
+    }
+  } else if (filters?.neighborhood_id) {
     query = query.eq('neighborhood_id', filters.neighborhood_id);
   }
 
@@ -300,6 +304,11 @@ export async function listOpenJobs(
   }
 
   let jobs = (data || []) as JobPost[];
+
+  // Aplica filtro de múltiplos bairros se mock não suportar .in()
+  if (Array.isArray(filters?.neighborhood_ids) && filters.neighborhood_ids.length > 0) {
+    jobs = jobs.filter(job => filters.neighborhood_ids!.includes(job.neighborhood_id));
+  }
 
   // Aplica filtragem fina de compatibilidade por modal (ex: raio <= 3km para bikes)
   if (filters?.modal) {
