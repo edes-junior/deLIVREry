@@ -4,6 +4,7 @@ import { ApiKeyGeneratorModal } from './ApiKeyGeneratorModal.tsx';
 import { WebhookTester } from './WebhookTester.tsx';
 import { EmbedWidgetPlayground } from './EmbedWidgetPlayground.tsx';
 import type { ApiClient } from '../../api/gateway/types.ts';
+import { Zap, Plus, BookOpen, Key, Bell, Package, Code2 } from 'lucide-react';
 
 interface DeveloperPortalProps {
   onBack?: () => void;
@@ -27,19 +28,15 @@ export const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ onBack }) => {
   const handleKeyGenerated = (key: string, client: ApiClient) => {
     setActiveApiKey(key);
     setActiveClient(client);
+    setActiveTab('docs');
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#0b1120',
-      color: '#f8fafc',
-      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-    }}>
+    <div style={{ backgroundColor: '#0f172a', minHeight: '100vh', color: '#f8fafc', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
       {/* Top Header */}
       <header style={{
-        backgroundColor: '#0f172a',
-        borderBottom: '1px solid #1e293b',
+        backgroundColor: '#1e293b',
+        borderBottom: '1px solid #334155',
         padding: '16px 24px',
         display: 'flex',
         alignItems: 'center',
@@ -52,9 +49,9 @@ export const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ onBack }) => {
             <button
               onClick={handleBack}
               style={{
-                backgroundColor: '#1e293b',
-                color: '#94a3b8',
-                border: '1px solid #334155',
+                backgroundColor: '#334155',
+                color: '#f8fafc',
+                border: 'none',
                 borderRadius: '8px',
                 padding: '8px 16px',
                 minHeight: '48px',
@@ -73,7 +70,7 @@ export const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ onBack }) => {
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '24px' }}>⚡</span>
+              <Zap size={22} style={{ color: '#38bdf8' }} />
               <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#f8fafc' }}>
                 deLIVREry <span style={{ color: '#38bdf8' }}>Developer Portal</span>
               </h1>
@@ -103,7 +100,8 @@ export const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ onBack }) => {
               boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.3)'
             }}
           >
-            ✨ Emitir Nova API Key
+            <Plus size={16} />
+            <span>Emitir Nova API Key</span>
           </button>
         </div>
       </header>
@@ -160,7 +158,8 @@ export const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ onBack }) => {
               borderBottom: activeTab === 'docs' ? '2px solid #38bdf8' : 'none'
             }}
           >
-            📖 Documentação OpenAPI & Console
+            <BookOpen size={16} />
+            <span>Documentação OpenAPI & Console</span>
           </button>
 
           <button
@@ -181,7 +180,8 @@ export const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ onBack }) => {
               borderBottom: activeTab === 'keys' ? '2px solid #38bdf8' : 'none'
             }}
           >
-            🔑 Gestão de Credenciais
+            <Key size={16} />
+            <span>Gestão de Credenciais</span>
           </button>
 
           <button
@@ -202,7 +202,8 @@ export const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ onBack }) => {
               borderBottom: activeTab === 'webhooks' ? '2px solid #38bdf8' : 'none'
             }}
           >
-            🔔 Simulador de Webhooks (HMAC)
+            <Bell size={16} />
+            <span>Simulador de Webhooks (HMAC)</span>
           </button>
 
           <button
@@ -223,7 +224,8 @@ export const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ onBack }) => {
               borderBottom: activeTab === 'sdk' ? '2px solid #38bdf8' : 'none'
             }}
           >
-            📦 SDK & Exemplos de Código
+            <Package size={16} />
+            <span>SDK & Exemplos de Código</span>
           </button>
 
           <button
@@ -244,7 +246,8 @@ export const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ onBack }) => {
               borderBottom: activeTab === 'widget' ? '2px solid #38bdf8' : 'none'
             }}
           >
-            🧩 Web Component (&lt;delivrery-button /&gt;)
+            <Code2 size={16} />
+            <span>Web Component (&lt;delivrery-button /&gt;)</span>
           </button>
         </div>
 
@@ -260,8 +263,8 @@ export const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ onBack }) => {
             borderRadius: '12px',
             padding: '28px'
           }}>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '18px', fontWeight: 700, color: '#60a5fa' }}>
-              🔑 Gestão e Emissão de Credenciais de API
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '18px', fontWeight: 700, color: '#60a5fa', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Key size={20} /> Gestão e Emissão de Credenciais de API
             </h3>
             <p style={{ margin: '0 0 20px 0', color: '#94a3b8', fontSize: '14px', lineHeight: 1.5 }}>
               Para integrar seu PDV, cardápio digital ou sistema municipal à rede descentralizada deLIVREry, gere sua API Key delimitando as cidades de operação e limites de taxa.
@@ -278,10 +281,13 @@ export const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ onBack }) => {
                 borderRadius: '8px',
                 fontWeight: 700,
                 fontSize: '15px',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
-              + Gerar Nova Chave de API
+              <Plus size={18} /> Gerar Nova Chave de API
             </button>
 
             {activeClient && (
@@ -313,8 +319,8 @@ export const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ onBack }) => {
             gap: '20px'
           }}>
             <div>
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 700, color: '#60a5fa' }}>
-                📦 Início Rápido com o SDK (@delivrery/api-client-sdk)
+              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 700, color: '#60a5fa', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Package size={20} /> Início Rápido com o SDK (@delivrery/api-client-sdk)
               </h3>
               <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px', lineHeight: 1.5 }}>
                 Utilize o SDK oficial para TypeScript / JavaScript com suporte nativo a autenticação, controle de taxa, erros RFC 7807 e validação de Webhooks HMAC-SHA256.

@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { triggerHaptic } from './Haptics.ts';
+import { Loader2 } from 'lucide-react';
 
 export type ButtonVariant = 'cta' | 'secondary' | 'whatsapp' | 'pix' | 'pill' | 'ghost' | 'danger';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -139,7 +140,7 @@ export const Button: React.FC<ButtonProps> = ({
     >
       {isLoading ? (
         <>
-          <span className="animate-spin" style={{ display: 'inline-block' }}>⚡</span>
+          <Loader2 size={16} className="animate-spin" style={{ display: 'inline-block' }} />
           <span>Carregando...</span>
         </>
       ) : (

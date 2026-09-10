@@ -40,6 +40,12 @@ export interface JobBid {
   notes?: string | null;
   created_at?: string;
   updated_at?: string;
+  // Perfil público do entregador proponente (Story 3 / CAP-3, AD-10)
+  courier_name?: string;
+  courier_avatar_url?: string | null;
+  courier_modal?: TransportModal;
+  courier_level?: string;
+  courier_xp?: number;
 }
 
 export interface MatchedJobContact {
@@ -53,10 +59,14 @@ export interface MatchedJobContact {
   store_name: string;
   store_contact_name: string;
   store_phone_number: string;
+  store_avatar_url?: string | null;
   courier_id: string;
   courier_name: string;
   courier_phone_number: string;
+  courier_avatar_url?: string | null;
   courier_modal: TransportModal;
+  courier_level?: string;
+  courier_xp?: number;
 }
 
 export interface CreateJobPostDTO {
@@ -86,6 +96,8 @@ export interface JobFilterParams {
   modal?: TransportModal;
   max_radius_km?: number;
   status?: JobStatus;
+  courier_user_id?: string;
+  exclude_conflicting_shifts?: boolean;
 }
 
 export interface JobRating {

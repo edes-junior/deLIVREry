@@ -8,6 +8,7 @@ import React, { useState } from 'react';
 import type { JobPost, JobBid } from '../../jobs/types.ts';
 import { submitBid } from '../../jobs/job-service.ts';
 import { Card, Button, Badge, triggerHaptic } from '../ui/index.ts';
+import { Calendar, Clock, MapPin, Target, Hourglass, Zap, Handshake } from 'lucide-react';
 
 interface JobCardProps {
   job: JobPost;
@@ -101,37 +102,19 @@ export const JobCard: React.FC<JobCardProps> = ({
             <Badge variant={isClosed ? 'neutral' : 'emerald'}>
               {isMatched ? 'Encerrada' : isCancelled ? 'Cancelada' : 'Turno Aberto'}
             </Badge>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              📅 {formatShiftDate(job.shift_date)} • ⏰ {formatTime(job.start_time)} às {formatTime(job.end_time)}
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+              <Calendar size={12} style={{ color: 'var(--text-muted)' }} />
+              {formatShiftDate(job.shift_date)} • <Clock size={12} style={{ color: 'var(--text-muted)' }} /> {formatTime(job.start_time)} às {formatTime(job.end_time)}
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800, color: '#ffffff' }}>
               {job.title}
             </h3>
-            {((job as any).is_store_supporter || (job as any).community_supporter) && (
-              <span
-                data-testid="badge-job-supporter"
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  padding: '2px 8px',
-                  borderRadius: '9999px',
-                  backgroundColor: 'rgba(0, 245, 155, 0.1)',
-                  color: 'var(--neon-emerald)',
-                  border: '1px solid rgba(0, 245, 155, 0.3)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '3px'
-                }}
-              >
-                <span>💚</span>
-                <span>Apoiador</span>
-              </span>
-            )}
           </div>
-          <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
-            📍 Região: <strong style={{ color: 'var(--neon-emerald)' }}>{job.neighborhood_id}</strong> ({job.city_id})
+          <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <MapPin size={12} style={{ color: 'var(--neon-emerald)' }} />
+            <span>Região: <strong style={{ color: 'var(--neon-emerald)' }}>{job.neighborhood_id}</strong> ({job.city_id})</span>
           </p>
         </div>
 
@@ -147,8 +130,9 @@ export const JobCard: React.FC<JobCardProps> = ({
           }}
         >
           <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Raio Máx.</div>
-          <div style={{ fontSize: '13px', fontWeight: 800, color: '#38bdf8' }}>
-            🎯 {job.delivery_radius_km ?? 3.0} km
+          <div style={{ fontSize: '13px', fontWeight: 800, color: '#38bdf8', display: 'inline-flex', alignItems: 'center', gap: '3px', justifyContent: 'center' }}>
+            <Target size={12} />
+            <span>{job.delivery_radius_km ?? 3.0} km</span>
           </div>
         </div>
       </div>
@@ -161,21 +145,27 @@ export const JobCard: React.FC<JobCardProps> = ({
           gap: '8px',
           backgroundColor: 'var(--bg-surface-raised)',
           padding: '12px 14px',
+          border: '1px solid var(--border-subtle)',
           borderRadius: 'var(--radius-md)',
-          marginBottom: '12px',
-          border: '1px solid var(--border-subtle)'
+          padding: '10px 12px',
+          marginBottom: '12px'
         }}
       >
         <div>
-          <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Valor do Turno</div>
-          <div className="tabular-price" style={{ fontSize: '20px', color: 'var(--neon-emerald)' }}>
+          <span style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
+            Diária Ofertada
+          </span>
+          <div className="tabular-price" style={{ fontSize: '18px', color: 'var(--neon-emerald)' }}>
             R$ {Number(job.offered_daily_rate).toFixed(2).replace('.', ',')}
           </div>
         </div>
+
         <div>
-          <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Taxa por Entrega</div>
-          <div className="tabular-price" style={{ fontSize: '20px', color: 'var(--highvis-yellow)' }}>
-            + R$ {Number(job.offered_delivery_fee).toFixed(2).replace('.', ',')}
+          <span style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
+            Taxa por Entrega
+          </span>
+          <div className="tabular-price" style={{ fontSize: '18px', color: 'var(--highvis-yellow)' }}>
+            R$ {Number(job.offered_delivery_fee).toFixed(2).replace('.', ',')}
           </div>
         </div>
       </div>
@@ -186,7 +176,13 @@ export const JobCard: React.FC<JobCardProps> = ({
           <span>Modais aceitos:</span>
           {job.accepted_modals.map((m) => (
             <Badge key={m} variant="modal">
-              {m === 'motorcycle' ? '🏍️ Moto' : m === 'bicycle' ? '🚲 Bike' : '⚡ E-Bike'}
+              {m === 'motorcycle' ? (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Bike size={12} /> Moto</span>
+              ) : m === 'bicycle' ? (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Bike size={12} /> Bike</span>
+              ) : (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Zap size={12} /> E-Bike</span>
+              )}
             </Badge>
           ))}
         </div>
@@ -207,10 +203,14 @@ export const JobCard: React.FC<JobCardProps> = ({
             padding: '8px 12px',
             marginBottom: '10px',
             fontSize: '12px',
-            color: '#fde68a'
+            color: '#fde68a',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
           }}
         >
-          ⚠️ {errorMessage}
+          <AlertTriangle size={14} style={{ color: '#f59e0b', flexShrink: 0 }} />
+          <span>{errorMessage}</span>
         </div>
       )}
 
@@ -230,15 +230,16 @@ export const JobCard: React.FC<JobCardProps> = ({
           }}
         >
           <div>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--neon-emerald)' }}>
-              ✓ Proposta Enviada ({existingBid?.status === 'accepted' ? 'Aceita pelo Lojista!' : 'Aguardando Lojista'})
+            <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--neon-emerald)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Check size={14} />
+              <span>Proposta Enviada ({existingBid?.status === 'accepted' ? 'Aceita pelo Lojista!' : 'Aguardando Lojista'})</span>
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-primary)', marginTop: '2px' }}>
               Diária: R$ {Number(existingBid?.bid_daily_rate || job.offered_daily_rate).toFixed(2).replace('.', ',')} |
               Taxa: R$ {Number(existingBid?.bid_delivery_fee || job.offered_delivery_fee).toFixed(2).replace('.', ',')}
             </div>
           </div>
-          <span style={{ fontSize: '20px' }}>⏳</span>
+          <Hourglass size={18} style={{ color: 'var(--neon-emerald)' }} />
         </div>
       ) : isClosed ? (
         <div
@@ -269,16 +270,20 @@ export const JobCard: React.FC<JobCardProps> = ({
             disabled={isSubmittingDirect}
             onClick={handleDirectAccept}
             isLoading={isSubmittingDirect}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
           >
-            ⚡ Aceitar Valor
+            <Zap size={14} />
+            <span>Aceitar Valor</span>
           </Button>
 
           <Button
             type="button"
             variant="secondary"
             onClick={() => onOpenCounterProposal(job)}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
           >
-            🤝 Negociar Valor
+            <Handshake size={14} />
+            <span>Negociar Valor</span>
           </Button>
         </div>
       )}

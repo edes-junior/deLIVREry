@@ -38,6 +38,30 @@ export interface StoreProfileInput {
   neighborhoodId: string;
 }
 
+export interface UpdateCourierProfileDTO {
+  userId: string;
+  fullName: string;
+  phoneNumber: string;
+  transportModal: TransportModal;
+  stateId: string;
+  cityId: string;
+  homeNeighborhoodId: string;
+}
+
+export interface UpdateStoreProfileDTO {
+  userId: string;
+  fullName: string;
+  phoneNumber: string;
+  storeName: string;
+  addressStreet?: string;
+  addressNumber?: string;
+  latitude?: number;
+  longitude?: number;
+  stateId: string;
+  cityId: string;
+  neighborhoodId: string;
+}
+
 export interface UserProfileResponse {
   user: {
     id: string;
@@ -46,6 +70,7 @@ export interface UserProfileResponse {
     cpf: string;
     phoneNumber: string;
     userType: 'courier' | 'store';
+    avatarUrl?: string | null;
   };
   profile: any;
 }
@@ -227,7 +252,8 @@ export class ProfileService {
         fullName: updatedUser.full_name,
         cpf: updatedUser.cpf,
         phoneNumber: updatedUser.phone_number,
-        userType: 'courier'
+        userType: 'courier',
+        avatarUrl: updatedUser.avatar_url || null
       },
       profile: courierProfile
     };
@@ -316,7 +342,8 @@ export class ProfileService {
         fullName: updatedUser.full_name,
         cpf: updatedUser.cpf,
         phoneNumber: updatedUser.phone_number,
-        userType: 'store'
+        userType: 'store',
+        avatarUrl: updatedUser.avatar_url || null
       },
       profile: storeProfile
     };
@@ -360,7 +387,8 @@ export class ProfileService {
         fullName: user.full_name,
         cpf: user.cpf,
         phoneNumber: user.phone_number,
-        userType: user.user_type
+        userType: user.user_type,
+        avatarUrl: user.avatar_url || null
       },
       profile: profileData
     };
@@ -524,6 +552,197 @@ export class ProfileService {
         rateUpdatedAt: new Date().toISOString()
       }
     };
+  }
+
+  /**
+   * Atualiza os dados cadastrais e operacionais do Entregador (Story 1 / CAP-1 / CAP-6).
+   * Garante a imutabilidade do CPF e tipo de conta.
+   */
+  public static async updateCourierProfile(
+    input: UpdateCourierProfileDTO,
+    client: any = supabase
+  ): Promise<UserProfileResponse> {
+    if (!input.userId) {
+      throw new Error('Identificador do usuário autenticado é obrigatório.');
+    }
+
+    if (!input.fullName || input.fullName.trim().length < 3) {
+      throw new Error('Informe o nome completo (mínimo de 3 caracteres).');
+    }
+
+    if (!validatePhone(input.phoneNumber)) {
+      throw new Error('Telefone celular inválido. Informe o DDD e o número com 9 dígitos.');
+    }
+
+    const validModals: TransportModal[] = ['motorcycle', 'bicycle', 'ebike_scooter'];
+    if (!validModals.includes(input.transportModal)) {
+      throw new Error('Modal de transporte selecionado é inválido.');
+    }
+
+    if (!input.stateId || !input.cityId || !input.homeNeighborhoodId) {
+      throw new Error('Selecione seu Estado, Cidade e Bairro de atuação.');
+    }
+
+    const formattedPhone = formatPhone(input.phoneNumber);
+
+    // 1. Atualiza public.users (sem alterar CPF ou user_type)
+    const { data: updatedUser, error: userError } = await client
+      .from('users')
+      .update({
+        full_name: input.fullName.trim(),
+        phone_number: formattedPhone,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', input.userId)
+      .select()
+      .single();
+
+    if (userError || !updatedUser) {
+      throw new Error(`Erro ao atualizar dados de usuário: ${userError?.message || 'Falha na persistência'}`);
+    }
+
+    // 2. Atualiza public.courier_profiles
+    const { data: updatedProfile, error: profileError } = await client
+      .from('courier_profiles')
+      .update({
+        transport_modal: input.transportModal,
+        state_id: input.stateId.toUpperCase(),
+        city_id: input.cityId,
+        home_neighborhood_id: input.homeNeighborhoodId,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', input.userId)
+      .select()
+      .single();
+
+    if (profileError || !updatedProfile) {
+      throw new Error(`Erro ao atualizar perfil do entregador: ${profileError?.message || 'Falha na persistência'}`);
+    }
+
+    return {
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        fullName: updatedUser.full_name,
+        cpf: updatedUser.cpf,
+        phoneNumber: updatedUser.phone_number,
+        userType: 'courier',
+        avatarUrl: updatedUser.avatar_url || null
+      },
+      profile: updatedProfile
+    };
+  }
+
+  /**
+   * Atualiza os dados cadastrais e operacionais do Lojista (Story 1 / CAP-1 / CAP-6).
+   * Garante a imutabilidade do CPF e tipo de conta.
+   */
+  public static async updateStoreProfile(
+    input: UpdateStoreProfileDTO,
+    client: any = supabase
+  ): Promise<UserProfileResponse> {
+    if (!input.userId) {
+      throw new Error('Identificador do usuário autenticado é obrigatório.');
+    }
+
+    if (!input.fullName || input.fullName.trim().length < 3) {
+      throw new Error('Informe o nome do responsável (mínimo de 3 caracteres).');
+    }
+
+    if (!validatePhone(input.phoneNumber)) {
+      throw new Error('Telefone celular inválido. Informe o DDD e o número com 9 dígitos.');
+    }
+
+    if (!input.storeName || input.storeName.trim().length < 2) {
+      throw new Error('Informe o nome do estabelecimento comercial.');
+    }
+
+    if (!input.stateId || !input.cityId || !input.neighborhoodId) {
+      throw new Error('Selecione seu Estado, Cidade e Bairro de atuação.');
+    }
+
+    const formattedPhone = formatPhone(input.phoneNumber);
+
+    // 1. Atualiza public.users (sem alterar CPF ou user_type)
+    const { data: updatedUser, error: userError } = await client
+      .from('users')
+      .update({
+        full_name: input.fullName.trim(),
+        phone_number: formattedPhone,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', input.userId)
+      .select()
+      .single();
+
+    if (userError || !updatedUser) {
+      throw new Error(`Erro ao atualizar dados de usuário: ${userError?.message || 'Falha na persistência'}`);
+    }
+
+    // 2. Atualiza public.store_profiles
+    const { data: updatedProfile, error: profileError } = await client
+      .from('store_profiles')
+      .update({
+        store_name: input.storeName.trim(),
+        address_street: input.addressStreet?.trim() || null,
+        address_number: input.addressNumber?.trim() || null,
+        latitude: input.latitude ?? null,
+        longitude: input.longitude ?? null,
+        state_id: input.stateId.toUpperCase(),
+        city_id: input.cityId,
+        neighborhood_id: input.neighborhoodId,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', input.userId)
+      .select()
+      .single();
+
+    if (profileError || !updatedProfile) {
+      throw new Error(`Erro ao atualizar perfil do lojista: ${profileError?.message || 'Falha na persistência'}`);
+    }
+
+    return {
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        fullName: updatedUser.full_name,
+        cpf: updatedUser.cpf,
+        phoneNumber: updatedUser.phone_number,
+        userType: 'store',
+        avatarUrl: updatedUser.avatar_url || null
+      },
+      profile: updatedProfile
+    };
+  }
+
+  /**
+   * Alterna a disponibilidade operacional do entregador (Story 4 / CAP-4).
+   * Permite alternar entre ativo (true) e pausado (false).
+   */
+  public static async toggleCourierAvailability(
+    userId: string,
+    isActive: boolean,
+    client: any = supabase
+  ): Promise<{ success: boolean; isActive: boolean; error?: string }> {
+    if (!userId) {
+      return { success: false, isActive: false, error: 'Identificador do usuário é obrigatório.' };
+    }
+
+    const { data, error } = await client
+      .from('courier_profiles')
+      .update({
+        is_active: isActive,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId)
+      .select('is_active')
+      .single();
+
+    if (error) {
+      return { success: false, isActive: !isActive, error: error.message };
+    }
+
+    return { success: true, isActive: Boolean(data?.is_active ?? isActive) };
   }
 }
 

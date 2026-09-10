@@ -3,6 +3,7 @@ import { generateWebhookSecret, verifyWebhookSignature } from '../../../../../pa
 import { WebhookDispatcherService } from '../../api/webhooks/webhook-dispatcher.ts';
 import { WebhookCrypto } from '../../api/webhooks/webhook-crypto.ts';
 import type { WebhookSubscription, WebhookEventType, WebhookDeliveryResult } from '../../api/webhooks/types.ts';
+import { Bell, RefreshCw, Check, Save, Send } from 'lucide-react';
 
 export const WebhookTester: React.FC = () => {
   const [targetUrl, setTargetUrl] = useState('https://webhook.site/delivrery-test-partner');
@@ -164,8 +165,8 @@ export const WebhookTester: React.FC = () => {
         color: '#f8fafc'
       }}>
         <div style={{ marginBottom: '18px' }}>
-          <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 700, color: '#60a5fa' }}>
-            🔔 Simulador e Validador de Webhooks (HMAC-SHA256)
+          <h3 style={{ margin: '0 0 6px 0', fontSize: '18px', fontWeight: 700, color: '#60a5fa', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Bell size={20} /> Simulador e Validador de Webhooks (HMAC-SHA256)
           </h3>
           <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px', lineHeight: 1.5 }}>
             Configure o endpoint receptor do seu sistema (PDV, ERP ou Cardápio Digital) e envie disparos de teste assinados para auditar a validação de segurança.
@@ -277,11 +278,15 @@ export const WebhookTester: React.FC = () => {
                     padding: '0 14px',
                     minHeight: '48px',
                     cursor: 'pointer',
-                    fontSize: '13px'
+                    fontSize: '13px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                   title="Gerar novo segredo"
+                  aria-label="Gerar novo segredo"
                 >
-                  🔄
+                  <RefreshCw size={16} />
                 </button>
               </div>
             </div>
@@ -300,10 +305,21 @@ export const WebhookTester: React.FC = () => {
                 borderRadius: '8px',
                 fontWeight: 600,
                 fontSize: '14px',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
-              {isSubscribed ? '✔ Subscrição Ativa' : '💾 Salvar Subscrição'}
+              {isSubscribed ? (
+                <>
+                  <Check size={16} /> Subscrição Ativa
+                </>
+              ) : (
+                <>
+                  <Save size={16} /> Salvar Subscrição
+                </>
+              )}
             </button>
 
             <button
@@ -325,7 +341,11 @@ export const WebhookTester: React.FC = () => {
                 gap: '8px'
               }}
             >
-              {isTesting ? 'Disparando...' : '🚀 Disparar Webhook de Teste'}
+              {isTesting ? 'Disparando...' : (
+                <>
+                  <Send size={16} /> Disparar Webhook de Teste
+                </>
+              )}
             </button>
           </div>
         </div>

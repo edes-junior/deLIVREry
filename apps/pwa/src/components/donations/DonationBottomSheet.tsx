@@ -9,6 +9,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import type { DonationTriggerMoment, PixConfiguration } from '../../donations/types.ts';
 import { DonationService } from '../../donations/donation-service.ts';
 import { generatePixBrcode } from '../../donations/pix-config.ts';
+import { Bike, Trophy, Zap, Star, Terminal, Heart, Check, Copy, Eye, EyeOff, QrCode } from 'lucide-react';
 
 export interface DonationBottomSheetProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ export interface DonationBottomSheetProps {
 }
 
 interface MomentContent {
-  icon: string;
+  icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
   badge: string;
   title: string;
   subtitle: string;
@@ -28,46 +29,46 @@ interface MomentContent {
 
 const MOMENT_CONTENTS: Record<DonationTriggerMoment, MomentContent> = {
   shift_completed: {
-    icon: '🏍️💨',
+    icon: Bike,
     badge: 'Turno Concluído',
-    title: 'Turno Concluído com Sucesso!',
+    title: 'Turno Concluído com Sucesso! 100% do Ganho Ficou com Você',
     subtitle: 'Seu pagamento foi confirmado diretamente pelo lojista sem taxas intermediárias.',
-    message: 'O deLIVREry é 100% gratuito e sem comissões. Se este turno fez a diferença no seu dia, considere apoiar a manutenção dos nossos servidores com um cafezinho.',
+    message: 'O deLIVREry não cobra comissões nem mensalidades. Nossa operação e suporte continuam ativos graças a quem reconhece o valor da independência e contribui voluntariamente.',
   },
   level_up: {
-    icon: '🏆⭐',
+    icon: Trophy,
     badge: 'Nova Conquista',
     title: 'Parabéns, Você Subiu de Nível!',
     subtitle: 'Sua dedicação fortalece a autonomia e a cooperação da nossa rede local.',
-    message: 'Cada entrega reforça um ecossistema mais livre e justo. Apoie com qualquer valor para mantermos a plataforma sempre independente e gratuita.',
+    message: 'Cada entrega reforça um ecossistema mais livre e justo. Apoie para mantermos a equipe e a plataforma sempre independentes e evoluindo.',
   },
   emergency_matched: {
-    icon: '⏱️⚡',
+    icon: Zap,
     badge: 'Resgate Operacional',
     title: 'Vaga de Emergência Atendida a Tempo!',
     subtitle: 'Um entregador parceiro aceitou seu chamado em menos de 5 minutos.',
-    message: 'Sem cobranças abusivas de intermediação, sua cozinha não parou! Considere contribuir com nossa infraestrutura para mantermos o sistema rápido e estável.',
+    message: 'Sem cobranças abusivas de intermediação, sua cozinha não parou! Considere contribuir voluntariamente para mantermos a operação ágil, estável e com suporte ativo.',
   },
   rating_5_stars: {
-    icon: '⭐⭐⭐⭐⭐',
+    icon: Star,
     badge: 'Excelência Reconhecida',
     title: 'Avaliação 5 Estrelas Registrada!',
     subtitle: 'A confiança recíproca é a maior moeda e o coração do deLIVREry.',
-    message: 'Construir parcerias sólidas sem intermediários corporativos é possível. Ajude a manter nossos servidores no ar com uma microdoação comunitária.',
+    message: 'Construir parcerias sólidas sem intermediários corporativos é possível. Ajude a manter a operação ativa, independente e sem taxas predatórias.',
   },
   api_1000_requests: {
-    icon: '🚀💻',
+    icon: Terminal,
     badge: 'Integração Ativa',
     title: 'Marca de 1.000 Requisições Atingida!',
     subtitle: 'Seu sistema integrado está conectado e operando em alta performance.',
-    message: 'A API neutra do deLIVREry continuará aberta e descentralizada. Apoie nossos custos de nuvem e banco de dados para continuarmos crescendo.',
+    message: 'A API neutra do deLIVREry continuará aberta e descentralizada. Apoie a sustentação contínua da nossa infraestrutura e do esforço da nossa equipe técnica.',
   },
   manual_donation: {
-    icon: '💚🤝',
-    badge: 'Apoio Comunitário',
-    title: 'Apoie a Sustentabilidade do deLIVREry!',
+    icon: Heart,
+    badge: 'Apoio à Operação',
+    title: 'Apoie a Sustentabilidade do deLIVREry! Mantenha a Operação Livre',
     subtitle: 'Plataforma livre de taxas, mantida por e para quem faz a entrega acontecer.',
-    message: 'Sua contribuição voluntária via PIX cobre diretamente os custos de servidores, banco de dados e disparo de notificações Web Push.',
+    message: 'Sua contribuição voluntária via PIX sustenta diretamente a operação, o suporte humanizado e o esforço contínuo da equipe técnica.',
   },
 };
 
@@ -166,15 +167,9 @@ export const DonationBottomSheet: React.FC<DonationBottomSheetProps> = ({
         suggestedAmount: selectedAmount,
       });
 
-      if (res.reward?.isFirstOfMonth && res.reward.xpAwarded > 0) {
-        setToastText('🎉 +25 XP e Selo de Apoiador da Comunidade Ativado!');
-      } else if (res.reward?.communitySupporter) {
-        setToastText('💚 Código PIX copiado! Obrigado pelo apoio contínuo à comunidade!');
-      } else {
-        setToastText('Código PIX copiado! Cole no seu app de banco.');
-      }
+      setToastText('Chave PIX copiada! Valeu por manter a logística livre e nas mãos de quem trabalha.');
     } catch {
-      setToastText('Código PIX copiado! Cole no seu app de banco.');
+      setToastText('Chave PIX copiada! Cole no seu app de banco.');
     }
 
     if (onDonated) {
@@ -238,7 +233,7 @@ export const DonationBottomSheet: React.FC<DonationBottomSheetProps> = ({
             minHeight: '48px',
           }}
         >
-          <span>✓</span>
+          <Check size={16} />
           <span>{toastText}</span>
         </div>
       )}
@@ -279,7 +274,9 @@ export const DonationBottomSheet: React.FC<DonationBottomSheetProps> = ({
 
         {/* Cabeçalho do Momento */}
         <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-          <div style={{ fontSize: '32px', marginBottom: '6px' }}>{content.icon}</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+            <content.icon size={36} style={{ color: 'var(--neon-emerald)' }} />
+          </div>
           <span
             data-testid="moment-badge"
             style={{
@@ -512,11 +509,11 @@ export const DonationBottomSheet: React.FC<DonationBottomSheetProps> = ({
               width: '100%',
               minHeight: '52px', // NFR-9: Touch target >= 48px
               padding: '14px 20px',
-              borderRadius: '14px',
+              borderRadius: '12px',
               border: 'none',
               backgroundColor: isCopied ? '#059669' : '#10b981',
-              color: '#ffffff',
-              fontSize: '16px',
+              color: '#09090b',
+              fontSize: '15px',
               fontWeight: 700,
               cursor: 'pointer',
               display: 'flex',
@@ -527,7 +524,7 @@ export const DonationBottomSheet: React.FC<DonationBottomSheetProps> = ({
               transition: 'background-color 0.2s ease',
             }}
           >
-            <span>{isCopied ? '✓' : '📋'}</span>
+            {isCopied ? <Check size={18} /> : <Copy size={18} />}
             <span>
               {isCopied
                 ? 'Código PIX Copiado!'
@@ -557,7 +554,7 @@ export const DonationBottomSheet: React.FC<DonationBottomSheetProps> = ({
               gap: '6px',
             }}
           >
-            <span>{showQrCode ? '🙈' : '📱'}</span>
+            {showQrCode ? <EyeOff size={16} /> : <QrCode size={16} />}
             <span>{showQrCode ? 'Ocultar QR Code' : 'Mostrar QR Code'}</span>
           </button>
 

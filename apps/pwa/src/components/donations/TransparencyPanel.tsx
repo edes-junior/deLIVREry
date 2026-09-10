@@ -1,13 +1,14 @@
 /**
  * @file TransparencyPanel.tsx
- * @description Painel público de transparência dos custos reais de servidor vs. arrecadação comunitária (Story 4.4 - FR-12).
- * Exibe o termômetro mensal com barra de progresso, breakdown detalhado de custos e o banner comemorativo de Vitória Coletiva
- * quando a arrecadação voluntária cobre 100% da meta de infraestrutura.
+ * @description Painel público de vitalidade e sustentação da operação comunitária (Story 4.4 - FR-12).
+ * Exibe o indicador de fôlego operacional em faixas qualitativas sem expor valores monetários em R$,
+ * comemorando a autossuficiência e o esforço contínuo da equipe com o banner de Vitória Coletiva.
  */
 
 import React, { useState, useEffect } from 'react';
 import { DonationService } from '../../donations/donation-service.ts';
 import type { TransparencyReport, DonationTriggerMoment } from '../../donations/types.ts';
+import { ShieldCheck, Trophy, Users, ClipboardCheck, Heart, ChevronDown, ChevronRight } from 'lucide-react';
 
 export interface TransparencyPanelProps {
   onOpenDonationModal?: (triggerMoment: DonationTriggerMoment) => void;
@@ -23,20 +24,20 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
   style,
 }) => {
   const [report, setReport] = useState<TransparencyReport | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isBreakdownExpanded, setIsBreakdownExpanded] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isBreakdownExpanded, setIsBreakdownExpanded] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
     async function loadReport() {
-      setIsLoading(true);
       try {
+        setIsLoading(true);
         const data = await DonationService.getTransparencyReport();
         if (isMounted) {
           setReport(data);
         }
-      } catch {
-        // Fallback silencioso para manter UX resiliente
+      } catch (err) {
+        console.error('Falha ao carregar relatório de sustentabilidade:', err);
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -55,10 +56,12 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
       try {
         navigator.vibrate([15, 50, 15]);
       } catch {
-        // Fallback silencioso
+        // Ignora silenciosamente
       }
     }
-    onOpenDonationModal?.('manual_donation');
+    if (onOpenDonationModal) {
+      onOpenDonationModal('spontaneous');
+    }
   };
 
   if (isLoading && !report) {
@@ -66,49 +69,72 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
       <div
         data-testid="transparency-panel-loading"
         style={{
-          backgroundColor: '#131822',
-          borderRadius: '16px',
-          padding: '20px',
-          border: '1px solid #1e293b',
+          padding: '24px',
           textAlign: 'center',
           color: '#94a3b8',
-          fontSize: '14px',
+          fontSize: '13px',
+          backgroundColor: '#0a0f1d',
+          borderRadius: '16px',
+          border: '1px solid #1e293b',
           ...style,
         }}
       >
-        Carregando painel de sustentabilidade comunitária...
+        Carregando transparência de custos operacionais...
       </div>
     );
   }
 
   const percentage = report?.percentage || 0;
   const isGoalReached = report?.isGoalReached || false;
-  const totalEstimatedAmount = report?.totalEstimatedAmount || 0;
-  const totalMonthlyTarget = report?.totalMonthlyTarget || 150;
-  const remainingAmount = report?.remainingAmount || 0;
   const uniqueDonorsCount = report?.uniqueDonorsCount || 0;
   const totalIntents = report?.totalIntents || 0;
-  const breakdownItems = report?.costBreakdown.items || [];
+  const healthStatusLabel = report?.healthStatusLabel || 'Operação Básica';
+  const healthDescription =
+    report?.healthDescription ||
+    'Infraestrutura e conectividade essenciais mantidas pelo compromisso da comunidade.';
 
-  // Cores dinâmicas para a barra de termômetro
+  // Cores dinâmicas para a barra de fôlego operacional
   const progressColor = isGoalReached
     ? 'linear-gradient(90deg, #10b981 0%, #34d399 100%)'
     : percentage >= 50
     ? 'linear-gradient(90deg, #0ea5e9 0%, #10b981 100%)'
     : 'linear-gradient(90deg, #f59e0b 0%, #0ea5e9 100%)';
 
+  const operationalPillars = [
+    {
+      id: 'core-infra',
+      name: 'Banco de Dados & Autenticação Segura',
+      description: 'Isolamento rigoroso de contatos, segurança de dados e login sem senha para entregadores e lojistas.',
+    },
+    {
+      id: 'edge-network',
+      name: 'Rede Edge & Disponibilidade em Alta Velocidade',
+      description: 'Carregamento instantâneo do PWA em qualquer bairro do Brasil, mesmo em conexões 3G/4G oscilantes.',
+    },
+    {
+      id: 'realtime-dispatch',
+      name: 'Notificações Web Push & Despacho em Tempo Real',
+      description: 'Comunicação instantânea de novas vagas, turnos de emergência e propostas sem intermediários.',
+    },
+    {
+      id: 'team-evolution',
+      name: 'Suporte Humanizado & Evolução Técnica Contínua',
+      description: 'Esforço diário da equipe para aprimorar algoritmos justos, balizadores de preço e suporte à comunidade.',
+    },
+  ];
+
   return (
     <section
       data-testid="transparency-panel"
-      aria-label="Painel Público de Transparência e Custos de Servidor"
+      aria-label="Painel de Transparência e Sustentação Comunitária"
       className={className}
       style={{
-        backgroundColor: '#131822',
+        backgroundColor: '#0a0f1d',
         borderRadius: '16px',
-        padding: '20px',
         border: '1px solid #1e293b',
+        padding: '20px',
+        boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.5)',
         color: '#f8fafc',
-        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4)',
         marginTop: '20px',
         ...style,
       }}
@@ -126,9 +152,7 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '20px' }} role="img" aria-label="Sustentabilidade">
-              🌱
-            </span>
+            <ShieldCheck size={20} style={{ color: '#34d399' }} />
             <h3
               style={{
                 fontSize: '16px',
@@ -138,7 +162,7 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
                 letterSpacing: '-0.01em',
               }}
             >
-              Transparência de Custos do Servidor
+              Vitalidade e Sustentação da Operação
             </h3>
           </div>
           <p
@@ -146,9 +170,11 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
               fontSize: '12px',
               color: '#94a3b8',
               margin: '4px 0 0 0',
+              lineHeight: 1.4,
             }}
           >
-            A plataforma opera com taxa 0% e sustentabilidade por microdoações PIX voluntárias.
+            O deLIVREry não cobra comissões nem vende seus dados. A operação, o suporte humanizado e o
+            esforço da equipe são mantidos pelo compromisso de quem acredita na logística livre.
           </p>
         </div>
 
@@ -169,7 +195,7 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
         </span>
       </div>
 
-      {/* 2. Banner Comemorativo de Vitória Coletiva (Quando meta >= 100%) */}
+      {/* 2. Banner Comemorativo de Vitória Coletiva (Quando fôlego >= 100%) */}
       {isGoalReached && (
         <div
           data-testid="collective-victory-banner"
@@ -201,7 +227,7 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
               flexShrink: 0,
             }}
           >
-            🏆
+            <Trophy size={22} style={{ color: '#0f172a' }} />
           </div>
           <div>
             <h4
@@ -212,7 +238,7 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
                 color: '#6ee7b7',
               }}
             >
-              🎉 Vitória Coletiva! Meta Mensal Atingida!
+              Vitória Coletiva! Operação 100% Sustentada!
             </h4>
             <p
               style={{
@@ -222,14 +248,14 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
                 lineHeight: 1.4,
               }}
             >
-              Graças aos microapoiadores, 100% dos servidores deste mês já estão pagos! Nossa infraestrutura
-              descentralizada segue livre e perene para todos.
+              Graças ao apoio da comunidade, toda a infraestrutura, suporte dedicado e desenvolvimento
+              deste mês estão plenamente assegurados. A logística livre segue forte e independente!
             </p>
           </div>
         </div>
       )}
 
-      {/* 3. Termômetro / Barra de Progresso */}
+      {/* 3. Barra de Fôlego Operacional (Objetivo Visual sem Cifras em R$) */}
       <div style={{ marginBottom: '16px' }}>
         <div
           style={{
@@ -240,7 +266,7 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
           }}
         >
           <span style={{ fontSize: '13px', color: '#cbd5e1', fontWeight: 600 }}>
-            Arrecadação Comunitária do Mês:
+            Fôlego Operacional da Comunidade:
           </span>
           <span
             data-testid="transparency-percentage"
@@ -254,7 +280,7 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
           </span>
         </div>
 
-        {/* Barra Termômetro */}
+        {/* Barra Visual */}
         <div
           style={{
             width: '100%',
@@ -278,7 +304,7 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
           />
         </div>
 
-        {/* Valores Arrecadado vs Meta */}
+        {/* Indicadores de Objetivo Qualitativo */}
         <div
           style={{
             display: 'flex',
@@ -288,29 +314,36 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
             fontSize: '12px',
           }}
         >
-          <span data-testid="transparency-collected-amount" style={{ color: '#f8fafc', fontWeight: 700 }}>
-            R$ {totalEstimatedAmount.toFixed(2).replace('.', ',')} arrecadados
+          <span
+            data-testid="transparency-collected-amount"
+            style={{
+              color: isGoalReached ? '#34d399' : '#38bdf8',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            ● Status: {healthStatusLabel}
           </span>
           <span data-testid="transparency-target-cost" style={{ color: '#94a3b8' }}>
-            Meta: R$ {totalMonthlyTarget.toFixed(2).replace('.', ',')} / mês
+            Meta: 100% Autonomia Operacional
           </span>
         </div>
 
-        {!isGoalReached && remainingAmount > 0 && (
-          <p
-            style={{
-              fontSize: '12px',
-              color: '#38bdf8',
-              margin: '6px 0 0 0',
-              fontWeight: 500,
-            }}
-          >
-            Faltam apenas <strong>R$ {remainingAmount.toFixed(2).replace('.', ',')}</strong> para garantir 100% dos servidores deste mês.
-          </p>
-        )}
+        <p
+          style={{
+            fontSize: '12px',
+            color: '#94a3b8',
+            margin: '6px 0 0 0',
+            lineHeight: 1.4,
+          }}
+        >
+          {healthDescription}
+        </p>
       </div>
 
-      {/* 4. Métricas Rápidas de Apoio */}
+      {/* 4. Métricas de Participação Comunitária */}
       <div
         style={{
           display: 'grid',
@@ -327,12 +360,13 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
             border: '1px solid #1e293b',
           }}
         >
-          <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block' }}>Apoiadores Únicos</span>
+          <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block' }}>Apoiadores Ativos</span>
           <span
             data-testid="transparency-donors-count"
-            style={{ fontSize: '15px', fontWeight: 700, color: '#f8fafc' }}
+            style={{ fontSize: '15px', fontWeight: 700, color: '#f8fafc', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
           >
-            👥 {uniqueDonorsCount} {uniqueDonorsCount === 1 ? 'membro' : 'membros'}
+            <Users size={15} style={{ color: 'var(--neon-emerald)' }} />
+            <span>{uniqueDonorsCount} {uniqueDonorsCount === 1 ? 'membro' : 'membros'}</span>
           </span>
         </div>
 
@@ -347,14 +381,15 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
           <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block' }}>Apoios via PIX</span>
           <span
             data-testid="transparency-intents-count"
-            style={{ fontSize: '15px', fontWeight: 700, color: '#f8fafc' }}
+            style={{ fontSize: '15px', fontWeight: 700, color: '#f8fafc', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
           >
-            📋 {totalIntents} {totalIntents === 1 ? 'registro' : 'registros'}
+            <ClipboardCheck size={15} style={{ color: 'var(--highvis-yellow)' }} />
+            <span>{totalIntents} {totalIntents === 1 ? 'registro' : 'registros'}</span>
           </span>
         </div>
       </div>
 
-      {/* 5. Detalhamento Expansível de Custos Operacionais (NFR-8 / Transparência Radical) */}
+      {/* 5. Pilares da Operação Mantida pela Comunidade */}
       <div style={{ marginBottom: '16px' }}>
         <button
           type="button"
@@ -376,9 +411,10 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
             textAlign: 'left',
           }}
         >
-          <span>{isBreakdownExpanded ? '▼ Ocultar custos reais' : '▶ Ver custos reais de infraestrutura'}</span>
+          {isBreakdownExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          <span>{isBreakdownExpanded ? 'Ocultar pilares da operação' : 'Ver o que sua contribuição mantém'}</span>
           <span style={{ fontSize: '11px', color: '#64748b' }}>
-            ({breakdownItems.length} itens transparentes)
+            ({operationalPillars.length} pilares ativos)
           </span>
         </button>
 
@@ -394,34 +430,19 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {breakdownItems.map((item) => (
+              {operationalPillars.map((item) => (
                 <div
                   key={item.id}
                   style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
                     borderBottom: '1px solid #1e293b',
                     paddingBottom: '8px',
                   }}
                 >
-                  <div style={{ paddingRight: '12px' }}>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#f8fafc' }}>
-                      {item.name}
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-                      {item.description}
-                    </div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#f8fafc' }}>
+                    {item.name}
                   </div>
-                  <div
-                    style={{
-                      fontSize: '13px',
-                      fontWeight: 700,
-                      color: '#38bdf8',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    R$ {item.monthlyCostBrl.toFixed(2).replace('.', ',')}
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px', lineHeight: 1.3 }}>
+                    {item.description}
                   </div>
                 </div>
               ))}
@@ -435,7 +456,7 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
                 fontStyle: 'italic',
               }}
             >
-              * Utilizamos infraestrutura serverless frugal (Postgres Supabase, Web Push FCM e Edge CDN). Sem taxas ocultas.
+              * Modelo Digital Commons: mantido por doação pura, sem intermediários financeiros, sem anúncios e sem rastreamento invasivo.
             </p>
           </div>
         )}
@@ -465,10 +486,8 @@ export const TransparencyPanel: React.FC<TransparencyPanelProps> = ({
           transition: 'transform 0.15s ease, background-color 0.2s ease',
         }}
       >
-        <span role="img" aria-label="Coração verde">
-          💚
-        </span>
-        <span>Apoiar Manutenção do Servidor com PIX</span>
+        <Heart size={16} fill="currentColor" />
+        <span>Manter a Operação Livre com PIX</span>
       </button>
     </section>
   );

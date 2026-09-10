@@ -1,0 +1,25 @@
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pwaBolt512" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00F59B"/>
+      <stop offset="1" stop-color="#00B870"/>
+    </linearGradient>
+    <radialGradient id="pwaGlow512" cx="256" cy="256" r="240" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00F59B" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#06090E" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow512" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <!-- Fundo Sólido Obsidiana -->
+  <rect width="512" height="512" rx="116" fill="#06090E"/>
+  <rect width="512" height="512" rx="116" fill="url(#pwaGlow512)"/>
+  <rect x="4" y="4" width="504" height="504" rx="112" stroke="#1E293B" stroke-width="6"/>
+  <!-- Glifo Central Freedom Bolt -->
+  <g transform="translate(132, 76)" filter="url(#glow512)">
+    <path d="M130 12L38 184H140L106 348L236 158H134L172 12H130Z" fill="url(#pwaBolt512)"/>
+    <circle cx="226" cy="48" r="20" fill="#FFE600"/>
+  </g>
+</svg>

@@ -1,53 +1,51 @@
 ---
-title: 'Story 4.3: Concessão de Badge de Apoiador e Bonificação de XP'
-type: 'feature'
+title: 'Story 4.3: Mensuração de Valor Retido e Gratidão Fraterna (Revogação de Badges por Conformidade Fiscal e Isonomia)'
+type: 'architecture-pivot'
 created: '2026-09-08'
-status: 'done'
-baseline_commit: '2cc5352'
-review_loop_iteration: 0
+updated: '2026-09-09'
+status: 'renegotiated-and-aligned'
+renegotiation_reason: 'Decisão Humana e Party Mode: Blindagem contra risco fiscal (evitar caracterização de venda de serviço/ISS similar ao selo pago do Instagram) e preservação da isonomia radical entre trabalhadores.'
 context:
   - '{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md'
 ---
 
-<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
+<frozen-after-approval reason="human-owned intent — renegotiated on 2026-09-09 by user direction">
+
+## Architectural Decision Record (ADR-4.3: Desacoplamento Fiscal e Revogação de Badges)
+
+- **Contexto:** A especificação original previa concessão de badge de *Apoiador da Comunidade* e $+25\text{ XP}$ no perfil do usuário após apoio via PIX.
+- **Risco Identificado:** No Direito Tributário brasileiro, a existência de uma contraprestação estética exclusiva no perfil (similar ao selo pago do Instagram / Meta Verified) pode ser utilizada por auditores fiscais para desqualificar a natureza jurídica de doação pura (Art. 538 do Código Civil), reclassificando-a como venda de serviço digital ou ativo intangível, com exigência de abertura de empresa comercial (SaaS), emissão de NF-e e incidência de ISS. Além disso, cria disparidade e castas visuais entre entregadores no trânsito e nas vagas.
+- **Decisão:** Revogar e expurgar a concessão de badges e pontuação de XP vinculadas ao PIX. O deLIVREry permanece um bem comum aberto (*Digital Commons*), com doações 100% anônimas e desvinculadas de qualquer contrapartida digital.
 
 ## Intent
 
-**Problem:** A sustentabilidade de uma infraestrutura descentralizada gratuita depende de doações voluntárias recorrentes da comunidade. No entanto, a contribuição precisa ser socialmente reconhecida e celebrada sem gerar privilégios predatórios na fila de entregas. O usuário que apoia financeiramente o projeto deve ter sua atitude valorizada através de pontos de experiência (+25 XP) e uma badge comemorativa de *Apoiador da Comunidade* em seu perfil e nos cards de interação (vagas, lances e dashboard).
+**Problem:** Para que a sustentabilidade da plataforma seja autêntica e livre de atritos fiscais ou divisões comunitárias, os usuários precisam compreender o valor tangível gerado pelo ecossistema em suas vidas (dinheiro economizado em taxas abusivas) sem que o aplicativo ofereça contrapartidas individuais ou crie privilégios visuais.
 
 **Approach:** 
-1. Criar a migration SQL que adiciona as colunas `community_supporter`, `supporter_since`, `last_donation_at` e `monthly_donations_count` em `public.courier_profiles` e `public.store_profiles`.
-2. Implementar função trigger no PostgreSQL (`process_donation_supporter_reward`) que detecta o primeiro apoio voluntário registrado por um usuário autenticado no mês corrente em `public.donations_log`, concedendo $+25\text{ XP}$ e ativando a badge de apoiador.
-3. Expor na camada de aplicação e domínio (`DonationService`) os métodos para bonificação de XP, verificação de elegibilidade do mês corrente e ativação da badge.
-4. Exibir o selo visual de *Apoiador da Comunidade* (`[ 💚 Apoiador da Comunidade ]`) no cabeçalho do `App.tsx`, nos cards de vagas (`JobCard.tsx`), nas propostas do lojista (`StoreJobManagementCard.tsx`) e no toast comemorativo do `DonationBottomSheet.tsx`.
+1. Eliminar a dependência de colunas de apoiador (`community_supporter`) ou gatilhos de pontuação de XP por doação no banco de dados.
+2. Apresentar no momento de confirmação de cópia do PIX um cálculo estimado de **Valor Retido no Bolso**: *"Neste período, você realizou suas operações sem pagar comissões predatórias. Sua economia estimada: ~R$ X."*
+3. Exibir uma mensagem calorosa e fraterna de gratidão coletiva: *"Essa ferramenta existe e evolui porque você e a comunidade escolheram a independência. Tamo junto!"*.
+4. Garantir que os cards de vagas (`JobCard.tsx`), propostas (`StoreJobManagementCard.tsx`) e cabeçalho mantenham tratamento absolutamente isonômico para todos os trabalhadores e lojistas.
 
 ## Boundaries & Constraints
 
-- **Não-Predatório (Regra de Neutralidade de Mercado):** A badge de apoiador confere prestígio social e pontuação de gamificação (+25 XP), mas **não altera** as regras de matching operacional nem os algoritmos de cálculo de preços (FR-7, FR-8).
-- **Limite Mensal de XP:** A bonificação de $+25\text{ XP}$ é concedida **exclusivamente na primeira doação do usuário no mês corrente**. Doações subsequentes no mesmo mês mantêm a badge ativa e atualizam `last_donation_at` e a contagem mensal, sem concessão cumulativa abusiva de XP para prevenir farming de níveis.
-- **Isolamento e Segurança (RLS - NFR-5):** Atualizações de pontuação e status de apoiador devem ser protegidas no banco de dados via trigger/função `SECURITY DEFINER` para impedir manipulação indevida de XP pelo cliente.
-- **Ergonomia e Acessibilidade (NFR-9):** O selo visual deve possuir alto contraste, ícone legível e ser touch-friendly.
+- **Isonomia Radical:** Nenhum usuário recebe destaque prioritário, cor diferenciada de avatar ou selo por ter contribuído financeiramente. Todos competem e operam sob as mesmas regras.
+- **Zero Estado no Banco de Dados (Zero-State Privacy):** A confirmação pós-cópia opera no cliente e/ou dados agregados anônimos, sem necessidade de conciliação bancária ou armazenamento de histórico financeiro nominal.
+- **Sem Shaming / Sem Barreira:** O cálculo de valor retido tem caráter puramente comemorativo e reflexivo, nunca de cobrança disfarçada ou coação psicológica.
 
 ## Acceptance Criteria
 
-1. **Migration SQL DDL e Triggers:**
-   - Adicionar colunas `community_supporter BOOLEAN NOT NULL DEFAULT false`, `supporter_since TIMESTAMPTZ`, `last_donation_at TIMESTAMPTZ`, e `monthly_donations_count INTEGER NOT NULL DEFAULT 0` em `public.courier_profiles` e `public.store_profiles`.
-   - Implementar trigger `trg_donation_supporter_reward` após inserção em `public.donations_log` para processar a bonificação e status do usuário autenticado.
-   - Conceder $+25\text{ XP}$ e recalcular nível (Bronze $\to$ Prata $\to$ Ouro) na primeira doação do mês (`COUNT = 1` no mês).
+1. **Remoção de Vínculo de Badges/XP a Pagamentos:**
+   - O sistema NÃO concede pontuação de XP nem altera níveis de perfil em decorrência de eventos de cópia ou doação PIX.
+   - Nenhum selo comemorativo ou badge de apoiador é injetado nos cards de vagas ou cabeçalho do app.
 
-2. **Camada de Serviço e Domínio (`DonationService`):**
-   - Método `processDonationReward(userId, suggestedAmount, triggerMoment)` retornando `{ xpAwarded: 25 | 0, isFirstOfMonth: boolean, newLevel: string, communitySupporter: true }`.
-   - Método `isUserFirstDonationOfMonth(userId, date?)` para checagem rápida de elegibilidade.
+2. **Mensagem de Gratidão Fraterna Pós-Cópia:**
+   - Ao copiar a chave PIX, o toast/modal exibe feedback de camaradagem: *"Chave PIX copiada! Obrigado por manter a logística livre e nas mãos de quem trabalha."*
 
-3. **Integração no Bottom Sheet e Toast:**
-   - Ao copiar o PIX autenticado pela 1ª vez no mês, o `DonationBottomSheet` exibe toast de vitória: *"🎉 +25 XP e Selo de Apoiador da Comunidade Ativado!"*.
+3. **Exibição Educativa de Valor Retido:**
+   - Na visualização pós-turno ou resumo operacional, o app apresenta discretamente o volume de comissões economizadas em comparação às plataformas convencionais de intermediação.
 
-4. **Selo Visual de Apoiador nos Componentes do PWA:**
-   - Header do `App.tsx`: Selo `[ 💚 Apoiador da Comunidade ]` ao lado do nome do usuário.
-   - `JobCard.tsx`: Selo `[ 💚 Apoiador ]` ao lado do nome do lojista que publicou o turno.
-   - `StoreJobManagementCard.tsx`: Selo `[ 💚 Apoiador ]` nos cards de entregadores que enviaram propostas.
-
-5. **Suíte de Testes Automatizados:**
-   - Testes unitários e de integração validando a concessão de +25 XP no 1º apoio do mês, rejeição de XP duplicado no mesmo mês, recálculo de nível e exibição visual do selo.
+4. **Preservação dos Testes de Isonomia:**
+   - Suíte de testes validando que os cards de proposta e listagens tratam todos os perfis com padrão visual unificado.
 
 </frozen-after-approval>

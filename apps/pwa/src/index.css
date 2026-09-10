@@ -57,12 +57,12 @@ body {
   align-items: center;
 }
 
-/* CONTAINER RESPONSIVO COM MIN-WIDTH: 0 */
+/* CONTAINER RESPONSIVO COM MIN-WIDTH: 0 (320px-first) */
 .app-container {
   width: 100%;
   max-width: 1040px;
   min-width: 0;
-  padding: 16px 14px 84px 14px;
+  padding: 10px 10px calc(84px + env(safe-area-inset-bottom, 20px)) 10px;
   display: flex;
   flex-direction: column;
 }
@@ -181,3 +181,95 @@ body {
   border-color: var(--border-focus);
   box-shadow: 0 0 0 3px var(--neon-emerald-glow);
 }
+
+/* CABEÇALHO TÁTICO E RESPONSIVO (320px-first) */
+.tactical-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  .tactical-header {
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    gap: 12px;
+  }
+}
+
+/* HUD DE PERFIL COMPACTO (MOBILE-FIRST) */
+.profile-hud-card {
+  margin-bottom: 12px !important;
+}
+
+.profile-hud-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.profile-hud-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.profile-hud-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile-hud-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-hud-badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.profile-hud-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+@media (min-width: 900px) {
+  .profile-hud-card {
+    margin-bottom: 18px !important;
+  }
+  .profile-hud-container {
+    gap: 16px;
+  }
+  .profile-hud-left {
+    gap: 16px;
+  }
+  .profile-hud-title {
+    font-size: 19px;
+  }
+  .profile-hud-actions {
+    gap: 8px;
+  }
+}
+

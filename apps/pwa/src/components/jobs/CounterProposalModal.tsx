@@ -8,6 +8,7 @@ import React, { useState } from 'react';
 import type { JobPost, JobBid } from '../../jobs/types.ts';
 import { submitBid } from '../../jobs/job-service.ts';
 import { Button, Card, triggerHaptic } from '../ui/index.ts';
+import { Handshake, X, AlertTriangle } from 'lucide-react';
 
 interface CounterProposalModalProps {
   isOpen: boolean;
@@ -116,8 +117,9 @@ export const CounterProposalModal: React.FC<CounterProposalModalProps> = ({
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#ffffff' }}>
-            🤝 Propor Outro Valor
+          <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Handshake size={20} style={{ color: 'var(--neon-emerald)' }} />
+            <span>Propor Outro Valor</span>
           </h2>
           <button
             type="button"
@@ -126,7 +128,6 @@ export const CounterProposalModal: React.FC<CounterProposalModalProps> = ({
               background: 'none',
               border: 'none',
               color: 'var(--text-secondary)',
-              fontSize: '20px',
               cursor: 'pointer',
               minWidth: '44px',
               minHeight: '44px',
@@ -135,7 +136,7 @@ export const CounterProposalModal: React.FC<CounterProposalModalProps> = ({
               justifyContent: 'center'
             }}
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
 
@@ -155,10 +156,14 @@ export const CounterProposalModal: React.FC<CounterProposalModalProps> = ({
               padding: '10px 12px',
               borderRadius: 'var(--radius-md)',
               fontSize: '12px',
-              marginBottom: '14px'
+              marginBottom: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
             }}
           >
-            ⚠️ {errorMessage}
+            <AlertTriangle size={14} style={{ color: '#f59e0b', flexShrink: 0 }} />
+            <span>{errorMessage}</span>
           </div>
         )}
 

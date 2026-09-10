@@ -534,14 +534,13 @@ describe('E2E Integrated Journey: Ciclo Completo de Ponta a Ponta (Happy Path)',
 
     assert.strictEqual(donationResult.success, true);
     assert.ok(donationResult.reward, 'Deve retornar recompensa calculada');
-    assert.strictEqual(donationResult.reward.isFirstOfMonth, true);
-    assert.strictEqual(donationResult.reward.communitySupporter, true);
-    assert.strictEqual(donationResult.reward.xpAwarded, 25, 'Deve conceder +25 XP no primeiro apoio do mês');
-    assert.strictEqual(donationResult.reward.totalXp, 245);
+    assert.strictEqual(donationResult.reward.communitySupporter, false, 'Sem badge individual para assegurar isonomia e blindagem fiscal');
+    assert.strictEqual(donationResult.reward.xpAwarded, 0, 'Não deve conceder XP por doação');
+    assert.strictEqual(donationResult.reward.totalXp, 220, 'XP deve permanecer inalterado');
 
     const supporterStatus = await DonationService.getUserSupporterStatus(courierUserId);
-    assert.strictEqual(supporterStatus.communitySupporter, true);
-    assert.strictEqual(supporterStatus.xpPoints, 245);
+    assert.strictEqual(supporterStatus.communitySupporter, false);
+    assert.strictEqual(supporterStatus.xpPoints, 220);
 
     // 4.4 Painel de Transparência reflete o apoio coletivo
     const transparencyReport = await DonationService.getTransparencyReport();

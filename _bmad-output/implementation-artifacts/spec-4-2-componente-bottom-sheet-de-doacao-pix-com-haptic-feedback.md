@@ -1,58 +1,51 @@
 ---
-title: 'Story 4.2: Componente Bottom Sheet de Doação PIX com Haptic Feedback nos 5 Delight Moments'
-type: 'feature'
+title: 'Story 4.2: Componente Bottom Sheet de Contribuição Operacional PIX com Haptic Feedback'
+type: 'feature-pivot'
 created: '2026-09-04'
-status: 'done'
-baseline_commit: 'd7dbc0b'
-review_loop_iteration: 0
+updated: '2026-09-09'
+status: 'renegotiated-and-aligned'
+renegotiation_reason: 'Decisão Humana e Party Mode: Não expor valores monetários fixos; narrativa de sustentação da operação e esforço da equipe em vez de caridade/servidor.'
 context:
   - '{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md'
 ---
 
-<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
+<frozen-after-approval reason="human-owned intent — renegotiated on 2026-09-09 by user direction">
 
 ## Intent
 
-**Problem:** Modais intrusivos, com contadores regressivos ou que bloqueiam a operação de trabalhadores de entrega e lojistas geram atrito e rejeição. Por outro lado, pedidos de apoio descontextualizados em páginas isoladas possuem conversão quase nula. Para garantir sustentabilidade comunitária sem intermediários, o sistema precisa acionar o pedido de contribuição voluntária de forma suave e afetuosa nos momentos exatos em que o usuário acabou de experimentar um alívio ou conquista operacional (*Delight Moments*), permitindo a cópia do código PIX em 1 toque com sensação tátil física.
+**Problem:** Modais intrusivos ou com apelos piegas de "caridade para pagar servidores" diminuem o respeito dos trabalhadores e lojistas pela ferramenta e desviam o foco da realidade: o deLIVREry é uma infraestrutura operacional profissional que exige dedicação, suporte humano e esforço de desenvolvimento para mantê-los livres de intermediários. Além disso, expor tabelas de valores pode soar comercial ou impor quantias. A solicitação deve ocorrer nos momentos em que o usuário experimenta a vitória da autonomia (*Delight Moments*), com narrativa convincente, sem caridade, sem expor cifras monetárias, e com cópia em 1 toque.
 
-**Approach:** Criar o componente `DonationBottomSheet.tsx` no PWA utilizando design touch-friendly com alvos $\ge 48\text{px}$, animação de subida (*slide-up*), mensagens contextuais de celebração adaptadas aos 5 momentos chave, seleção rápida de valores em chips (`[ R$ 2,00 ]`, `[ R$ 5,00 ]`, `[ R$ 10,00 ]`, `[ Outro ]`), botão de cópia do BR Code em 1 clique com vibração háptica (`navigator.vibrate([15, 50, 15])`), toast de confirmação e botão descompromissado `[ Agora Não ]`.
+**Approach:** Adaptar o componente `DonationBottomSheet.tsx` no PWA utilizando design touch-friendly com alvos $\ge 48\text{px}$, animação de subida (*slide-up*), mensagens contextuais de vitória da logística livre adaptadas aos 5 momentos chave, botão direto de cópia da Chave PIX em 1 clique com vibração háptica (`navigator.vibrate([15, 50, 15])`), toast comemorativo de valor retido e botão descompromissado `[ Agora Não ]`.
 
 ## Boundaries & Constraints
 
-- **Design Não-Bloqueante (Zero Dark Patterns):** É estritamente proibido incluir contadores regressivos de espera para fechar o modal, botões de recusa com texto culpabilizante ("shaming copy") ou desabilitar o botão `[ Agora Não ]`.
-- **Ergonomia e Acessibilidade Mobile (NFR-9):** Todos os elementos clicáveis (chips, botões de ação e fechar) devem possuir dimensões mínimas de $48 \times 48\text{px}$.
-- **Feedback Tátil Resiliente:** A chamada `navigator.vibrate([15, 50, 15])` deve possuir verificação defensiva de suporte para não quebrar em navegadores de desktop ou dispositivos iOS sem suporte à API de vibração.
-- **Integração de Domínio:** A ação de cópia deve acionar de forma assíncrona `DonationService.logDonationCopy({ userId, triggerMoment, suggestedAmount })`.
+- **Sem Caridade / Tom de Parceria e Independência:** A cópia deve deixar cristalino que a contribuição mantém a equipe, o suporte e a infraestrutura funcionando com qualidade, sem intermediários.
+- **Não Exposição de Valores:** A interface não expõe cifras obrigatórias nem tabela de preços em Reais; o usuário é livre para contribuir com o valor que achar justo diretamente no app de seu banco.
+- **Design Não-Bloqueante (Zero Dark Patterns):** É proibido qualquer contador regressivo, travamento de tela ou texto culpabilizante. O botão `[ Agora Não ]` fecha a tela imediatamente.
+- **Ergonomia e Acessibilidade Mobile (NFR-9):** Alvos clicáveis $\ge 48 \times 48\text{px}$.
+- **Feedback Tátil Resiliente:** Verificação defensiva de suporte a `navigator.vibrate`.
 
 ## Acceptance Criteria
 
 1. **Renderização e Mensagens Contextuais nos 5 Delight Moments:**
-   - O `DonationBottomSheet` deve renderizar título, ícone e mensagem personalizados para:
-     - `shift_completed`: "Turno Concluído com Sucesso! 🏍️💨"
-     - `level_up`: "Subiu de Nível na Comunidade! 🏆⭐"
-     - `emergency_matched`: "Vaga de Emergência Atendida a Tempo! ⏱️⚡"
+   - O `DonationBottomSheet` deve renderizar título, ícone e narrativa convincente de soberania e sustentação operacional:
+     - `shift_completed`: "Turno Concluído! 100% do Ganho Ficou com Você 🏍️💨" — destacando a ausência de comissões predatórias.
+     - `level_up`: "Subiu de Nível na Operação! 🏆⭐"
+     - `emergency_matched`: "Vaga de Emergência Salva sem Intermediários! ⏱️⚡"
      - `rating_5_stars`: "Avaliação 5 Estrelas Registrada! ⭐⭐⭐⭐⭐"
-     - `api_1000_requests`: "Marca de 1.000 Requisições Atingida! 🚀💻"
-     - `manual_donation`: "Apoie a Sustentabilidade do deLIVREry! 💚🤝"
-   - O modal deve possuir botão explícito `[ Agora Não ]` que o fecha imediatamente.
+     - `api_1000_requests`: "1.000 Requisições sem Taxas de API! 🚀💻"
+     - `manual_donation`: "Mantenha a Operação Livre e Independente! 💚🤝"
+   - Botão visível e amigável `[ Agora Não ]`.
 
-2. **Seleção de Valores Sugeridos:**
-   - Chips de valor pré-configurados: `R$ 2,00`, `R$ 5,00` (selecionado por padrão), `R$ 10,00` e opção para digitar `Outro Valor`.
-   - Ao alterar o chip, o valor no botão de cópia e o payload do PIX devem ser atualizados instantaneamente.
+2. **Cópia da Chave PIX em 1 Clique e Haptic Feedback:**
+   - Ao clicar em `[ 📋 Copiar Chave PIX ]`:
+     - O payload da Chave PIX Estática é copiado para o clipboard (`navigator.clipboard.writeText`);
+     - Vibração háptica física no dispositivo (`navigator.vibrate([15, 50, 15])`);
+     - Toast na tela: *"Chave PIX copiada! Valeu por manter a logística livre e nas mãos de quem trabalha."*;
+     - Ação registrada de forma anônima via `DonationService.logDonationCopy`.
 
-3. **Cópia do BR Code em 1 Clique e Haptic Feedback:**
-   - Ao clicar em `[ 📋 Copiar Código PIX ]`:
-     - O payload BR Code correspondente deve ser gravado na área de transferência (`navigator.clipboard.writeText`);
-     - O dispositivo deve emitir vibração háptica em padrão duplo (`navigator.vibrate([15, 50, 15])`);
-     - Um toast de feedback deve ser exibido na tela ("Código PIX copiado! Cole no seu app de banco.");
-     - A intenção de apoio deve ser registrada via `DonationService.logDonationCopy`.
-
-4. **Integração nos Fluxos Principais do PWA:**
-   - Disparo do modal no `JobRatingModal.tsx` quando uma nota 5 estrelas for atribuída.
-   - Disparo no `JobCard.tsx` / `App.tsx` quando um turno for marcado como concluído.
-   - Botão de acesso direto no cabeçalho ou rodapé para apoio voluntário espontâneo (`manual_donation`).
-
-5. **Suíte de Testes Automatizados:**
-   - Teste de dimensões $\ge 48\text{px}$, mensagens dos momentos disparadores, seleção de valores, vibração háptica, cópia e persistência do log.
+3. **Integração e Testes Automatizados:**
+   - Disparo contextual nos fluxos pós-turno e avaliação 5 estrelas.
+   - Suíte de testes validando ergonomia $\ge 48\text{px}$, ausência de bloqueios punitivos e integridade de cópia.
 
 </frozen-after-approval>

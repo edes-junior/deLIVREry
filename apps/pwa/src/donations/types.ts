@@ -72,6 +72,14 @@ export interface ServerCostBreakdown {
   items: ServerCostItem[];
 }
 
+export type OperationalHealthLevel = 'basic' | 'healthy' | 'accelerated';
+
+export interface OperationalHealthInfo {
+  level: OperationalHealthLevel;
+  statusLabel: string;
+  description: string;
+}
+
 export interface TransparencyReport {
   monthPeriod: string;
   totalEstimatedAmount: number;
@@ -83,5 +91,8 @@ export interface TransparencyReport {
   totalIntents: number;
   costBreakdown: ServerCostBreakdown;
   breakdownByMoment: Record<DonationTriggerMoment, number>;
+  healthLevel: OperationalHealthLevel;
+  healthStatusLabel: string;
+  healthDescription: string;
 }
 

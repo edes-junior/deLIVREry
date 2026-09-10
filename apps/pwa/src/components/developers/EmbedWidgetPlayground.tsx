@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../../../../../packages/embed-widget/src/delivrery-button.js';
+import { Code2, Settings, Radio, Copy, Check } from 'lucide-react';
 
 declare global {
   namespace JSX {
@@ -118,7 +119,7 @@ export const EmbedWidgetPlayground: React.FC = () => {
       {/* Header */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '24px' }}>🧩</span>
+          <Code2 size={24} style={{ color: '#60a5fa', flexShrink: 0 }} />
           <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#60a5fa' }}>
             Playground & Gerador do Web Component (<code style={{ fontFamily: 'monospace' }}>&lt;delivrery-button /&gt;</code>)
           </h2>
@@ -144,8 +145,8 @@ export const EmbedWidgetPlayground: React.FC = () => {
           flexDirection: 'column',
           gap: '16px'
         }}>
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#f8fafc', borderBottom: '1px solid #1e293b', paddingBottom: '10px' }}>
-            ⚙️ Atributos Declarativos
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#f8fafc', borderBottom: '1px solid #1e293b', paddingBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Settings size={18} /> Atributos Declarativos
           </h3>
 
           <div>
@@ -395,8 +396,8 @@ export const EmbedWidgetPlayground: React.FC = () => {
             flexDirection: 'column'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 700, color: '#38bdf8' }}>
-                📡 Monitor de Eventos DOM ({eventLogs.length})
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Radio size={16} /> Monitor de Eventos DOM ({eventLogs.length})
               </span>
               {eventLogs.length > 0 && (
                 <button
@@ -463,8 +464,8 @@ export const EmbedWidgetPlayground: React.FC = () => {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
           <div>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#f8fafc' }}>
-              📋 Código de Integração Pronto (Copy & Paste)
+            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Copy size={18} /> Código de Integração Pronto (Copy & Paste)
             </h3>
             <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>
               Cole diretamente no arquivo HTML do seu cardápio ou PDV.
@@ -489,7 +490,15 @@ export const EmbedWidgetPlayground: React.FC = () => {
               transition: 'background-color 0.2s ease'
             }}
           >
-            {copied ? '✅ Código Copiado!' : '📋 Copiar Snippet HTML'}
+            {copied ? (
+              <>
+                <Check size={18} /> Código Copiado!
+              </>
+            ) : (
+              <>
+                <Copy size={18} /> Copiar Snippet HTML
+              </>
+            )}
           </button>
         </div>
 

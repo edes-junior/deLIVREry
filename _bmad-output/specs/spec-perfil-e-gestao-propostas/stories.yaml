@@ -1,0 +1,49 @@
+- id: "1"
+  title: Edição Cadastral e Sincronização de Quórum Territorial
+  description: >-
+    Implementa a edição de dados cadastrais para entregadores e lojistas com imutabilidade de CPF e papel de conta (CAP-1).
+    Sincroniza de forma transacional os contadores de quórum em region_unlocks caso o bairro seja alterado no perfil (CAP-6).
+  spec_checkpoint: false
+  done_checkpoint: false
+  invoke_dev_with: >-
+    Garanta testes para a integridade imutável do CPF e verifique o trigger/função de sincronização atômica em region_unlocks.
+
+- id: "2"
+  title: Upload e Armazenamento de Foto de Perfil
+  description: >-
+    Cria o bucket avatars no Supabase Storage com políticas de RLS e adiciona a coluna avatar_url na tabela users (CAP-2).
+    Adiciona componente de seleção e compressão de foto no PWA refletindo o avatar atualizado no cabeçalho e perfil.
+  spec_checkpoint: false
+  done_checkpoint: false
+  invoke_dev_with: >-
+    Restrinja uploads aos formatos image/jpeg, image/png e image/webp com tamanho máximo de 5MB por arquivo.
+
+- id: "3"
+  title: Visualização de Avatares dos Entregadores pelo Lojista
+  description: >-
+    Exibe a foto de perfil e dados públicos do entregador nos cards de propostas recebidas pelo lojista e no turno aceito (CAP-3).
+    Mantém a política de privacidade AD-10 ocultando contatos privados até a confirmação do match.
+  spec_checkpoint: false
+  done_checkpoint: false
+  invoke_dev_with: >-
+    Exiba um avatar padrão elegante caso o entregador ainda não tenha configurado foto de perfil.
+
+- id: "4"
+  title: Controle de Disponibilidade Operacional do Entregador
+  description: >-
+    Adiciona a flag is_active na tabela courier_profiles com alternador visual de disponibilidade no painel do entregador (CAP-4).
+    Suprime o disparo de notificações push e alertas de novas vagas enquanto o status estiver em pausa.
+  spec_checkpoint: false
+  done_checkpoint: false
+  invoke_dev_with: >-
+    Integre a verificação da flag is_active diretamente no serviço de disparo de notificações web push de vagas.
+
+- id: "5"
+  title: Detecção de Colisão com Buffer de 30 min e Filtro Hiperlocal de Vagas
+  description: >-
+    Filtra as vagas públicas pelo bairro cadastrado do usuário e exclui vagas com conflito de horário com turnos aceitos (CAP-5, CAP-6).
+    Incorpora a tolerância de 30 minutos entre turnos consecutivos e bloqueia submissão de propostas conflitantes no backend.
+  spec_checkpoint: false
+  done_checkpoint: false
+  invoke_dev_with: >-
+    Implemente a verificação de overlap com tolerância de 30 minutos tanto na listagem de oportunidades quanto como barreira de segurança em createJobBid.

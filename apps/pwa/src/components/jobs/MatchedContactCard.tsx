@@ -8,6 +8,8 @@ import React, { useState } from 'react';
 import type { MatchedJobContact, JobPost } from '../../jobs/types.ts';
 import { completeJob, cancelJobWithPenaltyCheck } from '../../jobs/job-service.ts';
 import { DonationBottomSheet } from '../donations/DonationBottomSheet.tsx';
+import { Avatar } from '../ui/Avatar.tsx';
+import { Bike, Store, Star, Phone, MessageCircle, AlertTriangle, Flag, Car, Zap } from 'lucide-react';
 
 interface MatchedContactCardProps {
   contact: MatchedJobContact;
@@ -32,7 +34,7 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
   // O parceiro do lojista é o entregador; o parceiro do entregador é o lojista
   const partnerName = isStore ? contact.courier_name : contact.store_contact_name || contact.store_name;
   const partnerPhone = isStore ? contact.courier_phone_number : contact.store_phone_number;
-  const partnerRole = isStore ? '🛵 Entregador Confirmado' : '🏪 Estabelecimento Comercial';
+  const partnerRole = isStore ? 'Entregador Confirmado' : 'Estabelecimento Comercial';
 
   // Higieniza número para os links de WhatsApp e discagem
   const cleanPhone = partnerPhone ? partnerPhone.replace(/\D/g, '') : '';
@@ -61,7 +63,7 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
       if (!res.success || !res.job) {
         setErrorMessage(res.error || 'Erro ao concluir o turno.');
       } else {
-        setStatusMessage('🎉 Turno concluído com sucesso! XP de gamificação creditado.');
+        setStatusMessage('Turno concluído com sucesso! XP de gamificação creditado.');
         setIsDonationOpen(true);
         if (onJobUpdated) onJobUpdated(res.job);
         if (onOpenRatingModal) onOpenRatingModal(contact);
@@ -111,13 +113,63 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
         color: '#f8fafc'
       }}
     >
-      <div style={{ marginBottom: '16px' }}>
-        <h4 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 700 }}>
-          {partnerName}
-        </h4>
-        <p style={{ margin: 0, fontSize: '14px', color: '#38bdf8', fontWeight: 600 }}>
-          📞 {formattedPhone}
-        </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
+        <Avatar
+          src={isStore ? contact.courier_avatar_url : contact.store_avatar_url}
+          name={partnerName}
+          userType={isStore ? 'courier' : 'store'}
+          size="md"
+        />
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <h4 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>
+              {partnerName}
+            </h4>
+            {isStore && contact.courier_modal && (
+              <span
+                style={{
+                  fontSize: '11px',
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                  backgroundColor: '#1e293b',
+                  color: '#38bdf8',
+                  fontWeight: 600
+                }}
+              >
+                {contact.courier_modal === 'motorcycle' ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Bike size={12} /> Moto</span>
+                ) : contact.courier_modal === 'bicycle' ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Bike size={12} /> Bike</span>
+                ) : contact.courier_modal === 'e-bike' ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Zap size={12} /> E-Bike</span>
+                ) : (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Car size={12} /> Carro</span>
+                )}
+              </span>
+            )}
+            {isStore && contact.courier_level && (
+              <span
+                style={{
+                  fontSize: '11px',
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                  backgroundColor: 'rgba(255, 230, 0, 0.1)',
+                  color: '#ffe600',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <Star size={11} fill="currentColor" /> {contact.courier_level} ({contact.courier_xp ?? 0} XP)
+              </span>
+            )}
+          </div>
+          <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#38bdf8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Phone size={13} />
+            <span>{formattedPhone}</span>
+          </p>
+        </div>
       </div>
 
       {/* Botões de Ação de Comunicação Direta (Zero Intermediação / AD-2, AD-10) */}
@@ -149,7 +201,8 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
             boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)'
           }}
         >
-          💬 Chamar WhatsApp
+          <MessageCircle size={16} />
+          <span>Chamar WhatsApp</span>
         </a>
 
         <a
@@ -170,7 +223,8 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
             boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)'
           }}
         >
-          📞 Ligar Agora
+          <Phone size={16} />
+          <span>Ligar Agora</span>
         </a>
       </div>
 
@@ -200,10 +254,14 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
             padding: '10px 12px',
             fontSize: '13px',
             color: '#fca5a5',
-            marginBottom: '12px'
+            marginBottom: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
           }}
         >
-          ⚠️ {errorMessage}
+          <AlertTriangle size={14} style={{ color: '#ef4444', flexShrink: 0 }} />
+          <span>{errorMessage}</span>
         </div>
       )}
 
@@ -229,7 +287,8 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
             gap: '6px'
           }}
         >
-          🏁 Concluir Turno (+XP)
+          <Flag size={16} />
+          <span>Concluir Turno (+XP)</span>
         </button>
 
         {onOpenRatingModal && (

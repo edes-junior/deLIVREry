@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { sendMagicLink, validateEmail } from '../../auth/auth-service.ts';
 import { Button, Card } from '../ui/index.ts';
+import { CheckCircle2 } from 'lucide-react';
 
 interface MagicLinkFormProps {
   onSuccess?: (email: string) => void;
@@ -50,7 +51,9 @@ export const MagicLinkForm: React.FC<MagicLinkFormProps> = ({
   return (
     <Card className="delivrery-auth-card" style={{ maxWidth: '420px', margin: '0 auto', padding: '28px 20px' }}>
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <div style={{ fontSize: '28px', marginBottom: '8px' }}>⚡</div>
+        <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--neon-emerald)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
+          Acesso Instantâneo
+        </div>
         <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#ffffff', margin: 0, letterSpacing: '-0.02em' }}>
           Entrar sem senha
         </h2>
@@ -71,7 +74,9 @@ export const MagicLinkForm: React.FC<MagicLinkFormProps> = ({
           }}
           role="alert"
         >
-          <div style={{ fontWeight: 800, fontSize: '15px' }}>✓ Link enviado com sucesso!</div>
+          <div style={{ fontWeight: 800, fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <CheckCircle2 size={18} /> Link enviado com sucesso!
+          </div>
           <p style={{ margin: '8px 0 14px 0', fontSize: '13px', color: 'var(--text-primary)' }}>{successMessage}</p>
           <Button
             variant="ghost"

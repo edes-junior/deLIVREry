@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>deLIVREry — Propostas de Logo SVG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #06090E;
+      --bg-surface: #0D121C;
+      --bg-surface-raised: #141B29;
+      --border-subtle: #1E293B;
+      --border-focus: #00F59B;
+      --neon-emerald: #00F59B;
+      --neon-emerald-glow: rgba(0, 245, 155, 0.25);
+      --highvis-yellow: #FFE600;
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, sans-serif;
+      line-height: 1.5;
+      padding: 32px 20px 80px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1060px;
+      margin: 0 auto;
+    }
+
+    header.preview-header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .badge-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 245, 155, 0.1);
+      border: 1px solid rgba(0, 245, 155, 0.3);
+      color: var(--neon-emerald);
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      color: var(--text-secondary);
+      font-size: 14px;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* Grid de Opções */
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 20px;
+      margin-bottom: 48px;
+    }
+
+    @media (min-width: 900px) {
+      .options-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .option-card {
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .option-card:hover {
+      border-color: var(--neon-emerald);
+      box-shadow: 0 8px 30px rgba(0, 245, 155, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .card-badge {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--bg-surface-raised);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+    }
+
+    .logo-canvas {
+      background: #04060A;
+      border: 1px solid #141D2D;
+      border-radius: var(--radius-md);
+      min-height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 12px;
+      margin-bottom: 20px;
+      background-image: 
+        radial-gradient(rgba(0, 245, 155, 0.05) 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+
+    .logo-canvas svg {
+      width: 100%;
+      max-width: 220px;
+      height: auto;
+      max-height: 48px;
+    }
+
+    .option-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .option-description {
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 16px;
+      flex-grow: 1;
+    }
+
+    .option-meta {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .meta-tag {
+      color: var(--neon-emerald);
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Seção de Simulação em Contexto Real */
+    .context-preview-section {
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 32px 24px;
+      margin-top: 40px;
+    }
+
+    .context-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .context-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: var(--bg-surface-raised);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 8px 18px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-height: 42px;
+    }
+
+    .tab-btn.active, .tab-btn:hover {
+      background: rgba(0, 245, 155, 0.15);
+      border-color: var(--neon-emerald);
+      color: var(--neon-emerald);
+    }
+
+    /* Mockup da Tela de Login */
+    .mockup-wrapper {
+      max-width: 440px;
+      margin: 0 auto;
+      background: #0A0F1D;
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 32px 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      text-align: center;
+    }
+
+    .mockup-logo-slot {
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 64px;
+    }
+
+    .mockup-card {
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px 18px;
+      text-align: left;
+    }
+
+    .mockup-input {
+      width: 100%;
+      background: #06090E;
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      color: #94A3B8;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    .mockup-btn {
+      width: 100%;
+      background: var(--neon-emerald);
+      color: #032314;
+      font-weight: 900;
+      font-size: 14px;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      text-align: center;
+      box-shadow: 0 4px 16px var(--neon-emerald-glow);
+    }
+
+    /* Simulação de Header */
+    .mockup-header-preview {
+      background: #0A0F1D;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header class="preview-header">
+      <div class="badge-tag">🎨 BMad UX Designer • Sally</div>
+      <h1>Estúdio de Logos SVG — deLIVREry</h1>
+      <p class="subtitle">
+        Conceitos vetoriais desenvolvidos para ancorar a identidade de logística livre e descentralizada, com foco em alto contraste, leveza vetorial e legibilidade em qualquer tamanho.
+      </p>
+    </header>
+
+    <!-- Grid com os 4 conceitos -->
+    <div class="options-grid">
+
+      <!-- OPÇÃO 1A: Horizontal Centrado -->
+      <div class="option-card" onclick="selectConcept('1')">
+        <span class="card-badge">Opção 1A</span>
+        <div class="logo-canvas">
+          <!-- SVG OPÇÃO 1: Freedom Bolt Horizontal Centrado -->
+          <svg viewBox="4 2 182 45" width="196" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="boltGrad" x1="0" y1="0" x2="28" y2="44" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00F59B" />
+                <stop offset="1" stop-color="#00B870" />
+              </linearGradient>
+              <filter id="glow1" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+            <!-- Ícone Raio da Liberdade -->
+            <g transform="translate(4, 2)" filter="url(#glow1)">
+              <path d="M16 2L3 24H16L12 44L29 19H16L21 2H16Z" fill="url(#boltGrad)" />
+              <circle cx="27" cy="6" r="2.5" fill="#FFE600" />
+            </g>
+            <!-- Tipografia contínua sem espaços extras -->
+            <text x="40" y="32" font-family="'Inter', sans-serif" font-weight="900" font-size="28" letter-spacing="-0.03em">
+              <tspan fill="#94A3B8" font-weight="700">de</tspan><tspan fill="#00F59B">LIVRE</tspan><tspan fill="#F8FAFC">ry</tspan>
+            </text>
+            <text x="40" y="45" font-family="'Inter', sans-serif" font-weight="800" font-size="7.5" fill="#64748B" textLength="140.5" lengthAdjust="spacing">LOGÍSTICA P2P • SEM TAXAS</text>
+          </svg>
+        </div>
+        <h3 class="option-title">⚡ 1A. Freedom Bolt (Horizontal)</h3>
+        <p class="option-description">
+          Versão horizontal com <strong>bounding-box óptico ajustado</strong>. O raio e a tipografia estão perfeitamente balanceados no centro geométrico do card.
+        </p>
+        <div class="option-meta">
+          <span class="meta-tag">✓ Centralizado ao Pixel</span>
+          <span style="color: var(--text-muted)">Compacto</span>
+        </div>
+      </div>
+
+      <!-- OPÇÃO 1B: Vertical Emblema -->
+      <div class="option-card" onclick="selectConcept('1-vertical')">
+        <span class="card-badge" style="background: rgba(0, 245, 155, 0.15); color: #00F59B; border-color: rgba(0, 245, 155, 0.4);">Destaque Hero</span>
+        <div class="logo-canvas">
+          <!-- SVG OPÇÃO 1B: Emblema Vertical -->
+          <svg viewBox="0 0 200 80" width="180" height="74" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="boltGradStackCard" x1="86" y1="0" x2="114" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00F59B" />
+                <stop offset="1" stop-color="#00B870" />
+              </linearGradient>
+              <filter id="glowStackCard" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+            <g transform="translate(86, 0)" filter="url(#glowStackCard)">
+              <path d="M15 2L3 22H15L11 40L27 17H15L20 2H15Z" fill="url(#boltGradStackCard)" />
+              <circle cx="26" cy="6" r="2.5" fill="#FFE600" />
+            </g>
+            <text x="100" y="58" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="26" letter-spacing="-0.03em">
+              <tspan fill="#94A3B8" font-weight="700">de</tspan><tspan fill="#00F59B">LIVRE</tspan><tspan fill="#F8FAFC">ry</tspan>
+            </text>
+            <text x="100" y="73" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="800" font-size="7.2" fill="#64748B" textLength="130.2" lengthAdjust="spacing">LOGÍSTICA P2P • SEM TAXAS</text>
+          </svg>
+        </div>
+        <h3 class="option-title">⚡ 1B. Freedom Bolt (Emblema)</h3>
+        <p class="option-description">
+          Versão empilhada (stacked) com simetria axial perfeita. O raio ganha protagonismo no topo e ancora o card de login com autoridade visual imediata.
+        </p>
+        <div class="option-meta">
+          <span class="meta-tag">✓ Perfeito para o Hero</span>
+          <span style="color: var(--neon-emerald)">100% Simétrico</span>
+        </div>
+      </div>
+
+      <!-- OPÇÃO 2 -->
+      <div class="option-card" onclick="selectConcept(2)">
+        <span class="card-badge">Opção 2</span>
+        <div class="logo-canvas">
+          <!-- SVG OPÇÃO 2: Tactical Waypoint -->
+          <svg viewBox="0 0 290 52" width="250" height="46" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="boxGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#00F59B" flood-opacity="0.3"/>
+              </filter>
+            </defs>
+            <!-- Glifo Isométrico de Caixa / Rota -->
+            <g transform="translate(4, 6)" filter="url(#boxGlow)">
+              <polygon points="18,3 34,12 18,21 2,12" fill="#141B29" stroke="#00F59B" stroke-width="2.2" stroke-linejoin="round"/>
+              <polygon points="2,12 18,21 18,37 2,28" fill="#0D121C" stroke="#00F59B" stroke-width="2" stroke-linejoin="round"/>
+              <polygon points="34,12 18,21 18,37 34,28" fill="#090E17" stroke="#00F59B" stroke-width="2" stroke-linejoin="round"/>
+              <!-- Pin central de geolocalização -->
+              <circle cx="18" cy="12" r="3.2" fill="#FFE600" />
+            </g>
+            <!-- Tipografia -->
+            <text x="48" y="32" font-family="'Inter', sans-serif" font-weight="900" font-size="28" letter-spacing="-0.03em">
+              <tspan fill="#F8FAFC">de</tspan>
+              <tspan fill="#00F59B">LIVRE</tspan>
+              <tspan fill="#F8FAFC">ry</tspan>
+            </text>
+            <text x="50" y="46" font-family="'Inter', sans-serif" font-weight="800" font-size="7.5" fill="#94A3B8" letter-spacing="0.2em">
+              REDE DESCENTRALIZADA DE ENTREGAS
+            </text>
+          </svg>
+        </div>
+        <h3 class="option-title">📦 2. Tactical Waypoint</h3>
+        <p class="option-description">
+          Um pacote isométrico tático com pin de geolocalização no centro da tampa. Remete diretamente à logística real de caixas e entregas de mercadorias no bairro, com rigor e solidez.
+        </p>
+        <div class="option-meta">
+          <span class="meta-tag">✓ Forte para Lojistas</span>
+          <span style="color: var(--text-muted)">Estruturado & Tático</span>
+        </div>
+      </div>
+
+      <!-- OPÇÃO 3 -->
+      <div class="option-card" onclick="selectConcept(3)">
+        <span class="card-badge">Opção 3</span>
+        <div class="logo-canvas">
+          <!-- SVG OPÇÃO 3: Peer-to-Peer Orbit / Wings -->
+          <svg viewBox="0 0 280 50" width="240" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Glifo Duplo Vetor P2P -->
+            <g transform="translate(6, 8)">
+              <!-- Seta Direta Ponto A -> Ponto B -->
+              <path d="M4 22L18 6L30 18" stroke="#00F59B" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 28L24 16L32 24" stroke="#FFE600" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="4" cy="22" r="3" fill="#00F59B"/>
+              <circle cx="32" cy="24" r="3" fill="#FFE600"/>
+            </g>
+            <!-- Tipografia -->
+            <text x="48" y="32" font-family="'Inter', sans-serif" font-weight="900" font-size="28" letter-spacing="-0.03em">
+              <tspan fill="#94A3B8">de</tspan>
+              <tspan fill="#00F59B">LIVRE</tspan>
+              <tspan fill="#F8FAFC">ry</tspan>
+            </text>
+            <text x="49" y="45" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="7.5" fill="#64748B" letter-spacing="0.22em">
+              PEER-TO-PEER LOGISTICS
+            </text>
+          </svg>
+        </div>
+        <h3 class="option-title">🧭 3. Direct Route (P2P)</h3>
+        <p class="option-description">
+          Vetores dinâmicos conectando dois nós diretamente (origem e destino). Simboliza a conexão direta sem servidor central ou retenção de faturamento no meio do caminho.
+        </p>
+        <div class="option-meta">
+          <span class="meta-tag">✓ Conexão P2P Pura</span>
+          <span style="color: var(--text-muted)">Dinâmico & Fluido</span>
+        </div>
+      </div>
+
+      <!-- OPÇÃO 4 -->
+      <div class="option-card" onclick="selectConcept(4)">
+        <span class="card-badge">Opção 4</span>
+        <div class="logo-canvas">
+          <!-- SVG OPÇÃO 4: Pure Tactical Wordmark -->
+          <svg viewBox="0 0 280 50" width="240" height="44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g transform="translate(10, 4)">
+              <!-- Marca tipográfica ousada com sublinhado luminoso tático -->
+              <text x="0" y="30" font-family="'Inter', sans-serif" font-weight="900" font-size="32" letter-spacing="-0.04em">
+                <tspan fill="#64748B" font-weight="700">de</tspan>
+                <tspan fill="#00F59B">LIVRE</tspan>
+                <tspan fill="#F8FAFC">ry</tspan>
+              </text>
+              <!-- Linha de pulso com ponto de status -->
+              <rect x="36" y="36" width="94" height="3" rx="1.5" fill="#00F59B" />
+              <rect x="134" y="36" width="38" height="3" rx="1.5" fill="#FFE600" />
+            </g>
+          </svg>
+        </div>
+        <h3 class="option-title">📐 4. Pure Wordmark</h3>
+        <p class="option-description">
+          Minimalismo escandinavo tático. Sem ilustrações figurativas, apenas tipografia cirúrgica de impacto máximo com a barra de sinal e pulso operacional esmeralda e amarelo.
+        </p>
+        <div class="option-meta">
+          <span class="meta-tag">✓ Ultra Minimalista</span>
+          <span style="color: var(--text-muted)">Legibilidade Extrema</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Seção Interativa: Como fica na Tela Inicial Real -->
+    <div class="context-preview-section">
+      <div class="context-header">
+        <div class="badge-tag">Simulação em Tempo Real</div>
+        <h2>Veja como fica na Tela Inicial</h2>
+        <p style="color: var(--text-secondary); font-size: 13px; margin-top: 6px;">
+          Clique em cada botão abaixo para alternar o logo na tela de login e no cabeçalho do app:
+        </p>
+      </div>
+
+      <div class="context-tabs">
+        <button class="tab-btn active" data-concept="1" onclick="selectConcept('1')">⚡ 1A. Freedom Bolt (Horizontal)</button>
+        <button class="tab-btn" data-concept="1-vertical" onclick="selectConcept('1-vertical')">⚡ 1B. Freedom Bolt (Emblema)</button>
+        <button class="tab-btn" data-concept="2" onclick="selectConcept('2')">📦 2. Tactical Waypoint</button>
+        <button class="tab-btn" data-concept="3" onclick="selectConcept('3')">🧭 3. Direct Route (P2P)</button>
+        <button class="tab-btn" data-concept="4" onclick="selectConcept('4')">📐 4. Pure Wordmark</button>
+      </div>
+
+      <!-- Mockup da Tela de Acesso -->
+      <div class="mockup-wrapper">
+        <div class="mockup-logo-slot" id="mockup-slot">
+          <!-- Injetado dinamicamente via JS -->
+        </div>
+
+        <div class="mockup-card">
+          <div style="font-size: 11px; font-weight: 800; color: #00F59B; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">
+            Acesso Instantâneo
+          </div>
+          <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 6px;">Entrar sem senha</h3>
+          <p style="color: #94A3B8; font-size: 12px; margin-bottom: 16px;">
+            Informe seu e-mail para receber um link de acesso seguro e direto.
+          </p>
+          <div class="mockup-input">seu.email@exemplo.com</div>
+          <button class="mockup-btn">RECEBER LINK MÁGICO ➔</button>
+        </div>
+
+        <div style="margin-top: 18px; font-size: 11px; color: #64748B;">
+          🔒 Criptografia ponta a ponta • 100% Livre de Taxas
+        </div>
+      </div>
+
+      <!-- Simulação do Cabeçalho Superior pós-login -->
+      <div style="max-width: 600px; margin: 32px auto 0 auto;">
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; text-align: center;">
+          Como ficará no Cabeçalho do App após o login (com a Opção 1A compacta):
+        </div>
+        <div class="mockup-header-preview">
+          <div id="header-logo-slot">
+            <!-- Injetado dinamicamente via JS -->
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span style="background: #141B29; border: 1px solid #1E293B; color: #00F59B; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;">
+              ● Pinheiros, SP
+            </span>
+            <span style="background: #141B29; border: 1px solid #1E293B; color: #F8FAFC; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;">
+              EJ
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SEÇÃO: Ecossistema PWA, Favicon e Splash Screen -->
+    <div class="context-preview-section" style="margin-top: 40px; border-color: rgba(0, 245, 155, 0.3);">
+      <div class="context-header">
+        <div class="badge-tag" style="background: rgba(255, 230, 0, 0.1); border-color: rgba(255, 230, 0, 0.3); color: #FFE600;">
+          📱 PWA & Mobile Experience
+        </div>
+        <h2>Favicon, Ícone do App e Tela Splash</h2>
+        <p style="color: var(--text-secondary); font-size: 13px; margin-top: 6px;">
+          Arquivos reais gerados em <code>apps/pwa/public/</code> e vinculados no <code>index.html</code> e <code>manifest.webmanifest</code>.
+        </p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+
+        <!-- CARD 1: FAVICON -->
+        <div style="background: var(--bg-base); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px;">
+          <div style="font-size: 12px; font-weight: 800; color: #00F59B; text-transform: uppercase; margin-bottom: 8px;">
+            1. Favicon do Navegador
+          </div>
+          <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 16px;">
+            Vetor SVG puro e nítido em qualquer resolução (16px, 32px, 64px) em abas escuras ou claras.
+          </p>
+
+          <!-- Simulação de Aba de Navegador Escura -->
+          <div style="background: #1e293b; border-radius: 8px 8px 0 0; padding: 8px 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <img src="/favicon.svg" alt="Favicon" width="18" height="18" style="border-radius: 4px;" />
+            <span style="color: #f8fafc; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              deLIVREry - Logística Livre...
+            </span>
+            <span style="margin-left: auto; color: #94a3b8; font-size: 14px;">×</span>
+          </div>
+
+          <!-- Simulação de Aba Clara -->
+          <div style="background: #e2e8f0; border-radius: 8px 8px 0 0; padding: 8px 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+            <img src="/favicon.svg" alt="Favicon" width="18" height="18" style="border-radius: 4px;" />
+            <span style="color: #0f172a; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              deLIVREry - Logística Livre...
+            </span>
+            <span style="margin-left: auto; color: #64748b; font-size: 14px;">×</span>
+          </div>
+
+          <div style="font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+            Arquivo: <strong>apps/pwa/public/favicon.svg</strong> (64x64)
+          </div>
+        </div>
+
+        <!-- CARD 2: ÍCONE PWA INSTALADO -->
+        <div style="background: var(--bg-base); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px;">
+          <div style="font-size: 12px; font-weight: 800; color: #FFE600; text-transform: uppercase; margin-bottom: 8px;">
+            2. Ícone do App Instalado (PWA)
+          </div>
+          <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 16px;">
+            Visualização na tela de início do smartphone (Android / iOS Launcher).
+          </p>
+
+          <div style="background: #0D121C; border: 1px solid var(--border-subtle); border-radius: 16px; padding: 20px; display: flex; justify-content: center; align-items: center; gap: 24px; margin-bottom: 16px;">
+            <!-- App deLIVREry -->
+            <div style="text-align: center;">
+              <img src="/pwa-192x192.png" alt="deLIVREry App Icon" width="68" height="68" style="border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 245, 155, 0.3); border: 1px solid rgba(0, 245, 155, 0.4);" />
+              <div style="font-size: 11px; font-weight: 700; color: #F8FAFC; margin-top: 6px;">deLIVREry</div>
+            </div>
+
+            <!-- Outro App genérico para comparação de contraste -->
+            <div style="text-align: center; opacity: 0.5;">
+              <div style="width: 68px; height: 68px; border-radius: 16px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                💬
+              </div>
+              <div style="font-size: 11px; font-weight: 600; color: #94A3B8; margin-top: 6px;">Chat</div>
+            </div>
+          </div>
+
+          <div style="font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+            192x192 PNG + 512x512 PNG + Apple Touch Icon
+          </div>
+        </div>
+
+        <!-- CARD 3: SPLASH SCREEN -->
+        <div style="background: var(--bg-base); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px;">
+          <div style="font-size: 12px; font-weight: 800; color: #00F59B; text-transform: uppercase; margin-bottom: 8px;">
+            3. Tela Splash Oficial
+          </div>
+          <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 16px;">
+            Abertura instantânea enquanto o app carrega o ambiente e a localização.
+          </p>
+
+          <!-- Mockup de Smartphone com Splash Screen -->
+          <div style="background: #06090E; border: 2px solid #1E293B; border-radius: 18px; padding: 28px 16px; text-align: center; max-width: 240px; margin: 0 auto 16px auto; box-shadow: 0 8px 24px rgba(0,0,0,0.8);">
+            <!-- Emblema 1B central -->
+            <div style="margin-bottom: 16px;">
+              <svg viewBox="0 0 200 80" width="160" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="splashBoltGrad" x1="86" y1="0" x2="114" y2="40" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#00F59B" />
+                    <stop offset="1" stop-color="#00B870" />
+                  </linearGradient>
+                  <filter id="splashGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="4" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                </defs>
+                <g transform="translate(86, 0)" filter="url(#splashGlow)">
+                  <path d="M15 2L3 22H15L11 40L27 17H15L20 2H15Z" fill="url(#splashBoltGrad)" />
+                  <circle cx="26" cy="6" r="2.5" fill="#FFE600" />
+                </g>
+                <text x="100" y="58" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="26" letter-spacing="-0.03em">
+                  <tspan fill="#94A3B8" font-weight="700">de</tspan><tspan fill="#00F59B">LIVRE</tspan><tspan fill="#F8FAFC">ry</tspan>
+                </text>
+                <text x="100" y="73" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="800" font-size="7.2" fill="#64748B" textLength="130.2" lengthAdjust="spacing">LOGÍSTICA P2P • SEM TAXAS</text>
+              </svg>
+            </div>
+
+            <!-- Barra de carregamento tática -->
+            <div style="width: 120px; height: 3px; background: #141B29; border-radius: 2px; margin: 0 auto 12px auto; overflow: hidden;">
+              <div style="width: 65%; height: 100%; background: #00F59B; border-radius: 2px; box-shadow: 0 0 8px #00F59B;"></div>
+            </div>
+
+            <div style="font-size: 9px; font-weight: 700; color: #64748B; letter-spacing: 0.15em;">
+              INICIALIZANDO REDE SEGURA
+            </div>
+          </div>
+
+          <div style="font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+            Tema Obsidiana #06090E com Emblema Freedom Bolt
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  <script>
+    const SVGS = {
+      '1': `
+        <svg viewBox="4 2 182 45" width="200" height="46" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="boltGradMock" x1="0" y1="0" x2="28" y2="44" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#00F59B" />
+              <stop offset="1" stop-color="#00B870" />
+            </linearGradient>
+            <filter id="glowMock1" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+          <g transform="translate(4, 2)" filter="url(#glowMock1)">
+            <path d="M16 2L3 24H16L12 44L29 19H16L21 2H16Z" fill="url(#boltGradMock)" />
+            <circle cx="27" cy="6" r="2.5" fill="#FFE600" />
+          </g>
+          <text x="40" y="32" font-family="'Inter', sans-serif" font-weight="900" font-size="28" letter-spacing="-0.03em">
+            <tspan fill="#94A3B8" font-weight="700">de</tspan><tspan fill="#00F59B">LIVRE</tspan><tspan fill="#F8FAFC">ry</tspan>
+          </text>
+          <text x="40" y="45" font-family="'Inter', sans-serif" font-weight="800" font-size="7.5" fill="#64748B" textLength="140.5" lengthAdjust="spacing">LOGÍSTICA P2P • SEM TAXAS</text>
+        </svg>
+      `,
+      '1-vertical': `
+        <svg viewBox="0 0 200 80" width="200" height="80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="boltGradStack" x1="86" y1="0" x2="114" y2="40" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#00F59B" />
+              <stop offset="1" stop-color="#00B870" />
+            </linearGradient>
+            <filter id="glowStack" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+          <g transform="translate(86, 0)" filter="url(#glowStack)">
+            <path d="M15 2L3 22H15L11 40L27 17H15L20 2H15Z" fill="url(#boltGradStack)" />
+            <circle cx="26" cy="6" r="2.5" fill="#FFE600" />
+          </g>
+          <text x="100" y="58" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="26" letter-spacing="-0.03em">
+            <tspan fill="#94A3B8" font-weight="700">de</tspan><tspan fill="#00F59B">LIVRE</tspan><tspan fill="#F8FAFC">ry</tspan>
+          </text>
+          <text x="100" y="73" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="800" font-size="7.2" fill="#64748B" textLength="130.2" lengthAdjust="spacing">LOGÍSTICA P2P • SEM TAXAS</text>
+        </svg>
+      `,
+      '2': `
+        <svg viewBox="0 0 290 52" width="220" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(4, 6)">
+            <polygon points="18,3 34,12 18,21 2,12" fill="#141B29" stroke="#00F59B" stroke-width="2.2" stroke-linejoin="round"/>
+            <polygon points="2,12 18,21 18,37 2,28" fill="#0D121C" stroke="#00F59B" stroke-width="2" stroke-linejoin="round"/>
+            <polygon points="34,12 18,21 18,37 34,28" fill="#090E17" stroke="#00F59B" stroke-width="2" stroke-linejoin="round"/>
+            <circle cx="18" cy="12" r="3.2" fill="#FFE600" />
+          </g>
+          <text x="48" y="32" font-family="'Inter', sans-serif" font-weight="900" font-size="28" letter-spacing="-0.03em">
+            <tspan fill="#F8FAFC">de</tspan>
+            <tspan fill="#00F59B">LIVRE</tspan>
+            <tspan fill="#F8FAFC">ry</tspan>
+          </text>
+          <text x="50" y="46" font-family="'Inter', sans-serif" font-weight="800" font-size="7.5" fill="#94A3B8" letter-spacing="0.2em">
+            REDE DESCENTRALIZADA DE ENTREGAS
+          </text>
+        </svg>
+      `,
+      '3': `
+        <svg viewBox="0 0 280 50" width="220" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(6, 8)">
+            <path d="M4 22L18 6L30 18" stroke="#00F59B" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 28L24 16L32 24" stroke="#FFE600" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="4" cy="22" r="3" fill="#00F59B"/>
+            <circle cx="32" cy="24" r="3" fill="#FFE600"/>
+          </g>
+          <text x="48" y="32" font-family="'Inter', sans-serif" font-weight="900" font-size="28" letter-spacing="-0.03em">
+            <tspan fill="#94A3B8">de</tspan>
+            <tspan fill="#00F59B">LIVRE</tspan>
+            <tspan fill="#F8FAFC">ry</tspan>
+          </text>
+          <text x="49" y="45" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="7.5" fill="#64748B" letter-spacing="0.22em">
+            PEER-TO-PEER LOGISTICS
+          </text>
+        </svg>
+      `,
+      '4': `
+        <svg viewBox="0 0 280 50" width="210" height="38" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(6, 4)">
+            <text x="0" y="30" font-family="'Inter', sans-serif" font-weight="900" font-size="32" letter-spacing="-0.04em">
+              <tspan fill="#64748B" font-weight="700">de</tspan>
+              <tspan fill="#00F59B">LIVRE</tspan>
+              <tspan fill="#F8FAFC">ry</tspan>
+            </text>
+            <rect x="36" y="36" width="94" height="3" rx="1.5" fill="#00F59B" />
+            <rect x="134" y="36" width="38" height="3" rx="1.5" fill="#FFE600" />
+          </g>
+        </svg>
+      `
+    };
+
+    function selectConcept(key) {
+      document.getElementById('mockup-slot').innerHTML = SVGS[key];
+      // Para o header, se for vertical, exibimos a variante horizontal no header
+      document.getElementById('header-logo-slot').innerHTML = (key === '1-vertical') ? SVGS['1'] : SVGS[key];
+
+      document.querySelectorAll('.tab-btn').forEach((btn) => {
+        if (btn.getAttribute('data-concept') === String(key)) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    // Inicializa com a opção 1
+    selectConcept('1');
+  </script>
+</body>
+</html>

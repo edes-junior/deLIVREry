@@ -3,16 +3,15 @@
  * @description Componente visual de Meta de Cadastros no Bairro (FR-13, AD-8).
  * Apresenta o progresso de ativação territorial com linguagem natural, barras de progresso neon e convite viral.
  */
-
 import React from 'react';
 import { RegionQuorum } from '../../quorum/quorum-service.ts';
 import { Card, Badge, Button } from '../ui/index.ts';
+import { MapPin, Store, Bike, Megaphone, Trophy, Check } from 'lucide-react';
 
-interface RegionalQuorumThermometerProps {
+export interface RegionalQuorumThermometerProps {
   quorum: RegionQuorum;
   neighborhoodName?: string;
   cityName?: string;
-  stateId?: string;
   onShareClick?: () => void;
 }
 
@@ -20,32 +19,38 @@ export const RegionalQuorumThermometer: React.FC<RegionalQuorumThermometerProps>
   quorum,
   neighborhoodName,
   cityName,
-  stateId,
   onShareClick
 }) => {
   const isUnlocked = quorum.isUnlocked;
-  const locationLabel = neighborhoodName || quorum.neighborhoodId || 'Sua Região';
-  const cityStateLabel = cityName && stateId ? ` • ${cityName} - ${stateId}` : '';
-
   const missingStores = Math.max(0, quorum.requiredStores - quorum.storesCount);
   const missingCouriers = Math.max(0, quorum.requiredCouriers - quorum.couriersCount);
 
+  const locationLabel = neighborhoodName || quorum.neighborhoodId.replace(/-/g, ' ');
+  const cityStateLabel = cityName ? ` • ${cityName} - ${quorum.stateId}` : ` - ${quorum.stateId}`;
+
   return (
     <Card
-      variant={isUnlocked ? 'matched' : 'default'}
-      style={{ marginBottom: '16px' }}
+      style={{
+        position: 'relative',
+        overflow: 'hidden'
+      }}
     >
-      {/* Cabeçalho com Localização e Badge */}
+      {/* Indicador de progresso decorativo no topo */}
       <div
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          marginBottom: '14px',
-          flexWrap: 'wrap',
-          gap: '8px'
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '3px',
+          background: isUnlocked
+            ? 'linear-gradient(90deg, var(--neon-emerald), var(--neon-emerald-glow))'
+            : 'linear-gradient(90deg, #38bdf8, var(--highvis-yellow))'
         }}
-      >
+      />
+
+      {/* Cabeçalho */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
         <div>
           <span
             style={{
@@ -58,8 +63,9 @@ export const RegionalQuorumThermometer: React.FC<RegionalQuorumThermometerProps>
           >
             Meta do Bairro
           </span>
-          <h3 style={{ margin: '3px 0 0 0', fontSize: '17px', fontWeight: 800, color: '#ffffff' }}>
-            📍 {locationLabel}
+          <h3 style={{ margin: '3px 0 0 0', fontSize: '17px', fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            <MapPin size={16} style={{ color: 'var(--neon-emerald)' }} />
+            <span>{locationLabel}</span>
             <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>
               {cityStateLabel}
             </span>
@@ -69,7 +75,9 @@ export const RegionalQuorumThermometer: React.FC<RegionalQuorumThermometerProps>
         <div>
           {isUnlocked ? (
             <Badge variant="emerald" pulse>
-              ✓ Bairro 100% Ativo
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Check size={12} /> Bairro 100% Ativo
+              </span>
             </Badge>
           ) : (
             <Badge variant="yellow">
@@ -90,8 +98,9 @@ export const RegionalQuorumThermometer: React.FC<RegionalQuorumThermometerProps>
             fontSize: '12px'
           }}
         >
-          <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
-            🏪 Lojas Cadastradas
+          <span style={{ color: 'var(--text-secondary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <Store size={14} />
+            <span>Lojas Cadastradas</span>
           </span>
           <span className="tabular-price" style={{ color: '#38bdf8', fontSize: '13px' }}>
             {quorum.storesCount}/{quorum.requiredStores} ({quorum.storePercentage}%)
@@ -130,8 +139,9 @@ export const RegionalQuorumThermometer: React.FC<RegionalQuorumThermometerProps>
             fontSize: '12px'
           }}
         >
-          <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>
-            🛵 Entregadores Cadastrados
+          <span style={{ color: 'var(--text-secondary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <Bike size={14} />
+            <span>Entregadores Cadastrados</span>
           </span>
           <span className="tabular-price" style={{ color: 'var(--highvis-yellow)', fontSize: '13px' }}>
             {quorum.couriersCount}/{quorum.requiredCouriers} ({quorum.courierPercentage}%)
@@ -183,7 +193,7 @@ export const RegionalQuorumThermometer: React.FC<RegionalQuorumThermometerProps>
               variant="cta"
               size="sm"
               onClick={onShareClick}
-              icon={<span>📢</span>}
+              icon={<Megaphone size={14} />}
             >
               Convidar Amigos
             </Button>
@@ -198,10 +208,14 @@ export const RegionalQuorumThermometer: React.FC<RegionalQuorumThermometerProps>
             borderRadius: 'var(--radius-md)',
             fontSize: '13px',
             color: 'var(--neon-emerald)',
-            fontWeight: 700
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}
         >
-          🎉 Parabéns! Meta alcançada: entregas e turnos 100% livres no bairro!
+          <Trophy size={16} />
+          <span>Parabéns! Meta alcançada: entregas e turnos 100% livres no bairro!</span>
         </div>
       )}
     </Card>

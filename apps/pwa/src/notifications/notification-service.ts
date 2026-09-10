@@ -32,6 +32,7 @@ export interface CourierNotificationTarget {
   homeNeighborhoodId: string;
   transportModal: TransportModal;
   pushToken?: string | null;
+  isActive?: boolean;
 }
 
 export interface DispatchResult {
@@ -75,7 +76,7 @@ export function formatJobPushPayload(job: JobPost, storeName: string): PushNotif
     : 'sua região';
 
   return {
-    title: `⚡ Nova Vaga em ${neighborhoodDisplay}!`,
+    title: `Nova Vaga em ${neighborhoodDisplay}!`,
     body: `${storeName} abriu um turno: Diária R$ ${Number(job.offered_daily_rate).toFixed(2)} + R$ ${Number(job.offered_delivery_fee).toFixed(2)}/entrega. Toque para aceitar ou contrapropor.`,
     icon: '/icon-192.png',
     badge: '/badge-72.png',
@@ -102,6 +103,10 @@ export function filterCouriersForJob(
   if (!Array.isArray(couriers)) return [];
 
   return couriers.filter(courier => {
+    // 0. Verificação de disponibilidade operacional (Story 4 / CAP-4)
+    // Se o entregador estiver pausado (isActive === false), suprime notificações e ofertas
+    if (courier.isActive === false) return false;
+
     // 1. Compatibilidade geográfica estrita (mesmo estado, cidade e bairro base)
     const isSameRegion =
       courier.stateId?.toUpperCase() === job.state_id?.toUpperCase() &&

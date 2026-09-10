@@ -375,9 +375,9 @@ So that eu tenha transparência sobre os valores praticados no meu bairro para c
 
 ---
 
-## Epic 4: Sustentabilidade Comunitária por Microdoações PIX em Delight Moments
+## Epic 4: Sustentabilidade e Autonomia Operacional por Contribuições Voluntárias PIX em Delight Moments
 
-Usuários e integradores apoiam financeiramente a manutenção dos servidores da plataforma através de microdoações voluntárias via Chave PIX Estática Copia e Cola (com feedback tátil e BR Code), acionadas estrategicamente nos 5 momentos de alívio e alta satisfação operacional (*Delight Moments*), com acompanhamento coletivo no Painel de Transparência de Custos.
+Usuários e integradores mantêm a operação integral, o suporte e o esforço contínuo de evolução do deLIVREry como ecossistema livre (Digital Commons) através de contribuições voluntárias diretas via Chave PIX Estática Copia e Cola (com feedback tátil e BR Code), acionadas estrategicamente nos 5 momentos de alívio e satisfação operacional (*Delight Moments*). A abordagem foca na preservação da liberdade contra monopólios (não em caridade), com objetivo visual de vitalidade operacional sem expor cifras monetárias e com isonomia radical entre os trabalhadores (sem selos ou contraprestações que configurem venda comercial/SaaS).
 
 ### Story 4.1: Schema de Logs de Microdoação (`donations_log`) e Configuração de Ambiente PIX
 
@@ -395,62 +395,66 @@ So that as intenções de doação sejam registradas anonimamente e as chaves PI
 **When** o aplicativo for inicializado
 **Then** esses valores devem estar disponíveis para injeção nos modais de Delight Moment.
 
-### Story 4.2: Componente Bottom Sheet de Doação PIX com Haptic Feedback nos 5 Delight Moments
+### Story 4.2: Componente Bottom Sheet de Contribuição Operacional PIX com Haptic Feedback nos 5 Delight Moments
 
 As a Entregador, Lojista ou Desenvolvedor de API em um momento de alívio ou celebração (*Delight Moment*),
-I want visualizar o Bottom Sheet não-bloqueante com chips de valores rápidos (`R$ 2,00`, `R$ 5,00`, `R$ 10,00`) e botão de cópia do BR Code com feedback tátil,
-So that eu possa contribuir voluntariamente em menos de 10 segundos no meu app de banco sem interromper meu fluxo de trabalho.
+I want visualizar o Bottom Sheet elegante e não-bloqueante com narrativa convincente de sustentação da operação e botão de cópia do BR Code com feedback tátil,
+So that eu possa contribuir voluntariamente em menos de 10 segundos no meu app de banco sem interromper meu fluxo de trabalho e sem sensação de esmola ou caridade.
 
 **Acceptance Criteria:**
 
 **Given** um dos 5 momentos disparadores:
-  1. Entregador após confirmação de pagamento do turno;
-  2. Entregador ao subir de nível (Bronze → Prata → Ouro);
+  1. Entregador após confirmação de pagamento integral do turno;
+  2. Entregador ao subir de nível operacional (Bronze → Prata → Ouro);
   3. Lojista com vaga de emergência aceita em $<5\text{min}$;
   4. Lojista avaliando motoboy com 5 estrelas;
   5. Parceiro API atingindo 1.000 requisições mensais de sucesso
 **When** o evento for disparado no PWA ou Portal
-**Then** o Bottom Sheet deve surgir suavemente na tela com mensagem contextual de gratidão e botão claro de saída `[ Agora Não ]` (sem contadores de bloqueio).
+**Then** o Bottom Sheet deve surgir suavemente na tela com mensagem contextual convincente de copropriedade e sustentação da operação livre, com botão claro de saída `[ Agora Não ]` (sem contadores de bloqueio ou dark patterns).
 
-**Given** o usuário selecionando um valor sugerido ou clicando em [ 📋 Copiar Código PIX ]
+**Given** o usuário clicando em [ 📋 Copiar Chave PIX ]
 **When** a ação for executada
-**Then** o payload BR Code da chave PIX estática deve ser copiado para a área de transferência do dispositivo com emissão de vibração tátil (*Haptic Feedback*) e toast de sucesso.
+**Then** o payload BR Code da chave PIX estática deve ser copiado para a área de transferência do dispositivo com emissão de vibração tátil (*Haptic Feedback*) e toast de celebração fraterna.
 
 **Given** o clique de cópia realizado
 **When** a ação for confirmada
 **Then** um registro anônimo deve ser inserido na tabela `donations_log` para cômputo de métricas de conversão.
 
-### Story 4.3: Concessão de Badge de Apoiador e Bonificação de XP
+### Story 4.3: Mensuração de Valor Retido e Gratidão Fraterna (Substituição de Badges por Conformidade Fiscal e Isonomia)
 
-As a Usuário que realizou uma microdoação comunitária,
-I want receber a badge comemorativa de *Apoiador da Comunidade* e $+25\text{ XP}$ no meu perfil no primeiro apoio do mês,
-So that minha contribuição para a sustentabilidade da plataforma seja reconhecida e celebrada socialmente.
+As a Entregador ou Lojista que utiliza a plataforma,
+I want visualizar discretamente a economia real de taxas gerada pelo deLIVREry no meu período e receber uma mensagem transparente de gratidão ao apoiar,
+So that eu compreenda o valor prático da ferramenta sem que o sistema crie castas de usuários ou incorra em riscos tributários de venda de serviços digitais (ISS).
 
 **Acceptance Criteria:**
 
-**Given** um usuário logado clicando em copiar a chave PIX voluntária
-**When** for o primeiro apoio registrado para sua conta no mês corrente
-**Then** o sistema deve conceder $+25\text{ XP}$ e ativar a badge *Apoiador da Comunidade* em seu perfil público.
+**Given** a decisão arquitetural e fiscal de manter o deLIVREry como Digital Commons imune a tributação de serviços
+**When** um usuário apoiar financeiramente o projeto
+**Then** o sistema NÃO deve conceder selos, badges ou pontuações de XP vinculadas ao pagamento (eliminando o risco de reclassificação da doação como venda de serviços/ativos digitais estilo Instagram Verified).
 
-**Given** um usuário com a badge de Apoiador ativa
-**When** ele publicar vagas ou enviar propostas de turno
-**Then** seu avatar deve exibir o selo visual de apoiador em destaque.
+**Given** dois entregadores disputando uma vaga ou interagindo na plataforma
+**When** seus perfis e cards forem visualizados
+**Then** ambos devem possuir rigorosamente a mesma dignidade e visibilidade visual, sem qualquer diferenciação por capacidade contributiva (isonomia radical).
 
-### Story 4.4: Painel Público de Transparência de Custos do Servidor e Vitória Coletiva
+**Given** o fechamento do modal após a cópia da chave PIX
+**When** a mensagem de confirmação for exibida
+**Then** deve apresentar agradecimento fraterno e exibir estimativa do valor que permaneceu no bolso do trabalhador/lojista por não pagar taxas de intermediação.
+
+### Story 4.4: Painel Público de Vitalidade e Sustentação Operacional da Praça (Sem Cifras Monetárias)
 
 As a Membro da comunidade do deLIVREry,
-I want visualizar um painel transparente com os custos reais de infraestrutura vs. o total arrecadado no mês,
-So that tenhamos clareza sobre a sustentabilidade do ecossistema e visual comemorativo de *Vitória Coletiva* ao atingir 100% da meta.
+I want visualizar um indicador visual de vitalidade e saúde operacional da praça sem exposição de valores em Reais (R$),
+So that tenhamos clareza visual de objetivo sobre o fôlego da operação e visual comemorativo de *Vitória Coletiva* quando a comunidade garantir a sustentação plena do mês.
 
 **Acceptance Criteria:**
 
-**Given** o componente de transparência no rodapé do PWA e Landing Pages
+**Given** o componente de sustentação no rodapé do PWA e Landing Pages
 **When** renderizado
-**Then** deve exibir o termômetro com a barra de progresso da arrecadação mensal estimada vs. o custo de servidores daquele mês.
+**Then** deve exibir o indicador visual de Vitalidade da Rede em faixas qualitativas (*Operação Básica* ➔ *Operação Saudável* ➔ *Evolução e Suporte Pleno*), sem expor cifras monetárias em Reais.
 
-**Given** o atingimento de 100% da meta de arrecadação do mês
+**Given** o atingimento de 100% da autonomia operacional estimada para o mês
 **When** a página for carregada
-**Then** o componente deve exibir o banner comemorativo de *Vitória Coletiva* destacando a autossuficiência comunitária da plataforma.
+**Then** o componente deve exibir o banner comemorativo de *Vitória Coletiva* destacando a autossuficiência e o esforço coletivo mantido pela própria comunidade.
 
 ---
 

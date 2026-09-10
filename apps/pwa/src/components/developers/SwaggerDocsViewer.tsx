@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { openApiSpec } from '../../api/openapi/openapi-spec.ts';
 import { HeadlessApiRouter } from '../../api/headless/headless-api-router.ts';
 import type { ApiGatewayRequest, ApiGatewayResponse } from '../../api/gateway/types.ts';
+import { Key, Zap } from 'lucide-react';
 
 interface SwaggerDocsViewerProps {
   apiKey?: string;
@@ -211,8 +212,8 @@ export const SwaggerDocsViewer: React.FC<SwaggerDocsViewerProps> = ({ apiKey: in
             border: '1px solid #475569',
             minWidth: '280px'
           }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#cbd5e1', marginBottom: '6px' }}>
-              🔑 API Key para Testes (X-API-Key):
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#cbd5e1', marginBottom: '6px' }}>
+              <Key size={16} /> API Key para Testes (X-API-Key):
             </label>
             <input
               type="text"
@@ -361,8 +362,8 @@ export const SwaggerDocsViewer: React.FC<SwaggerDocsViewerProps> = ({ apiKey: in
                     border: '1px solid #3b82f6'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                      <h4 style={{ margin: 0, fontSize: '15px', color: '#60a5fa', fontWeight: 600 }}>
-                        ⚡ Console Interativo (Try It Out)
+                      <h4 style={{ margin: 0, fontSize: '15px', color: '#60a5fa', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Zap size={16} /> Console Interativo (Try It Out)
                       </h4>
                       <button
                         onClick={() => executeTryItOut(method, path, key)}

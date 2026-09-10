@@ -96,9 +96,8 @@ export class DonationService {
     const now = new Date();
     let reward: CommunitySupporterReward | undefined = undefined;
 
-    // 3. Processa recompensa para usuário autenticado
+    // 3. Isonomia Radical & Blindagem Fiscal (ADR-4.3): Sem concessão de badges ou alteração de XP
     if (userId) {
-      const isFirst = this.isUserFirstDonationOfMonth(userId, now);
       const userState = inMemorySupporterStates.get(userId) || {
         xpPoints: 0,
         level: 'Bronze',
@@ -106,27 +105,18 @@ export class DonationService {
         monthlyDonationsCount: 0,
       };
 
-      const xpBonus = isFirst ? 25 : 0;
-      const newXp = userState.xpPoints + xpBonus;
-      const newLevel = this.calculateLevelFromXp(newXp);
-
-      userState.xpPoints = newXp;
-      userState.level = newLevel;
-      userState.communitySupporter = true;
+      // Preserva integridade de dados sem alterar XP e sem ativar badge comercial
       userState.lastDonationAt = now.toISOString();
-      if (!userState.supporterSince) {
-        userState.supporterSince = now.toISOString();
-      }
       userState.monthlyDonationsCount += 1;
       inMemorySupporterStates.set(userId, userState);
 
       reward = {
         userId,
-        isFirstOfMonth: isFirst,
-        xpAwarded: xpBonus,
-        communitySupporter: true,
-        newLevel,
-        totalXp: newXp,
+        isFirstOfMonth: false,
+        xpAwarded: 0,
+        communitySupporter: false,
+        newLevel: userState.level,
+        totalXp: userState.xpPoints,
       };
     }
 
@@ -377,6 +367,20 @@ export class DonationService {
     const isGoalReached = totalEstimatedAmount >= totalMonthlyTarget;
     const remainingAmount = Math.max(0, Number((totalMonthlyTarget - totalEstimatedAmount).toFixed(2)));
 
+    let healthLevel: OperationalHealthLevel = 'basic';
+    let healthStatusLabel = 'Operação Básica';
+    let healthDescription = 'Infraestrutura e conectividade essenciais mantidas pela comunidade.';
+
+    if (percentage >= 100) {
+      healthLevel = 'accelerated';
+      healthStatusLabel = 'Evolução Plena';
+      healthDescription = 'Operação, suporte dedicado e desenvolvimento contínuo plenamente assegurados pela comunidade!';
+    } else if (percentage >= 50) {
+      healthLevel = 'healthy';
+      healthStatusLabel = 'Operação Saudável';
+      healthDescription = 'Suporte ativo, monitoramento e estabilidade operacional garantidos.';
+    }
+
     return {
       monthPeriod: stats.monthPeriod,
       totalEstimatedAmount,
@@ -388,6 +392,9 @@ export class DonationService {
       totalIntents: stats.totalIntents,
       costBreakdown,
       breakdownByMoment: stats.breakdownByMoment,
+      healthLevel,
+      healthStatusLabel,
+      healthDescription,
     };
   }
 

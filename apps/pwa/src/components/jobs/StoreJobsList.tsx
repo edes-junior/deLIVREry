@@ -10,6 +10,7 @@ import { listStoreJobs } from '../../jobs/job-service.ts';
 import { StoreJobManagementCard } from './StoreJobManagementCard.tsx';
 import { JobRatingModal } from './JobRatingModal.tsx';
 import { DonationBottomSheet } from '../donations/DonationBottomSheet.tsx';
+import { ClipboardList, RefreshCw } from 'lucide-react';
 
 interface StoreJobsListProps {
   storeUserId: string;
@@ -18,13 +19,13 @@ interface StoreJobsListProps {
 
 export const StoreJobsList: React.FC<StoreJobsListProps> = ({
   storeUserId,
-  refreshTrigger
+  refreshTrigger = 0
 }) => {
   const [jobs, setJobs] = useState<JobPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedContactForRating, setSelectedContactForRating] = useState<MatchedJobContact | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const fetchJobs = useCallback(async () => {
     setIsLoading(true);
@@ -34,7 +35,7 @@ export const StoreJobsList: React.FC<StoreJobsListProps> = ({
         setJobs(res.jobs);
       }
     } catch {
-      // Ignora erro
+      // Ignora para não travar
     } finally {
       setIsLoading(false);
     }
@@ -48,20 +49,19 @@ export const StoreJobsList: React.FC<StoreJobsListProps> = ({
     setJobs((prev) => prev.map((j) => (j.id === updatedJob.id ? updatedJob : j)));
   };
 
-  const handleRatingSuccess = (_rating: JobRating) => {
-    fetchJobs();
-    if (_rating.rating === 5) {
+  const handleRatingSuccess = (_rating: JobRating, awardedFiveStars: boolean) => {
+    if (awardedFiveStars) {
       setIsDonationOpen(true);
     } else {
-      setToastMessage('⭐ Avaliação registrada! Obrigado por fortalecer a confiança da comunidade.');
-      setTimeout(() => setToastMessage(null), 4000);
+      setToastMessage('Avaliação enviada com sucesso!');
+      setTimeout(() => setToastMessage(null), 3000);
     }
   };
 
   if (isLoading) {
     return (
-      <div style={{ marginTop: '20px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
-        ⏳ Carregando seus turnos publicados...
+      <div style={{ textAlign: 'center', padding: '24px 0', color: '#94a3b8', fontSize: '13px' }}>
+        Carregando suas vagas e turnos...
       </div>
     );
   }
@@ -73,8 +73,9 @@ export const StoreJobsList: React.FC<StoreJobsListProps> = ({
   return (
     <div style={{ marginTop: '24px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-        <h3 style={{ fontSize: '17px', fontWeight: 700, margin: 0, color: '#f8fafc' }}>
-          📋 Minhas Vagas e Turnos ({jobs.length})
+        <h3 style={{ fontSize: '17px', fontWeight: 700, margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <ClipboardList size={18} style={{ color: 'var(--neon-emerald)' }} />
+          <span>Minhas Vagas e Turnos ({jobs.length})</span>
         </h3>
         <button
           type="button"
@@ -87,10 +88,14 @@ export const StoreJobsList: React.FC<StoreJobsListProps> = ({
             borderRadius: '8px',
             fontSize: '12px',
             cursor: 'pointer',
-            fontWeight: 600
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
           }}
         >
-          🔄 Atualizar
+          <RefreshCw size={13} />
+          <span>Atualizar</span>
         </button>
       </div>
 
@@ -119,7 +124,7 @@ export const StoreJobsList: React.FC<StoreJobsListProps> = ({
         triggerMoment="rating_5_stars"
         currentUserId={storeUserId}
         onDonated={({ amount }) => {
-          setToastMessage(`💚 Muito obrigado pela contribuição de R$ ${amount.toFixed(2)} à comunidade!`);
+          setToastMessage(`Muito obrigado pela contribuição de R$ ${amount.toFixed(2)} à comunidade!`);
           setTimeout(() => setToastMessage(null), 4000);
         }}
       />

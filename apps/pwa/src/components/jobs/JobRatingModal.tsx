@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import type { MatchedJobContact, JobRating } from '../../jobs/types.ts';
 import { submitJobRating } from '../../jobs/job-service.ts';
+import { X, AlertTriangle, Star } from 'lucide-react';
 
 interface JobRatingModalProps {
   isOpen: boolean;
@@ -129,7 +130,7 @@ export const JobRatingModal: React.FC<JobRatingModalProps> = ({
               justifyContent: 'center'
             }}
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
 
@@ -146,10 +147,14 @@ export const JobRatingModal: React.FC<JobRatingModalProps> = ({
               padding: '10px 12px',
               marginBottom: '16px',
               color: '#fca5a5',
-              fontSize: '13px'
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
             }}
           >
-            ⚠️ {errorMessage}
+            <AlertTriangle size={14} style={{ color: '#ef4444', flexShrink: 0 }} />
+            <span>{errorMessage}</span>
           </div>
         )}
 
@@ -175,7 +180,6 @@ export const JobRatingModal: React.FC<JobRatingModalProps> = ({
                   backgroundColor: star <= selectedRating ? '#1e293b' : '#0a0f1d',
                   border: star <= selectedRating ? '1px solid #facc15' : '1px solid #334155',
                   color: star <= selectedRating ? '#facc15' : '#475569',
-                  fontSize: '28px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -183,17 +187,17 @@ export const JobRatingModal: React.FC<JobRatingModalProps> = ({
                   transition: 'all 0.15s ease'
                 }}
               >
-                ★
+                <Star size={24} fill={star <= selectedRating ? 'currentColor' : 'none'} />
               </button>
             ))}
           </div>
 
           <div style={{ textAlign: 'center', marginBottom: '16px', fontSize: '14px', fontWeight: 600, color: '#facc15' }}>
-            {selectedRating === 5 && '🌟 Excelente / Impecável'}
-            {selectedRating === 4 && '👍 Muito Bom / Recomendado'}
-            {selectedRating === 3 && '👌 Regular / Aceitável'}
-            {selectedRating === 2 && '👎 Ruim / Teve Problemas'}
-            {selectedRating === 1 && '⚠️ Péssimo / Não Recomendo'}
+            {selectedRating === 5 && 'Excelente / Impecável'}
+            {selectedRating === 4 && 'Muito Bom / Recomendado'}
+            {selectedRating === 3 && 'Regular / Aceitável'}
+            {selectedRating === 2 && 'Ruim / Teve Problemas'}
+            {selectedRating === 1 && 'Péssimo / Não Recomendo'}
           </div>
 
           {/* Campo de Comentário Opcional */}

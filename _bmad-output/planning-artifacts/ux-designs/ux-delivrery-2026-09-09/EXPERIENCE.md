@@ -48,8 +48,7 @@ Eliminamos todo o jargão técnico e acadêmico da engenharia. A comunicação a
 | *Matching bid/ask* | **Negociar valor** / **Propor outro valor** | O usuário entende que é uma proposta comercial direta. |
 | *Quórum regional de ativação* | **Meta de entregadores no bairro** | Transforma um conceito estatístico em um objetivo de equipe. |
 | *Autenticação passwordless* | **Entrar sem senha (link no e-mail)** | Explica o benefício em vez do protocolo. |
-| *Expulgo de outliers* | **Aviso de valor fora do padrão do bairro** | Evita estranheza sem perder o efeito protetor. |
-| *Doação de sustentação* | **Apoiar o projeto (PIX livre)** | Clareza de que a contribuição é voluntária e comunitária. |
+| *Sustentação operacional e independência* | **Manter a Operação Livre (PIX Direto)** | Clareza de que a contribuição é voluntária, mantém a equipe e a operação ativas e sem intermediários, sem caridade e sem contraprestação de venda/serviço. |
 | *Fechamento de matching* | **Turno fechado!** | Comemoração de acordo alcançado. |
 
 ## 4. Component Patterns (Padrões de Comportamento)

@@ -3,6 +3,7 @@ import { generateApiKey, hashApiKey } from '../../../../../packages/api-client-s
 import { ApiGatewayService } from '../../api/gateway/api-gateway-service.ts';
 import { supabase } from '../../lib/supabase.ts';
 import type { ApiClient } from '../../api/gateway/types.ts';
+import { Key, X, Sparkles, CheckCircle2, Check, Copy } from 'lucide-react';
 
 interface ApiKeyGeneratorModalProps {
   isOpen: boolean;
@@ -150,11 +151,12 @@ export const ApiKeyGeneratorModal: React.FC<ApiKeyGeneratorModalProps> = ({
         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#60a5fa' }}>
-            🔑 Emissão de Nova API Key
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#60a5fa', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Key size={20} /> Emissão de Nova API Key
           </h3>
           <button
             onClick={onClose}
+            aria-label="Fechar"
             style={{
               backgroundColor: 'transparent',
               border: 'none',
@@ -168,7 +170,7 @@ export const ApiKeyGeneratorModal: React.FC<ApiKeyGeneratorModalProps> = ({
               justifyContent: 'center'
             }}
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
 
@@ -336,7 +338,11 @@ export const ApiKeyGeneratorModal: React.FC<ApiKeyGeneratorModalProps> = ({
                   cursor: isLoading ? 'not-allowed' : 'pointer'
                 }}
               >
-                {isLoading ? 'Emitindo...' : '✨ Gerar API Key'}
+                {isLoading ? 'Emitindo...' : (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <Sparkles size={16} /> Gerar API Key
+                  </span>
+                )}
               </button>
             </div>
           </form>
@@ -349,9 +355,15 @@ export const ApiKeyGeneratorModal: React.FC<ApiKeyGeneratorModalProps> = ({
               borderRadius: '8px',
               padding: '14px',
               color: '#a7f3d0',
-              fontSize: '14px'
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '8px'
             }}>
-              ✅ <strong>API Key gerada com sucesso!</strong> Armazene-a em local seguro. Por motivos de segurança, ela <strong>não poderá ser visualizada novamente</strong>.
+              <CheckCircle2 size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+              <span>
+                <strong>API Key gerada com sucesso!</strong> Armazene-a em local seguro. Por motivos de segurança, ela <strong>não poderá ser visualizada novamente</strong>.
+              </span>
             </div>
 
             <div style={{
@@ -388,7 +400,15 @@ export const ApiKeyGeneratorModal: React.FC<ApiKeyGeneratorModalProps> = ({
                 transition: 'background-color 0.2s'
               }}
             >
-              {copied ? '✔ Chave Copiada para a Área de Transferência!' : '📋 Copiar API Key'}
+              {copied ? (
+                <>
+                  <Check size={18} /> Chave Copiada para a Área de Transferência!
+                </>
+              ) : (
+                <>
+                  <Copy size={18} /> Copiar API Key
+                </>
+              )}
             </button>
 
             <button

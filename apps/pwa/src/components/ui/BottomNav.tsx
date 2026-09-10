@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import { Zap, TrendingUp, MapPin, Heart } from 'lucide-react';
 import { triggerHaptic } from './Haptics.ts';
 
 export type NavTab = 'turnos' | 'precos' | 'quorum' | 'doar';
@@ -15,11 +16,11 @@ export interface BottomNavProps {
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
-  const tabs: { id: NavTab; label: string; icon: string }[] = [
-    { id: 'turnos', label: 'Turnos', icon: '⚡' },
-    { id: 'precos', label: 'Preços', icon: '📊' },
-    { id: 'quorum', label: 'Meta Bairro', icon: '📍' },
-    { id: 'doar', label: 'Apoiar', icon: '💚' },
+  const tabs: { id: NavTab; label: string; icon: React.ReactNode }[] = [
+    { id: 'turnos', label: 'Turnos', icon: <Zap size={18} strokeWidth={2.2} /> },
+    { id: 'precos', label: 'Preços', icon: <TrendingUp size={18} strokeWidth={2} /> },
+    { id: 'quorum', label: 'Meta Bairro', icon: <MapPin size={18} strokeWidth={2} /> },
+    { id: 'doar', label: 'Apoiar', icon: <Heart size={18} strokeWidth={2} /> },
   ];
 
   const handleSelect = (id: NavTab) => {
@@ -36,7 +37,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
         left: 0,
         right: 0,
         width: '100%',
-        height: '60px',
+        height: 'calc(58px + env(safe-area-inset-bottom, 0px))',
         backgroundColor: 'rgba(13, 18, 28, 0.96)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
@@ -44,7 +45,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
         display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'center',
-        padding: '0 8px',
+        padding: '0 8px env(safe-area-inset-bottom, 0px) 8px',
         zIndex: 1000,
         boxSizing: 'border-box',
       }}

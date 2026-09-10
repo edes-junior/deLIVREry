@@ -8,6 +8,7 @@ import React, { useState } from 'react';
 import { ReferralService } from '../../referral/referral-service.ts';
 import { Card } from '../ui/Card.tsx';
 import { Button } from '../ui/Button.tsx';
+import { Rocket, Copy, MessageCircle, Check } from 'lucide-react';
 
 interface ReferralCardProps {
   referralCode: string;
@@ -49,8 +50,9 @@ export const ReferralCard: React.FC<ReferralCardProps> = ({
     <Card variant="raised" style={{ position: 'relative' }}>
       <div style={{ marginBottom: '14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', color: 'var(--neon-emerald)', letterSpacing: '0.05em' }}>
-            🚀 Expansão Comunitária
+          <span style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', color: 'var(--neon-emerald)', letterSpacing: '0.05em', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+            <Rocket size={13} />
+            <span>Expansão Comunitária</span>
           </span>
         </div>
         <h3 style={{ margin: '0 0 6px 0', fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)' }}>
@@ -110,9 +112,10 @@ export const ReferralCard: React.FC<ReferralCardProps> = ({
           variant="secondary"
           disabled={isSharing}
           onClick={handleShareClick}
-          style={{ width: '100%', fontSize: '13px' }}
+          style={{ width: '100%', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
         >
-          📋 Copiar Link
+          <Copy size={14} />
+          <span>Copiar Link</span>
         </Button>
 
         <a
@@ -123,9 +126,10 @@ export const ReferralCard: React.FC<ReferralCardProps> = ({
         >
           <Button
             variant="whatsapp"
-            style={{ width: '100%', fontSize: '13px' }}
+            style={{ width: '100%', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
           >
-            💬 WhatsApp
+            <MessageCircle size={14} />
+            <span>WhatsApp</span>
           </Button>
         </a>
       </div>
@@ -146,10 +150,14 @@ export const ReferralCard: React.FC<ReferralCardProps> = ({
             fontWeight: 800,
             boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
             whiteSpace: 'nowrap',
-            zIndex: 10
+            zIndex: 10,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
           }}
         >
-          ✅ {toastMessage}
+          <Check size={14} />
+          <span>{toastMessage}</span>
         </div>
       )}
     </Card>

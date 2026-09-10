@@ -12,6 +12,7 @@ import { ReferralService } from '../../referral/referral-service.ts';
 import { Card } from '../ui/Card.tsx';
 import { Button } from '../ui/Button.tsx';
 import { Badge } from '../ui/Badge.tsx';
+import { Bike, Store, MapPin, Zap, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 interface ProfileCompletionFormProps {
   userId: string;
@@ -250,7 +251,7 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
             padding: '10px',
             borderRadius: 'var(--radius-md)',
             border: userType === 'courier' ? '2px solid var(--neon-emerald)' : '1px solid var(--border-subtle)',
-            backgroundColor: userType === 'courier' ? 'rgba(0, 245, 155, 0.12)' : 'var(--bg-surface)',
+            backgroundColor: userType === 'courier' ? 'var(--neon-emerald-dim)' : 'var(--bg-surface)',
             color: userType === 'courier' ? 'var(--neon-emerald)' : 'var(--text-secondary)',
             fontWeight: 800,
             cursor: 'pointer',
@@ -259,10 +260,11 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '6px'
+            gap: '8px'
           }}
         >
-          🛵 Sou Entregador
+          <Bike size={18} />
+          <span>Sou Entregador</span>
         </button>
 
         <button
@@ -282,10 +284,11 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '6px'
+            gap: '8px'
           }}
         >
-          🏪 Sou Comerciante
+          <Store size={18} />
+          <span>Sou Comerciante</span>
         </button>
       </div>
 
@@ -298,61 +301,62 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
           <input
             type="text"
             required
+            placeholder={userType === 'courier' ? 'Ex: Carlos Silva' : 'Ex: Roberto Mendonça'}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            placeholder="Ex: Carlos Silva"
             className="tactical-input"
+            style={{ width: '100%' }}
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '10px', marginBottom: '14px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              CPF *
-            </label>
-            <input
-              type="text"
-              required
-              maxLength={14}
-              value={cpf}
-              onChange={handleCpfChange}
-              placeholder="000.000.000-00"
-              className="tactical-input"
-              style={{
-                borderColor: cpfError ? '#ef4444' : undefined,
-                fontFamily: 'var(--font-mono)'
-              }}
-            />
-            {cpfError && (
-              <span style={{ display: 'block', color: '#ef4444', fontSize: '11px', marginTop: '4px' }}>
-                {cpfError}
-              </span>
-            )}
-          </div>
+        {/* CPF Civil Imutável */}
+        <div style={{ marginBottom: '14px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+            CPF Civil *
+          </label>
+          <input
+            type="text"
+            required
+            maxLength={14}
+            placeholder="000.000.000-00"
+            value={cpf}
+            onChange={handleCpfChange}
+            className="tactical-input"
+            style={{
+              width: '100%',
+              borderColor: cpfError ? 'var(--alert-warning)' : undefined
+            }}
+          />
+          {cpfError && (
+            <span style={{ color: 'var(--alert-warning)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+              {cpfError}
+            </span>
+          )}
+        </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              Celular com DDD *
-            </label>
-            <input
-              type="text"
-              required
-              maxLength={15}
-              value={phone}
-              onChange={handlePhoneChange}
-              placeholder="(11) 98765-4321"
-              className="tactical-input"
-              style={{
-                borderColor: phoneError ? '#ef4444' : undefined,
-                fontFamily: 'var(--font-mono)'
-              }}
-            />
-            {phoneError && (
-              <span style={{ display: 'block', color: '#ef4444', fontSize: '11px', marginTop: '4px' }}>
-                {phoneError}
-              </span>
-            )}
-          </div>
+        {/* Telefone / WhatsApp */}
+        <div style={{ marginBottom: '14px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+            Telefone / WhatsApp com DDD *
+          </label>
+          <input
+            type="tel"
+            required
+            maxLength={15}
+            placeholder="(11) 99999-9999"
+            value={phone}
+            onChange={handlePhoneChange}
+            className="tactical-input"
+            style={{
+              width: '100%',
+              borderColor: phoneError ? 'var(--alert-warning)' : undefined
+            }}
+          />
+          {phoneError && (
+            <span style={{ color: 'var(--alert-warning)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+              {phoneError}
+            </span>
+          )}
         </div>
 
         {/* Localização Geográfica em Cascata */}
@@ -365,8 +369,9 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
             border: '1px solid var(--border-subtle)'
           }}
         >
-          <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--neon-emerald)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            📍 Região de Atuação
+          <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--neon-emerald)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <MapPin size={14} />
+            <span>Região de Atuação</span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '80px minmax(0, 1fr)', gap: '10px', marginBottom: '10px' }}>
@@ -482,33 +487,37 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', marginBottom: '14px' }}>
               {[
-                { id: 'motorcycle', label: 'Moto', icon: '🏍️' },
-                { id: 'bicycle', label: 'Bike', icon: '🚲' },
-                { id: 'ebike_scooter', label: 'E-Bike', icon: '⚡' }
-              ].map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setTransportModal(m.id as TransportModal)}
-                  style={{
-                    minHeight: '48px',
-                    padding: '6px',
-                    borderRadius: 'var(--radius-md)',
-                    border: transportModal === m.id ? '2px solid var(--neon-emerald)' : '1px solid var(--border-subtle)',
-                    backgroundColor: transportModal === m.id ? 'rgba(0, 245, 155, 0.15)' : 'var(--bg-surface)',
-                    color: transportModal === m.id ? 'var(--neon-emerald)' : 'var(--text-secondary)',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '4px'
-                  }}
-                >
-                  <span>{m.icon}</span> <span>{m.label}</span>
-                </button>
-              ))}
+                { id: 'motorcycle', label: 'Moto', icon: Bike },
+                { id: 'bicycle', label: 'Bike', icon: Bike },
+                { id: 'ebike_scooter', label: 'E-Bike', icon: Zap }
+              ].map((m) => {
+                const IconComp = m.icon;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setTransportModal(m.id as TransportModal)}
+                    style={{
+                      minHeight: '48px',
+                      padding: '6px',
+                      borderRadius: 'var(--radius-md)',
+                      border: transportModal === m.id ? '2px solid var(--neon-emerald)' : '1px solid var(--border-subtle)',
+                      backgroundColor: transportModal === m.id ? 'rgba(0, 245, 155, 0.15)' : 'var(--bg-surface)',
+                      color: transportModal === m.id ? 'var(--neon-emerald)' : 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <IconComp size={15} />
+                    <span>{m.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '10px', marginBottom: '14px' }}>
@@ -614,10 +623,14 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
               border: '1px solid #ef4444',
               color: '#fca5a5',
               fontSize: '13px',
-              marginBottom: '16px'
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
             }}
           >
-            ⚠️ {errorMessage}
+            <AlertTriangle size={15} style={{ color: '#ef4444', flexShrink: 0 }} />
+            <span>{errorMessage}</span>
           </div>
         )}
 
@@ -630,10 +643,14 @@ export const ProfileCompletionForm: React.FC<ProfileCompletionFormProps> = ({
               border: '1px solid var(--neon-emerald)',
               color: 'var(--neon-emerald)',
               fontSize: '13px',
-              marginBottom: '16px'
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
             }}
           >
-            ✅ {successMessage}
+            <CheckCircle2 size={15} style={{ color: 'var(--neon-emerald)', flexShrink: 0 }} />
+            <span>{successMessage}</span>
           </div>
         )}
 

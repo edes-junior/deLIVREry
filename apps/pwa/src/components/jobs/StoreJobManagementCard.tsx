@@ -8,6 +8,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { JobPost, JobBid, MatchedJobContact } from '../../jobs/types.ts';
 import { listBidsForJob, acceptBid, getMatchedJobDetails } from '../../jobs/job-service.ts';
 import { MatchedContactCard } from './MatchedContactCard.tsx';
+import { Avatar } from '../ui/Avatar.tsx';
+import { MapPin, AlertTriangle, Inbox, RefreshCw, Bike, Car, Zap, Star, MessageSquare, Handshake } from 'lucide-react';
 
 interface StoreJobManagementCardProps {
   job: JobPost;
@@ -133,8 +135,8 @@ export const StoreJobManagementCard: React.FC<StoreJobManagementCardProps> = ({
                 ? 'Concluída'
                 : 'Cancelada'}
             </span>
-            <span style={{ fontSize: '13px', color: '#94a3b8' }}>
-              📍 {job.neighborhood_id}
+            <span style={{ fontSize: '13px', color: '#94a3b8', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <MapPin size={13} /> {job.neighborhood_id}
             </span>
           </div>
           <h3 style={{ fontSize: '16px', fontWeight: 700, margin: '2px 0 0 0' }}>
@@ -159,10 +161,14 @@ export const StoreJobManagementCard: React.FC<StoreJobManagementCardProps> = ({
             padding: '8px 12px',
             marginBottom: '10px',
             color: '#fca5a5',
-            fontSize: '12px'
+            fontSize: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
           }}
         >
-          ⚠️ {errorMessage}
+          <AlertTriangle size={14} style={{ color: '#ef4444', flexShrink: 0 }} />
+          <span>{errorMessage}</span>
         </div>
       )}
 
@@ -181,8 +187,9 @@ export const StoreJobManagementCard: React.FC<StoreJobManagementCardProps> = ({
       {job.status === 'open' && (
         <div style={{ marginTop: '14px', borderTop: '1px solid #1e293b', paddingTop: '12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <h4 style={{ fontSize: '13px', fontWeight: 700, margin: 0, color: '#38bdf8' }}>
-              📥 Propostas Recebidas ({bids.length})
+            <h4 style={{ fontSize: '13px', fontWeight: 700, margin: 0, color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Inbox size={15} />
+              <span>Propostas Recebidas ({bids.length})</span>
             </h4>
             <button
               type="button"
@@ -193,10 +200,14 @@ export const StoreJobManagementCard: React.FC<StoreJobManagementCardProps> = ({
                 color: '#94a3b8',
                 fontSize: '12px',
                 cursor: 'pointer',
-                padding: '4px'
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
               }}
             >
-              🔄 Atualizar
+              <RefreshCw size={12} />
+              <span>Atualizar</span>
             </button>
           </div>
 
@@ -244,49 +255,95 @@ export const StoreJobManagementCard: React.FC<StoreJobManagementCardProps> = ({
                       gap: '8px'
                     }}
                   >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span
-                          style={{
-                            fontSize: '10px',
-                            fontWeight: 700,
-                            padding: '2px 6px',
-                            borderRadius: '4px',
-                            backgroundColor: isCounter ? '#0369a1' : '#065f46',
-                            color: '#fff'
-                          }}
-                        >
-                          {isCounter ? '💬 Contraproposta' : '⚡ Valor Integral'}
-                        </span>
-                        {((bid as any).is_supporter || (bid as any).community_supporter) && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '240px' }}>
+                      <Avatar
+                        src={bid.courier_avatar_url}
+                        name={bid.courier_name || 'Entregador'}
+                        userType="courier"
+                        size="sm"
+                      />
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#f8fafc' }}>
+                            {bid.courier_name || 'Entregador Parceiro'}
+                          </span>
+                          {bid.courier_modal && (
+                            <span
+                              style={{
+                                fontSize: '10px',
+                                padding: '1px 6px',
+                                borderRadius: '4px',
+                                backgroundColor: '#1e293b',
+                                color: '#94a3b8'
+                              }}
+                            >
+                              {bid.courier_modal === 'motorcycle' ? (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Bike size={11} /> Moto</span>
+                              ) : bid.courier_modal === 'bicycle' ? (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Bike size={11} /> Bike</span>
+                              ) : bid.courier_modal === 'e-bike' ? (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Zap size={11} /> E-Bike</span>
+                              ) : (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}><Car size={11} /> Carro</span>
+                              )}
+                            </span>
+                          )}
+                          {bid.courier_level && (
+                            <span
+                              style={{
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                padding: '1px 6px',
+                                borderRadius: '4px',
+                                backgroundColor: 'rgba(255, 230, 0, 0.1)',
+                                color: '#ffe600',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px'
+                              }}
+                            >
+                              <Star size={10} fill="currentColor" /> {bid.courier_level} ({bid.courier_xp ?? 0} XP)
+                            </span>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
                           <span
-                            data-testid="badge-bid-supporter"
                             style={{
                               fontSize: '10px',
                               fontWeight: 700,
                               padding: '2px 6px',
                               borderRadius: '4px',
-                              backgroundColor: '#064e3b',
-                              color: '#34d399',
-                              border: '1px solid #059669',
+                              backgroundColor: isCounter ? '#0369a1' : '#065f46',
+                              color: '#fff',
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '3px'
                             }}
                           >
-                            <span>💚</span>
-                            <span>Apoiador</span>
+                            {isCounter ? (
+                              <>
+                                <MessageSquare size={10} />
+                                <span>Contraproposta</span>
+                              </>
+                            ) : (
+                              <>
+                                <Zap size={10} />
+                                <span>Valor Integral</span>
+                              </>
+                            )}
                           </span>
+                          <span style={{ fontSize: '12px', fontWeight: 600, color: '#10b981' }}>
+                            Diária: R$ {Number(bid.bid_daily_rate).toFixed(2)} | Taxa: R$ {Number(bid.bid_delivery_fee).toFixed(2)}
+                          </span>
+                        </div>
+
+                        {bid.notes && (
+                          <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#94a3b8' }}>
+                            "{bid.notes}"
+                          </p>
                         )}
-                        <span style={{ fontSize: '13px', fontWeight: 700, color: '#f1f5f9' }}>
-                          Diária: R$ {Number(bid.bid_daily_rate).toFixed(2)} | Taxa: R$ {Number(bid.bid_delivery_fee).toFixed(2)}
-                        </span>
                       </div>
-                      {bid.notes && (
-                        <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#94a3b8' }}>
-                          "{bid.notes}"
-                        </p>
-                      )}
                     </div>
 
                     {/* Botão de Aceite em 1 Clique (FR-6, NFR-9) */}
@@ -304,10 +361,19 @@ export const StoreJobManagementCard: React.FC<StoreJobManagementCardProps> = ({
                         fontWeight: 700,
                         fontSize: '13px',
                         cursor: isAccepting ? 'not-allowed' : 'pointer',
-                        boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
+                        boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
                       }}
                     >
-                      {isAccepting ? 'Fechando...' : '🤝 Aceitar'}
+                      {isAccepting ? 'Fechando...' : (
+                        <>
+                          <Handshake size={15} />
+                          <span>Aceitar</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 );

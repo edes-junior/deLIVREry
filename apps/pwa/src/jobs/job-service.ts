@@ -202,8 +202,70 @@ export function isJobCompatibleWithModal(
   return true;
 }
 
+export const SHIFT_COLLISION_BUFFER_MS = 30 * 60 * 1000; // 30 minutos de tolerância/buffer (Story 5 / CAP-5)
+
 /**
- * Consulta pública de vagas abertas com suporte a filtros geográficos e modal.
+ * Verifica se dois intervalos de turnos operacionais colidem temporalmente,
+ * aplicando uma janela de tolerância/buffer fixo de 30 minutos (Story 5 / CAP-5).
+ *
+ * Dois turnos A e B colidem se:
+ * (A.start < B.end + 30min) && (A.end > B.start - 30min)
+ */
+export function doShiftsCollide(
+  shiftAStart: string | Date,
+  shiftAEnd: string | Date,
+  shiftBStart: string | Date,
+  shiftBEnd: string | Date,
+  bufferMs: number = SHIFT_COLLISION_BUFFER_MS
+): boolean {
+  const aStart = new Date(shiftAStart).getTime();
+  const aEnd = new Date(shiftAEnd).getTime();
+  const bStart = new Date(shiftBStart).getTime();
+  const bEnd = new Date(shiftBEnd).getTime();
+
+  if (isNaN(aStart) || isNaN(aEnd) || isNaN(bStart) || isNaN(bEnd)) {
+    return false;
+  }
+
+  return aStart < (bEnd + bufferMs) && aEnd > (bStart - bufferMs);
+}
+
+/**
+ * Retorna os turnos já aceitos/confirmados do entregador ('matched' ou 'in_progress').
+ */
+export async function getCourierAcceptedShifts(
+  courierUserId: string,
+  client: any = supabase
+): Promise<JobPost[]> {
+  if (!courierUserId) return [];
+  try {
+    const { data, error } = await client
+      .from('job_posts')
+      .select('*')
+      .eq('matched_courier_id', courierUserId)
+      .in('status', ['matched', 'in_progress']);
+
+    if (error || !data) return [];
+    return data as JobPost[];
+  } catch {
+    // Fallback gracioso para mocks sem operador .in()
+    try {
+      const { data } = await client
+        .from('job_posts')
+        .select('*')
+        .eq('matched_courier_id', courierUserId);
+      if (Array.isArray(data)) {
+        return data.filter((j: any) => j.status === 'matched' || j.status === 'in_progress');
+      }
+    } catch {
+      return [];
+    }
+    return [];
+  }
+}
+
+/**
+ * Consulta pública de vagas abertas com suporte a filtros geográficos, modal e exclusão de colisão.
  * Nota: Os telefones das lojas não são retornados pela consulta pública de vagas (RLS / AD-10).
  */
 export async function listOpenJobs(
@@ -248,6 +310,22 @@ export async function listOpenJobs(
     jobs = jobs.filter(job => (job.delivery_radius_km ?? 3.0) <= filters.max_radius_km!);
   }
 
+  // Exclusão de vagas com colisão de horário com a agenda aceita do entregador (Story 5 / CAP-5)
+  if (filters?.courier_user_id) {
+    try {
+      const acceptedShifts = await getCourierAcceptedShifts(filters.courier_user_id, client);
+      if (acceptedShifts.length > 0) {
+        jobs = jobs.filter(job =>
+          !acceptedShifts.some(accepted =>
+            doShiftsCollide(job.shift_start_time, job.shift_end_time, accepted.shift_start_time, accepted.shift_end_time)
+          )
+        );
+      }
+    } catch {
+      // Degradação graciosa
+    }
+  }
+
   return { success: true, jobs };
 }
 
@@ -268,11 +346,11 @@ export async function submitBid(
     return { success: false, error: validation.errors.join(' ') };
   }
 
-  // Verifica se a vaga ainda aceita propostas (não casada ou cancelada)
+  // Verifica se a vaga ainda aceita propostas e se não há colisão de agenda com turnos aceitos (CAP-5)
   try {
     const { data: job } = await client
       .from('job_posts')
-      .select('status')
+      .select('status, shift_start_time, shift_end_time')
       .eq('id', input.job_id)
       .single();
 
@@ -285,6 +363,21 @@ export async function submitBid(
       }
       if (job.status !== 'open') {
         return { success: false, error: 'Esta vaga não está aberta para receber propostas.' };
+      }
+
+      // Barreira de segurança: impede envio de bid para turno que colida com buffer de 30m
+      if (job.shift_start_time && job.shift_end_time) {
+        const acceptedShifts = await getCourierAcceptedShifts(courierUserId, client);
+        const conflictingShift = acceptedShifts.find(accepted =>
+          doShiftsCollide(job.shift_start_time, job.shift_end_time, accepted.shift_start_time, accepted.shift_end_time)
+        );
+
+        if (conflictingShift) {
+          return {
+            success: false,
+            error: 'Conflito de agenda: você já possui um turno confirmado com intervalo inferior a 30 minutos deste horário (SCHEDULE_CONFLICT).'
+          };
+        }
       }
     }
   } catch {
@@ -315,6 +408,7 @@ export async function submitBid(
 
 /**
  * Consulta todas as propostas recebidas para uma vaga (acessível exclusivamente pelo lojista dono).
+ * Retorna dados enriquecidos com perfil público do entregador (avatar, nome, modal, reputação - CAP-3, AD-10).
  */
 export async function listBidsForJob(
   storeUserId: string,
@@ -325,6 +419,22 @@ export async function listBidsForJob(
     return { success: false, bids: [], error: 'Parâmetros obrigatórios ausentes.' };
   }
 
+  // Tenta consultar a view enriquecida com perfil público e avatares (CAP-3, AD-10)
+  try {
+    const res = await client
+      .from('job_bids_with_couriers')
+      .select('*')
+      .eq('job_id', jobId)
+      .order('created_at', { ascending: false });
+
+    if (res && !res.error && Array.isArray(res.data)) {
+      return { success: true, bids: res.data as JobBid[] };
+    }
+  } catch {
+    // Fallback transparente caso a view não exista no banco ou mock legado
+  }
+
+  // Fallback padrão para a tabela relacional job_bids
   const { data, error } = await client
     .from('job_bids')
     .select('*')

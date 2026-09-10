@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { Bike, Zap, ShieldCheck, Sparkles, Check, Loader2 } from 'lucide-react';
 import { PricingService } from '../../pricing/pricing-service.ts';
 import { RegionalPricingMetrics } from '../../pricing/types.ts';
 import { Card, Badge, Button, triggerHaptic } from '../ui/index.ts';
@@ -73,10 +74,10 @@ export const RegionalPricingWidget: React.FC<RegionalPricingWidgetProps> = ({
   };
 
   const modals = [
-    { id: 'all', label: 'Todos' },
-    { id: 'motorcycle', label: '🏍️ Moto' },
-    { id: 'bicycle', label: '🚲 Bike' },
-    { id: 'ebike_scooter', label: '⚡ E-Bike' }
+    { id: 'all', label: 'Todos', icon: null },
+    { id: 'motorcycle', label: 'Moto', icon: Bike },
+    { id: 'bicycle', label: 'Bike', icon: Bike },
+    { id: 'ebike_scooter', label: 'E-Bike', icon: Zap }
   ];
 
   return (
@@ -112,7 +113,13 @@ export const RegionalPricingWidget: React.FC<RegionalPricingWidgetProps> = ({
         {/* Badge de Consolidação */}
         {metrics && (
           <Badge variant={metrics.isConsolidated ? 'emerald' : 'yellow'}>
-            {metrics.isConsolidated ? '✓ Consolidado no Bairro' : 'Em Consolidação (Ref. Cidade)'}
+            {metrics.isConsolidated ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <Check size={12} /> Consolidado no Bairro
+              </span>
+            ) : (
+              'Em Consolidação (Ref. Cidade)'
+            )}
           </Badge>
         )}
       </div>
@@ -121,6 +128,7 @@ export const RegionalPricingWidget: React.FC<RegionalPricingWidgetProps> = ({
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '6px', marginBottom: '16px' }}>
         {modals.map(m => {
           const isSelected = selectedModal === m.id;
+          const IconComp = m.icon;
           return (
             <Button
               key={m.id}
@@ -128,9 +136,10 @@ export const RegionalPricingWidget: React.FC<RegionalPricingWidgetProps> = ({
               size="sm"
               isActive={isSelected}
               onClick={() => setSelectedModal(m.id)}
-              style={{ fontSize: '11px', padding: '6px 4px', minHeight: '48px' }}
+              style={{ fontSize: '11px', padding: '6px 4px', minHeight: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
             >
-              {m.label}
+              {IconComp && <IconComp size={13} />}
+              <span>{m.label}</span>
             </Button>
           );
         })}
@@ -138,9 +147,9 @@ export const RegionalPricingWidget: React.FC<RegionalPricingWidgetProps> = ({
 
       {/* Indicadores de Valores (Diária e Taxa) */}
       {isLoading ? (
-        <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px' }}>
-          <span className="animate-spin" style={{ display: 'inline-block', marginRight: '6px' }}>⚡</span>
-          Atualizando média do bairro...
+        <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <Loader2 size={16} className="animate-spin" />
+          <span>Atualizando média do bairro...</span>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: compact ? '1fr' : 'minmax(0, 1fr) minmax(0, 1fr)', gap: '10px', marginBottom: '14px' }}>
@@ -177,8 +186,11 @@ export const RegionalPricingWidget: React.FC<RegionalPricingWidgetProps> = ({
       )}
 
       {/* Info Proteção Anti-Manipulação com Contador de Outliers */}
-      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '14px', lineHeight: 1.35 }}>
-        🛡️ Sem comissão de intermediação. {metrics?.outliersCount !== undefined && `${metrics.outliersCount} proposta(s) anômala(s) expurgada(s) pelo filtro 1.5xIQR.`} Valores fora da realidade são desconsiderados para manter o mercado saudável.
+      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '14px', lineHeight: 1.4, display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+        <ShieldCheck size={14} style={{ color: 'var(--neon-emerald)', flexShrink: 0, marginTop: '2px' }} />
+        <span>
+          Sem comissão de intermediação. {metrics?.outliersCount !== undefined && `${metrics.outliersCount} proposta(s) anômala(s) expurgada(s) pelo filtro 1.5xIQR.`} Valores fora da realidade são desconsiderados para manter o mercado saudável.
+        </span>
       </div>
 
       {/* Botão de Autopreenchimento com Sugerir Preço de Mercado */}
@@ -197,7 +209,15 @@ export const RegionalPricingWidget: React.FC<RegionalPricingWidgetProps> = ({
           disabled={isLoading}
           style={{ minHeight: '48px' }}
         >
-          {appliedFeedback ? '✓ Preço Médio Sugerido Aplicado!' : '💡 Sugerir Preço de Mercado'}
+          {appliedFeedback ? (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <Check size={16} /> Preço Médio Sugerido Aplicado!
+            </span>
+          ) : (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <Sparkles size={16} /> Sugerir Preço de Mercado
+            </span>
+          )}
         </Button>
       )}
     </Card>

@@ -84,7 +84,7 @@ O **deLIVREry** existe para restituir a liberdade e a soberania das pontas opera
 - **Gatilho de Desbloqueio Regional:** Limiar numérico mínimo de densidade local (padrão: 10 lojistas ativos e 50 entregadores cadastrados em raio de 3km) para transicionar qualquer bairro/cidade do Brasil de *Pré-Lançamento* para *Operação Ativa*.
 - **Termômetro de Desbloqueio:** Indicador visual no PWA/Landing Pages que exibe o percentual de quórum atingido para a ativação do bairro selecionado e incentiva a indicação viral.
 - **Magic Link:** Mecanismo de autenticação sem senha (*passwordless*) onde o usuário recebe um token seguro por e-mail para acesso persistente.
-- **Microdoação PIX:** Contribuição financeira voluntária não-obrigatória, realizada através de Chave PIX Estática Copia e Cola, destinada à manutenção dos servidores e evolução da plataforma.
+- **Contribuição Voluntária Operacional PIX:** Apoio financeiro livre, direto e voluntário (sem contraprestação ou vínculo comercial/SaaS), realizado via Chave PIX Estática Copia e Cola, destinado à sustentação integral da operação, suporte humanizado, infraestrutura e esforço contínuo de evolução da plataforma aberta (Digital Commons).
 - **Modal:** Meio de locomoção do entregador (Motocicleta, Bicicleta convencional, Bicicleta elétrica / Patinete).
 
 ---
@@ -165,34 +165,36 @@ O sistema deve bloquear alterações no valor base padrão do perfil do entregad
 
 ---
 
-### 4.4 Sustentabilidade por Microdoações PIX (Delight Moments)
-**Description:** Sistema de financiamento comunitário sem comissões obrigatórias, acionado estrategicamente por microdoações PIX Copia e Cola via Chave Estática em momentos de alta satisfação. Realiza UJ-1, UJ-2.
+### 4.4 Sustentabilidade e Autonomia Operacional por Contribuições Voluntárias PIX (Delight Moments)
+**Description:** Sistema de sustentabilidade e independência comunitária sem comissões nem mensalidades obrigatórias, acionado por contribuições voluntárias diretas via Chave PIX Estática Copia e Cola em momentos de alta satisfação operacional (*Delight Moments*). A contribuição mantém a operação plena, o suporte humanizado e o esforço contínuo de evolução da plataforma aberta (Digital Commons). Não se trata de caridade nem de vaquinha de servidores, mas sim da preservação mútua de um ecossistema livre de taxas predatórias. Realiza UJ-1, UJ-2.
 
 **Functional Requirements:**
 
-#### FR-10: Disparo do Modal de Microdoação nos 5 Delight Moments
-O sistema deve acionar o componente de doação (Bottom Sheet / Modal flutuante) exclusivamente nos 5 momentos mapeados:
-1. *Entregador:* Ao ter o pagamento confirmado pelo lojista ao final do turno.
-2. *Entregador:* Ao subir de nível no sistema de gamificação.
-3. *Lojista:* Ao ter uma vaga de emergência aceita em $<5$ minutos.
+#### FR-10: Disparo do Componente de Apoio Operacional nos 5 Delight Moments
+O sistema deve acionar o componente de contribuição voluntária (Bottom Sheet / Modal não-bloqueante) de forma elegante e contextual nos 5 momentos de alívio e conquista mapeados:
+1. *Entregador:* Ao ter o pagamento integral do turno confirmado pelo lojista (destacando a ausência de taxas intermediárias).
+2. *Entregador:* Ao subir de nível no sistema de gamificação operacional.
+3. *Lojista:* Ao ter uma vaga de emergência atendida em $<5$ minutos.
 4. *Lojista:* Ao avaliar um entregador com 5 estrelas pós-turno.
 5. *Parceiro API:* Ao completar 1.000 requisições de sucesso no mês.
 Realiza UJ-1, UJ-2, UJ-3.
 **Consequences (testable):**
-- O modal surge suavemente sem bloquear a tela de forma punitiva e com opção clara de fechar em 1 clique (`[ Agora Não ]`).
-- Exibe chips de valores rápidos: `[ R$ 2,00 ]`, `[ R$ 5,00 ]`, `[ R$ 10,00 ]` e `[ Outro Valor ]`.
+- O modal surge suavemente com narrativa convincente de copropriedade e sustentação da operação (sem apelo à caridade ou culpa), com opção clara de fechar em 1 toque (`[ Agora Não ]`).
+- Não há imposição de valores ou barreiras de uso; a interface foca na facilidade da contribuição voluntária e na relevância do esforço mantido.
 
-#### FR-11: Chave PIX Estática Mockada e Cópia em 1 Clique
-Ao selecionar o valor ou clicar em [ 📋 Copiar Código PIX ], o sistema injeta o payload BR Code da Chave PIX Estática (`pix@delivrery.app.br` / mock configurável) na área de transferência do dispositivo com vibração tátil (*Haptic Feedback*) e toast informativo. Realiza UJ-1.
+#### FR-11: Chave PIX Estática e Gratidão Fraterna com Privacidade Absoluta (Zero Risco Fiscal)
+Ao clicar em [ 📋 Copiar Chave PIX ], o sistema injeta o payload BR Code da Chave PIX Estática (`pix@delivrery.app.br` / mock configurável) na área de transferência do dispositivo com vibração tátil (*Haptic Feedback*) e toast de celebração fraterna. Realiza UJ-1.
 **Consequences (testable):**
-- O payload copiado é padronizado e compatível com leitura de qualquer aplicativo bancário nacional.
-- O evento de cópia é registrado anonimamente na tabela `donations_log` para análise de métricas de conversão.
-- Concede instantaneamente $+25\text{ XP}$ e a badge de *Apoiador da Comunidade* ao usuário no primeiro apoio do mês.
+- O payload copiado é padronizado e compatível com qualquer aplicativo bancário nacional.
+- O evento de cópia é registrado de forma anônima para métricas de conversão, sem rastro bancário individual no app.
+- **Proteção Fiscal e Isonomia Radical:** Não são concedidos selos, badges ou pontuações de XP no perfil do usuário, eliminando qualquer risco de reclassificação tributária da doação para venda de serviços/ativos digitais (evitando incidência de ISS) e prevenindo castas ou privilégios operacionais entre trabalhadores.
+- A tela pós-cópia exibe mensagem humana de gratidão e lembra discretamente o valor/taxas que permaneceram no bolso do usuário graças ao deLIVREry.
 
-#### FR-12: Painel Público de Transparência do Custo do Servidor
-O sistema deve disponibilizar um indicador público de arrecadação comunitária vs. custo real mensal de infraestrutura (Supabase, FCM, hospedagem), promovendo transparência total.
+#### FR-12: Painel Público de Vitalidade e Sustentação Operacional da Praça
+O sistema deve disponibilizar um indicador público e visual de saúde da operação e sustentabilidade da praça, sem expor cifras monetárias em Reais (R$), promovendo clareza de objetivo sem parecer balancete ou arrecadação contábil.
 **Consequences (testable):**
-- O atingimento de 100% da meta do mês ativa visual comemorativo de *Vitória Coletiva* no rodapé do PWA.
+- O indicador visual exibe o status de vitalidade em faixas qualitativas de fôlego operacional (*Operação Básica* ➔ *Operação Saudável* ➔ *Evolução e Suporte Contínuo*).
+- O atingimento de 100% da autonomia operacional do mês ativa banner comemorativo de *Vitória Coletiva* no rodapé do PWA, celebrando a sustentação do ecossistema por quem o utiliza.
 
 ---
 

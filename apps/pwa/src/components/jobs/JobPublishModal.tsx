@@ -6,6 +6,7 @@
 // ==============================================================================
 
 import React, { useState, useMemo } from 'react';
+import { Megaphone, X, Sparkles, Lightbulb, Bike, Zap } from 'lucide-react';
 import type { TransportModal } from '../../profile/types.ts';
 import { createJobPost } from '../../jobs/job-service.ts';
 import { isEligibleForEarlyXpBonus } from '../../notifications/notification-service.ts';
@@ -157,8 +158,9 @@ export const JobPublishModal: React.FC<JobPublishModalProps> = ({
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>
-            📢 Publicar Vaga de Turno
+          <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Megaphone size={20} style={{ color: 'var(--neon-emerald)' }} />
+            <span>Publicar Vaga de Turno</span>
           </h2>
           <button
             type="button"
@@ -167,7 +169,6 @@ export const JobPublishModal: React.FC<JobPublishModalProps> = ({
               background: 'none',
               border: 'none',
               color: '#94a3b8',
-              fontSize: '20px',
               cursor: 'pointer',
               minWidth: '48px',
               minHeight: '48px',
@@ -176,7 +177,7 @@ export const JobPublishModal: React.FC<JobPublishModalProps> = ({
               justifyContent: 'center'
             }}
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
 
@@ -194,7 +195,7 @@ export const JobPublishModal: React.FC<JobPublishModalProps> = ({
               gap: '10px'
             }}
           >
-            <span style={{ fontSize: '24px' }}>⭐</span>
+            <Sparkles size={24} style={{ color: '#f59e0b', flexShrink: 0 }} />
             <div>
               <div style={{ fontSize: '13px', fontWeight: 700, color: '#f59e0b' }}>
                 Bônus de Antecipação Ativo (+50 XP)!
@@ -212,10 +213,16 @@ export const JobPublishModal: React.FC<JobPublishModalProps> = ({
               padding: '10px 14px',
               marginBottom: '16px',
               fontSize: '12px',
-              color: '#94a3b8'
+              color: '#94a3b8',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
             }}
           >
-            💡 <strong>Dica Pro:</strong> Agende turnos com mais de 48h de antecedência para acumular <strong>+50 XP</strong> no seu perfil de lojista.
+            <Lightbulb size={15} style={{ color: '#f59e0b', flexShrink: 0 }} />
+            <span>
+              <strong>Dica Pro:</strong> Agende turnos com mais de 48h de antecedência para acumular <strong>+50 XP</strong> no seu perfil de lojista.
+            </span>
           </div>
         )}
 
@@ -292,7 +299,7 @@ export const JobPublishModal: React.FC<JobPublishModalProps> = ({
               cityId={defaultCityId}
               neighborhoodId={defaultNeighborhoodId}
               compact={true}
-              title="📊 Balizador de Preços da sua Região"
+              title="Balizador de Preços da sua Região"
               onApplyRates={(suggestedDaily, suggestedFee) => {
                 setDailyRate(suggestedDaily.toFixed(2));
                 setDeliveryFee(suggestedFee.toFixed(2));
@@ -362,11 +369,12 @@ export const JobPublishModal: React.FC<JobPublishModalProps> = ({
             </label>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {[
-                { id: 'motorcycle', label: '🏍️ Moto' },
-                { id: 'bicycle', label: '🚲 Bicicleta' },
-                { id: 'ebike_scooter', label: '⚡ E-Bike / Patinete' }
+                { id: 'motorcycle', label: 'Moto', icon: Bike },
+                { id: 'bicycle', label: 'Bicicleta', icon: Bike },
+                { id: 'ebike_scooter', label: 'E-Bike / Patinete', icon: Zap }
               ].map(m => {
                 const isSelected = selectedModals.includes(m.id as TransportModal);
+                const IconComp = m.icon;
                 return (
                   <button
                     key={m.id}
@@ -382,10 +390,15 @@ export const JobPublishModal: React.FC<JobPublishModalProps> = ({
                       fontWeight: 600,
                       fontSize: '13px',
                       cursor: 'pointer',
-                      minHeight: '48px'
+                      minHeight: '48px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
                     }}
                   >
-                    {m.label}
+                    <IconComp size={16} />
+                    <span>{m.label}</span>
                   </button>
                 );
               })}

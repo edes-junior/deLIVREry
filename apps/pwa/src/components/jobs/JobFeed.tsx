@@ -10,6 +10,7 @@ import { listOpenJobs } from '../../jobs/job-service.ts';
 import { JobCard } from './JobCard.tsx';
 import { CounterProposalModal } from './CounterProposalModal.tsx';
 import { Button, Card, triggerHaptic } from '../ui/index.ts';
+import { MapPin, Globe, RefreshCw, Radar, ShieldCheck, AlertCircle, Bike, Zap } from 'lucide-react';
 
 interface JobFeedProps {
   courierUserId: string;
@@ -30,7 +31,7 @@ export const JobFeed: React.FC<JobFeedProps> = ({
   const [userBids, setUserBids] = useState<Record<string, JobBid>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [filterNeighborhood, setFilterNeighborhood] = useState(false);
+  const [filterNeighborhood, setFilterNeighborhood] = useState(true); // Padrão: Meu Bairro cadastrado (CAP-6)
   const [selectedJobForCounter, setSelectedJobForCounter] = useState<JobPost | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -48,7 +49,8 @@ export const JobFeed: React.FC<JobFeedProps> = ({
         state_id: stateId,
         city_id: cityId,
         neighborhood_id: filterNeighborhood ? neighborhoodId : undefined,
-        modal: transportModal
+        modal: transportModal,
+        courier_user_id: courierUserId // Exclui oportunidades conflitantes com a agenda aceita (CAP-5)
       });
 
       if (!res.success) {
@@ -62,14 +64,14 @@ export const JobFeed: React.FC<JobFeedProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [stateId, cityId, neighborhoodId, transportModal, filterNeighborhood]);
+  }, [stateId, cityId, neighborhoodId, transportModal, filterNeighborhood, courierUserId]);
 
   useEffect(() => {
     fetchJobs();
   }, [fetchJobs]);
 
   const handleRefresh = () => {
-    triggerHaptic(20);
+    triggerHaptic(25);
     fetchJobs();
   };
 
@@ -78,56 +80,87 @@ export const JobFeed: React.FC<JobFeedProps> = ({
       ...prev,
       [jobId]: bid
     }));
-    showToast('🚀 Proposta enviada com sucesso para o restaurante!');
+    showToast('Proposta enviada com sucesso para o restaurante!');
   };
 
   const modalLabel =
     transportModal === 'bicycle'
-      ? '🚲 Bicicleta (Até 3km)'
+      ? 'Bicicleta (Até 3km)'
       : transportModal === 'motorcycle'
-      ? '🏍️ Moto'
-      : '⚡ E-Bike';
+      ? 'Moto'
+      : 'E-Bike';
 
   return (
-    <div style={{ marginTop: '16px', width: '100%', minWidth: 0 }}>
-      {/* Barra de Filtros e Título do Feed */}
+    <div style={{ marginTop: '4px', width: '100%', minWidth: 0 }}>
+      {/* Barra de Filtros e Título do Feed (320px-proof) */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '14px',
-          flexWrap: 'wrap',
-          gap: '8px'
+          marginBottom: '8px',
+          gap: '8px',
+          width: '100%'
         }}
       >
-        <div>
-          <h2 style={{ fontSize: '17px', fontWeight: 800, margin: 0, color: '#ffffff' }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <h2 style={{ fontSize: '15px', fontWeight: 800, margin: 0, color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             Turnos com Vagas Abertas
           </h2>
-          <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>
-            Filtradas para o seu modal: <strong style={{ color: 'var(--neon-emerald)' }}>{modalLabel}</strong>
+          <p style={{ margin: '1px 0 0 0', fontSize: '11px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            Filtradas para o seu modal:{' '}
+            <strong style={{ color: 'var(--neon-emerald)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+              <Bike size={12} />
+              {modalLabel}
+            </strong>
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '6px' }}>
-          <Button
-            size="sm"
-            variant={filterNeighborhood ? 'cta' : 'secondary'}
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
+          <button
+            type="button"
             onClick={() => setFilterNeighborhood((prev) => !prev)}
-            style={{ fontSize: '11px', padding: '6px 10px', minHeight: '40px' }}
+            style={{
+              minHeight: '32px',
+              padding: '4px 10px',
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: filterNeighborhood ? 'rgba(0, 245, 155, 0.15)' : 'var(--bg-surface-raised)',
+              border: filterNeighborhood ? '1px solid var(--neon-emerald)' : '1px solid var(--border-subtle)',
+              color: filterNeighborhood ? 'var(--neon-emerald)' : 'var(--text-secondary)',
+              cursor: 'pointer',
+              fontSize: '11px',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              transition: 'all 0.15s ease'
+            }}
           >
-            {filterNeighborhood ? '📍 Meu Bairro' : '🌐 Toda a Região'}
-          </Button>
+            {filterNeighborhood ? <MapPin size={12} /> : <Globe size={12} />}
+            <span>{filterNeighborhood ? 'Meu Bairro' : 'Região'}</span>
+          </button>
 
-          <Button
-            size="sm"
-            variant="secondary"
+          <button
+            type="button"
             onClick={handleRefresh}
-            style={{ fontSize: '11px', padding: '6px 10px', minHeight: '40px' }}
+            style={{
+              minHeight: '32px',
+              width: '32px',
+              padding: 0,
+              borderRadius: 'var(--radius-full)',
+              backgroundColor: 'var(--bg-surface-raised)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.15s ease'
+            }}
+            title="Atualizar lista de vagas"
           >
-            🔄 Atualizar
-          </Button>
+            <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
+          </button>
         </div>
       </div>
 
@@ -147,7 +180,7 @@ export const JobFeed: React.FC<JobFeedProps> = ({
             gap: '8px'
           }}
         >
-          <span>🛡️</span>
+          <ShieldCheck size={16} style={{ color: '#38bdf8', flexShrink: 0 }} />
           <span>
             <strong>Segurança Ativa:</strong> Exibindo apenas turnos com raio de até 3km para proteger sua ergonomia física.
           </span>
@@ -164,33 +197,85 @@ export const JobFeed: React.FC<JobFeedProps> = ({
             padding: '10px 14px',
             marginBottom: '14px',
             color: '#fde68a',
-            fontSize: '13px'
+            fontSize: '13px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}
         >
-          ⚠️ {errorMessage}
+          <AlertCircle size={15} style={{ color: '#f59e0b', flexShrink: 0 }} />
+          <span>{errorMessage}</span>
         </div>
       )}
 
       {/* Loading Skeleton */}
       {isLoading && (
         <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-secondary)' }}>
-          <div className="animate-spin" style={{ fontSize: '24px', marginBottom: '8px', display: 'inline-block' }}>⚡</div>
+          <div className="animate-spin" style={{ marginBottom: '8px', display: 'inline-block' }}>
+            <Zap size={24} style={{ color: 'var(--neon-emerald)' }} />
+          </div>
           <div style={{ fontSize: '13px' }}>Buscando turnos no seu bairro...</div>
         </div>
       )}
 
-      {/* Lista de Vagas */}
+      {/* Lista de Vagas - Radar Tático (320px-proof) */}
       {!isLoading && jobs.length === 0 && (
-        <Card style={{ textAlign: 'center', padding: '32px 16px' }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🛵</div>
-          <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: '0 0 6px 0' }}>
+        <Card
+          variant="raised"
+          style={{
+            textAlign: 'center',
+            padding: '24px 14px',
+            border: '1px dashed var(--border-subtle)',
+            backgroundColor: 'rgba(13, 18, 28, 0.6)'
+          }}
+        >
+          <div
+            style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(0, 245, 155, 0.1)',
+              border: '1px solid rgba(0, 245, 155, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 10px auto'
+            }}
+          >
+            <Radar size={22} style={{ color: 'var(--neon-emerald)' }} />
+          </div>
+          <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff', margin: '0 0 4px 0' }}>
             Nenhum turno aberto no momento
           </h3>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 14px 0', lineHeight: 1.4 }}>
             {filterNeighborhood
-              ? 'Não há vagas no seu bairro agora. Tente alternar para "Toda a Região" acima.'
-              : 'Nenhum estabelecimento publicou turnos nesta região hoje. Volte em instantes!'}
+              ? 'Seu radar está ligado no seu bairro. Toque abaixo para ver vagas em toda a região.'
+              : 'Nenhum estabelecimento publicou turnos nesta região hoje. Seu radar segue escutando!'}
           </p>
+
+          {filterNeighborhood && (
+            <button
+              type="button"
+              onClick={() => setFilterNeighborhood(false)}
+              style={{
+                minHeight: '36px',
+                padding: '6px 14px',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: 'rgba(0, 245, 155, 0.12)',
+                border: '1px solid var(--neon-emerald)',
+                color: 'var(--neon-emerald)',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Globe size={13} />
+              <span>Ver Vagas em Toda a Região</span>
+            </button>
+          )}
         </Card>
       )}
 
