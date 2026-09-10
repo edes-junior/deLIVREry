@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import type { JobPost, JobBid, MatchedJobContact } from '../../jobs/types.ts';
-import { listBidsForJob, acceptBid, getMatchedJobDetails } from '../../jobs/job-service.ts';
+import { listBidsForJob, acceptBid, getMatchedJobDetails, hasUserRatedJob } from '../../jobs/job-service.ts';
 import { MatchedContactCard } from './MatchedContactCard.tsx';
 import { JobCancellationModal } from './JobCancellationModal.tsx';
 import { Avatar } from '../ui/Avatar.tsx';
@@ -15,6 +15,7 @@ import { MapPin, AlertTriangle, Inbox, RefreshCw, Bike, Car, Zap, Star, MessageS
 interface StoreJobManagementCardProps {
   job: JobPost;
   storeUserId: string;
+  hasRated?: boolean;
   onJobUpdated: (updatedJob: JobPost) => void;
   onOpenRatingModal: (contact: MatchedJobContact) => void;
 }
@@ -22,6 +23,7 @@ interface StoreJobManagementCardProps {
 export const StoreJobManagementCard: React.FC<StoreJobManagementCardProps> = ({
   job,
   storeUserId,
+  hasRated,
   onJobUpdated,
   onOpenRatingModal
 }) => {
@@ -31,6 +33,15 @@ export const StoreJobManagementCard: React.FC<StoreJobManagementCardProps> = ({
   const [matchedContact, setMatchedContact] = useState<MatchedJobContact | null>(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [localHasRated, setLocalHasRated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (job.status === 'completed' && hasRated === undefined) {
+      hasUserRatedJob(storeUserId, job.id).then(setLocalHasRated);
+    }
+  }, [job.status, job.id, storeUserId, hasRated]);
+
+  const isShiftRated = hasRated !== undefined ? hasRated : (localHasRated ?? false);
 
   const fetchBids = useCallback(async () => {
     if (job.status !== 'open') return;
@@ -174,12 +185,14 @@ export const StoreJobManagementCard: React.FC<StoreJobManagementCardProps> = ({
         </div>
       )}
 
-      {/* Caso a vaga esteja casada ou concluída, exibe os contatos liberados */}
+      {/* Caso a vaga esteja casada ou concluída, exibe os contatos liberados ou status de encerramento */}
       {(job.status === 'matched' || job.status === 'completed') && matchedContact && (
         <MatchedContactCard
           contact={matchedContact}
           currentUserId={storeUserId}
           isStore={true}
+          jobStatus={job.status}
+          hasRated={isShiftRated}
           onJobUpdated={onJobUpdated}
           onOpenRatingModal={onOpenRatingModal}
         />

@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import type { JobPost, MatchedJobContact, JobRating } from '../../jobs/types.ts';
-import { listStoreJobs } from '../../jobs/job-service.ts';
+import { listStoreJobs, getRatedJobIdsForUser } from '../../jobs/job-service.ts';
 import { StoreJobManagementCard } from './StoreJobManagementCard.tsx';
 import { JobRatingModal } from './JobRatingModal.tsx';
 import { DonationBottomSheet } from '../donations/DonationBottomSheet.tsx';
@@ -26,6 +26,7 @@ export const StoreJobsList: React.FC<StoreJobsListProps> = ({
   const [selectedContactForRating, setSelectedContactForRating] = useState<MatchedJobContact | null>(null);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [ratedJobIds, setRatedJobIds] = useState<Set<string>>(new Set());
 
   const fetchJobs = useCallback(async () => {
     setIsLoading(true);
@@ -33,6 +34,9 @@ export const StoreJobsList: React.FC<StoreJobsListProps> = ({
       const res = await listStoreJobs(storeUserId);
       if (res.success) {
         setJobs(res.jobs);
+        const jobIds = (res.jobs || []).map((j) => j.id);
+        const ratedSet = await getRatedJobIdsForUser(storeUserId, jobIds);
+        setRatedJobIds(ratedSet);
       }
     } catch {
       // Ignora para não travar
@@ -50,6 +54,9 @@ export const StoreJobsList: React.FC<StoreJobsListProps> = ({
   };
 
   const handleRatingSuccess = (rating: JobRating, earnedXp?: number) => {
+    if (rating?.job_id) {
+      setRatedJobIds((prev) => new Set([...prev, rating.job_id]));
+    }
     if (rating.rating === 5) {
       setIsDonationOpen(true);
     } else {
@@ -108,6 +115,7 @@ export const StoreJobsList: React.FC<StoreJobsListProps> = ({
           key={job.id}
           job={job}
           storeUserId={storeUserId}
+          hasRated={ratedJobIds.has(job.id)}
           onJobUpdated={handleJobUpdated}
           onOpenRatingModal={(contact) => setSelectedContactForRating(contact)}
         />

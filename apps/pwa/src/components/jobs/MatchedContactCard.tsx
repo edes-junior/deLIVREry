@@ -9,12 +9,14 @@ import type { MatchedJobContact, JobPost } from '../../jobs/types.ts';
 import { completeJob, cancelJobWithPenaltyCheck } from '../../jobs/job-service.ts';
 import { DonationBottomSheet } from '../donations/DonationBottomSheet.tsx';
 import { Avatar } from '../ui/Avatar.tsx';
-import { Bike, Store, Star, Phone, MessageCircle, AlertTriangle, Flag, Car, Zap } from 'lucide-react';
+import { Bike, Store, Star, Phone, MessageCircle, AlertTriangle, Flag, Car, Zap, CheckCircle } from 'lucide-react';
 
 interface MatchedContactCardProps {
   contact: MatchedJobContact;
   currentUserId: string;
   isStore: boolean;
+  jobStatus?: string;
+  hasRated?: boolean;
   onJobUpdated?: (updatedJob: JobPost) => void;
   onOpenRatingModal?: (contact: MatchedJobContact) => void;
 }
@@ -23,6 +25,8 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
   contact,
   currentUserId,
   isStore,
+  jobStatus,
+  hasRated = false,
   onJobUpdated,
   onOpenRatingModal
 }) => {
@@ -99,6 +103,92 @@ export const MatchedContactCard: React.FC<MatchedContactCardProps> = ({
       setIsProcessing(false);
     }
   };
+
+  const isClosed = jobStatus === 'completed' || jobStatus === 'cancelled';
+
+  if (isClosed) {
+    if (hasRated) {
+      return (
+        <div
+          data-testid="shift-completed-rated"
+          style={{
+            marginTop: '12px',
+            paddingTop: '10px',
+            borderTop: '1px solid #1e293b',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '12px',
+            color: '#10b981',
+            fontFamily: 'system-ui, -apple-system, sans-serif'
+          }}
+        >
+          <CheckCircle size={14} />
+          <span>Turno finalizado e avaliado</span>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        data-testid="shift-completed-unrated"
+        style={{
+          marginTop: '14px',
+          paddingTop: '12px',
+          borderTop: '1px solid #1e293b',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '8px',
+          fontFamily: 'system-ui, -apple-system, sans-serif'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#facc15' }}>
+          <Star size={15} fill="#facc15" />
+          <span style={{ fontWeight: 600 }}>Avaliação Pendente</span>
+        </div>
+
+        {onOpenRatingModal && (
+          <button
+            type="button"
+            data-testid="btn-evaluate-closed-shift"
+            onClick={() => {
+              triggerHaptic(15);
+              onOpenRatingModal(contact);
+            }}
+            style={{
+              minHeight: '44px',
+              padding: '0 16px',
+              borderRadius: '10px',
+              backgroundColor: '#facc15',
+              border: 'none',
+              color: '#0f172a',
+              fontWeight: 700,
+              fontSize: '13px',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 2px 8px rgba(250, 204, 21, 0.25)',
+              transition: 'transform 0.1s ease'
+            }}
+          >
+            <Star size={14} fill="#0f172a" />
+            <span>Avaliar Entregador (+10 XP)</span>
+          </button>
+        )}
+
+        {/* Modal de Microdoação PIX (Story 4.2 - Delight Moment #1) */}
+        <DonationBottomSheet
+          isOpen={isDonationOpen}
+          onClose={() => setIsDonationOpen(false)}
+          triggerMoment="shift_completed"
+          currentUserId={currentUserId}
+        />
+      </div>
+    );
+  }
 
   return (
     <div

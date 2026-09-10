@@ -925,6 +925,59 @@ export async function getPendingJobReviews(
 }
 
 /**
+ * Consulta quais IDs de turnos já foram avaliados por determinado usuário.
+ */
+export async function getRatedJobIdsForUser(
+  userId: string,
+  jobIds: string[],
+  client: any = supabase
+): Promise<Set<string>> {
+  if (!userId || !jobIds || jobIds.length === 0) {
+    return new Set();
+  }
+
+  try {
+    const { data, error } = await client
+      .from('job_ratings')
+      .select('job_id')
+      .eq('rater_id', userId)
+      .in('job_id', jobIds);
+
+    if (error || !data) {
+      return new Set();
+    }
+
+    return new Set(data.map((r: any) => r.job_id));
+  } catch {
+    return new Set();
+  }
+}
+
+/**
+ * Verifica se um usuário (lojista ou entregador) já avaliou um turno específico.
+ */
+export async function hasUserRatedJob(
+  userId: string,
+  jobId: string,
+  client: any = supabase
+): Promise<boolean> {
+  if (!userId || !jobId) return false;
+  try {
+    const { data, error } = await client
+      .from('job_ratings')
+      .select('id')
+      .eq('job_id', jobId)
+      .eq('rater_id', userId)
+      .maybeSingle();
+
+    if (error || !data) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Cancela um turno aplicando regras de integridade e penalidade de reputação (-30 XP):
  * - Lojista: permitido somente enquanto o turno estiver 'open' (proibido após o match).
  *   - Isento de penalidade se cancelado em até 1h da publicação OU se não houver propostas de entregadores.
