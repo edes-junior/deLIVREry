@@ -1,0 +1,12 @@
+# GitGuardian Configuration File
+# Documentation: https://docs.gitguardian.com/ggshield-docs/configuration
+
+version: 2
+
+secret:
+  # Ignorar arquivos de testes automatizados e relatórios de planejamento/revisão
+  ignored-paths:
+    - "tests/**"
+    - "_bmad-output/**"
+    - "**/*.test.js"
+    - "**/*.test.ts"

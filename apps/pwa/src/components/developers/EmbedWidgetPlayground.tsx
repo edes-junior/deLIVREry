@@ -28,7 +28,7 @@ interface EventLogEntry {
 }
 
 export const EmbedWidgetPlayground: React.FC = () => {
-  const [clientId, setClientId] = useState('dlv_live_sample99');
+  const [clientId, setClientId] = useState('dlv_test_sample99');
   const [cityId, setCityId] = useState('sao_paulo');
   const [neighborhoodId, setNeighborhoodId] = useState('Pinheiros');
   const [storeName, setStoreName] = useState('Pizzaria Bella Roma');

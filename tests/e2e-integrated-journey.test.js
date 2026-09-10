@@ -301,7 +301,7 @@ describe('E2E Integrated Journey: Ciclo Completo de Ponta a Ponta (Happy Path)',
   const storeUserId = 'store-user-sao-paulo-1';
   const courierUserId = 'courier-user-sao-paulo-1';
   const competitorCourierId = 'courier-user-sao-paulo-2';
-  const partnerApiKey = 'dlv_live_e2e_partner_secret_12345';
+  const partnerApiKey = 'dlv_test_e2e_partner_secret_12345';
   const partnerClientId = 'client-uuid-e2e-partner';
   const partnerWebhookSecret = 'whsec_e2e_integration_test_secret_key';
 
@@ -680,7 +680,7 @@ describe('E2E Integrated Journey: Casos Críticos de Resiliência e Regras de Se
   });
 
   it('Caso 4: Isolamento Multi-Tenant Headless — Rejeição 403 Forbidden para Cidade Não Autorizada (FR-3, NFR-5)', async () => {
-    const testApiKey = 'dlv_live_regional_partner_sp_only';
+    const testApiKey = 'dlv_test_regional_partner_sp_only';
     ApiGatewayService.clearMockClients();
     HeadlessApiRouter.clearMocks();
 

@@ -7,7 +7,7 @@ import { openApiSpec } from '../apps/pwa/src/api/openapi/openapi-spec.ts';
 import { DelivreryClient, hashApiKey } from '../packages/api-client-sdk/src/index.js';
 
 describe('Story 5.2: Endpoints RESTful Headless de Gestão de Vagas e Perfis (FR-16, NFR-5, NFR-7)', () => {
-  const testApiKey = 'dlv_live_headless_test_partner';
+  const testApiKey = 'dlv_test_headless_test_partner';
   const testClientId = 'client-headless-uuid';
 
   beforeEach(() => {
@@ -180,7 +180,7 @@ describe('Story 5.2: Endpoints RESTful Headless de Gestão de Vagas e Perfis (FR
       ApiGatewayService.registerMockClient({
         id: 'client-low-limit',
         clientName: 'Cliente Teste Limite',
-        apiKeyHash: hashApiKey('dlv_live_low_limit'),
+        apiKeyHash: hashApiKey('dlv_test_low_limit'),
         ownerEmail: 'test@rate.com',
         allowedCities: ['*'],
         rateLimitRpm: 3,
@@ -190,7 +190,7 @@ describe('Story 5.2: Endpoints RESTful Headless de Gestão de Vagas e Perfis (FR
       const sendReq = () => HeadlessApiRouter.handle({
         method: 'GET',
         url: '/api/v1/jobs?city_id=sao_paulo',
-        headers: { 'X-API-Key': 'dlv_live_low_limit' },
+        headers: { 'X-API-Key': 'dlv_test_low_limit' },
         queryParams: { city_id: 'sao_paulo' }
       });
 

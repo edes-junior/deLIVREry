@@ -16,7 +16,7 @@ import {
 } from '../packages/api-client-sdk/src/index.js';
 
 describe('Story 5.4: Portal do Desenvolvedor (/developers) com Swagger UI Interativo', () => {
-  const testApiKey = 'dlv_live_portal_test_developer_key';
+  const testApiKey = 'dlv_test_portal_test_developer_key';
   const testClientId = 'client_portal_uuid';
 
   beforeEach(() => {

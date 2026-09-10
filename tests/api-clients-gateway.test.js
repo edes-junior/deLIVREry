@@ -17,7 +17,7 @@ describe('Story 5.1: Schema de Clientes de API, Webhooks e Gateway de Validaçã
 
   describe('Matriz de I/O & Edge Cases do API Gateway', () => {
     it('Cenário 1: Autenticação Válida (Nacional) com allowed_cities=["*"]', async () => {
-      const rawKey = 'dlv_live_abc123national';
+      const rawKey = 'dlv_test_abc123national';
       const keyHash = hashApiKey(rawKey);
 
       ApiGatewayService.registerMockClient({
@@ -57,7 +57,7 @@ describe('Story 5.1: Schema de Clientes de API, Webhooks e Gateway de Validaçã
     });
 
     it('Cenário 2: Autenticação Válida (Cidade Permitida) com escopo regional', async () => {
-      const rawKey = 'dlv_live_xyz789regional';
+      const rawKey = 'dlv_test_xyz789regional';
       const keyHash = hashApiKey(rawKey);
 
       ApiGatewayService.registerMockClient({
@@ -122,7 +122,7 @@ describe('Story 5.1: Schema de Clientes de API, Webhooks e Gateway de Validaçã
         {
           method: 'GET',
           url: '/api/v1/jobs',
-          headers: { 'X-API-Key': 'dlv_invalid_key_999' }
+          headers: { 'X-API-Key': 'dlv_test_invalid_key_999' }
         },
         async () => ({ status: 200, headers: {}, body: {} })
       );
@@ -132,7 +132,7 @@ describe('Story 5.1: Schema de Clientes de API, Webhooks e Gateway de Validaçã
       assert.ok(respInvalid.body.detail.includes('inválida, revogada ou inativa'));
 
       // 4b: Cliente revogado/inativo
-      const rawRevoked = 'dlv_live_revoked_client';
+      const rawRevoked = 'dlv_test_revoked_client';
       ApiGatewayService.registerMockClient({
         id: 'client-revoked',
         clientName: 'Parceiro Desativado',
@@ -158,7 +158,7 @@ describe('Story 5.1: Schema de Clientes de API, Webhooks e Gateway de Validaçã
     });
 
     it('Cenário 5: Escopo Geográfico Não Autorizado - Rejeição com HTTP 403 RFC 7807', async () => {
-      const rawKey = 'dlv_live_curitiba_only';
+      const rawKey = 'dlv_test_curitiba_only';
       ApiGatewayService.registerMockClient({
         id: 'client-curitiba-only',
         clientName: 'Parceiro Curitiba',
@@ -218,7 +218,7 @@ describe('Story 5.1: Schema de Clientes de API, Webhooks e Gateway de Validaçã
 
   describe('Utilitários Criptográficos e Suporte no SDK', () => {
     it('deve calcular hash SHA-256 idempotente e consistente', () => {
-      const key = 'dlv_live_mysecretkey123';
+      const key = 'dlv_test_mysecretkey123';
       const hash1 = hashApiKey(key);
       const hash2 = ApiGatewayService.hashApiKey(key);
 
@@ -251,7 +251,7 @@ describe('Story 5.1: Schema de Clientes de API, Webhooks e Gateway de Validaçã
       };
 
       const client = new DelivreryClient({
-        apiKey: 'dlv_live_client_test_key',
+        apiKey: 'dlv_test_client_test_key',
         fetch: mockFetch
       });
 
@@ -261,8 +261,8 @@ describe('Story 5.1: Schema de Clientes de API, Webhooks e Gateway de Validaçã
       });
 
       assert.ok(capturedHeaders);
-      assert.strictEqual(capturedHeaders['X-API-Key'], 'dlv_live_client_test_key');
-      assert.strictEqual(capturedHeaders['Authorization'], 'Bearer dlv_live_client_test_key');
+      assert.strictEqual(capturedHeaders['X-API-Key'], 'dlv_test_client_test_key');
+      assert.strictEqual(capturedHeaders['Authorization'], 'Bearer dlv_test_client_test_key');
     });
 
     it('deve suportar preflight CORS (OPTIONS) com status 204 no gateway', async () => {
@@ -282,13 +282,13 @@ describe('Story 5.1: Schema de Clientes de API, Webhooks e Gateway de Validaçã
 
     it('deve extrair API Key de instância de Headers (Web API) e Authorization Bearer', () => {
       const headersMap = new Map();
-      headersMap.set('x-api-key', 'dlv_live_headers_map_key');
+      headersMap.set('x-api-key', 'dlv_test_headers_map_key');
       const mockWebHeaders = {
         get: (key) => headersMap.get(key.toLowerCase()) || null
       };
 
       const extracted = ApiGatewayService.extractApiKey(mockWebHeaders);
-      assert.strictEqual(extracted, 'dlv_live_headers_map_key');
+      assert.strictEqual(extracted, 'dlv_test_headers_map_key');
 
       // Teste com Bearer em mock Headers
       const bearerMap = new Map();
